@@ -1,0 +1,106 @@
+keys:
+  - &host_poubelle00 age1fdp7w6z9mayzm3e9n2a00up45jws53wsqnwk0kc884p5j643ky3snhs7vz
+  - &host_stonkstation age16462eqs3uc8rvlr5ef7ttvt2qe2gvaha7gf2prhwadfffmvmcdgs5nt22v
+  - &host_prodesk age1syx48exjgrns9500apf3v4a84gj62fdpy0sqvseax438d9k0y3tqrtfn3t
+
+  - &router_vultr_edge age1w2cfzf8wm02umpj74tcseqmslhj2cfl9qtkdkcnj5cyvspyhvfxq5lh2gd
+  - &router_virtua_edge age1kh8evunyhzlwwh04smtx85tmaaq73867j4lhxcuuxe7ce543nuus3kcvq6
+
+  - &router_iguane age19qe5ea965hnjv5e9dty2ws5dr375tsh0x4ct0zg6syg82cmlp9wq0l6sgp
+
+  - &router_aure_home age1f9c0vpqpafkc0uugm4qnwuw8tr87pt63ar9497auzsz6kker33tq8cs7gw
+
+  - &user_root_stonks age1aj2qrwdh88njh3kx695zglvzvdzxggwkkdxdumrlp00pnjtctdws0q8y0c
+  - &user_root_laptaupe age1m7erxk6hmmlar2k9u7gjsjlhgquxww84tfdlank0lv92g20fuydqglqqur
+creation_rules:
+  - path_regex: secrets/[^/]+\.pub\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age: &age_everyone
+          - *host_stonkstation
+          - *host_poubelle00
+          - *host_prodesk
+
+          - *router_vultr_edge
+          - *router_virtua_edge
+          - *router_iguane
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/poubelle00([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *host_poubelle00
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/iguane-kit-rtr([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *router_iguane
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/virtua-kit-edge([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *router_virtua_edge
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/vultr-kit-edge([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *router_vultr_edge
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/toinux-home-kitrtr([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          # - *router_toinux_home01
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/aure-home-kitrtr([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *router_aure_home
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/stonkstation([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *host_stonkstation
+
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age: *age_everyone
+    mac_only_encrypted: true
