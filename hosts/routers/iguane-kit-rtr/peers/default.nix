@@ -17,4 +17,5 @@ defaultPeers
   aureG8 = import ./KIT-aurelien-RBR.nix { };
   toinuxMEL1 = import ./KIT-toinux-MEL1.nix { };
   roumainNTE = import ./KIT-roumain-NTE.nix { };
+  roumaiNixNTE = import ./KIT-roumainNix-NTE.nix { };
 }

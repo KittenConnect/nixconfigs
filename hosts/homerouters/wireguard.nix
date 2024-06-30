@@ -113,7 +113,7 @@ let
     };
 in
 {
-  #  sops --set '["wireguard_serverkey"] "'"$(wg genkey | tee >(wg pubkey > /dev/stderr))"'"' secrets/vultr-kit-edge.yaml
+  #  sops --set '["wireguard_serverkey"] "'"$(wg genkey | tee >(wg pubkey > /dev/stderr))"'"' secrets/<name>.yaml
   sops.secrets.wireguard_serverkey = { };
   environment.systemPackages = with pkgs; [ wireguard-tools ];
 

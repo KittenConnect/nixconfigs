@@ -9,7 +9,9 @@ keys:
   - &router_iguane age19qe5ea965hnjv5e9dty2ws5dr375tsh0x4ct0zg6syg82cmlp9wq0l6sgp
 
   - &router_aure_home age1f9c0vpqpafkc0uugm4qnwuw8tr87pt63ar9497auzsz6kker33tq8cs7gw
+  - &router_romain_home age13shuee5uk80wjlhdsl2hlg7n7nv489wxq8r7xy0arh9nkk3lju9qfs0k0x
 
+  - &user_root_nixifier age10zyzjhvtp96mzuas9xtykmz0snh03rm2k5q0fzk78cc8fdnd0ehsrsnl7f
   - &user_root_stonks age1aj2qrwdh88njh3kx695zglvzvdzxggwkkdxdumrlp00pnjtctdws0q8y0c
   - &user_root_laptaupe age1m7erxk6hmmlar2k9u7gjsjlhgquxww84tfdlank0lv92g20fuydqglqqur
 creation_rules:
@@ -85,6 +87,17 @@ creation_rules:
       - age:
           - *router_aure_home
 
+          - *user_root_stonks
+          - *user_root_laptaupe
+    mac_only_encrypted: true
+
+  - path_regex: secrets/romain-home-kitrtr([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *router_romain_home
+
+          - *user_root_nixifier
           - *user_root_stonks
           - *user_root_laptaupe
     mac_only_encrypted: true
