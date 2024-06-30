@@ -11,7 +11,7 @@
 }:
 let
   iface = if targetConfig ? interface then targetConfig.interface else null;
-  # kittenIFACE = "ens19";
+  kittenIFACE = "ens19";
 in
 {
   services.xserver.xkb = {
@@ -43,25 +43,35 @@ in
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   networking = {
     #nameservers = [ "1.3.3.7" ];
+    vlans = {
+      vlan36 = {
+        id = 36;
+        interface = "${kittenIFACE}";
+      };
+      # vlan91 = {
+      #   id = 91;
+      #   interface = "${kittenIFACE}"; 
+      # };
+    };
     interfaces = {
       "${iface}".useDHCP = true;
 
-      # "${kittenIFACE}" = {
+      vlan36 = {
 
-      #   # ipv4.addresses = [
-      #   #   {
-      #   #     address = "185.10.17.209";
-      #   #     prefixLength = 24;
-      #   #   }
-      #   # ];
+        # ipv4.addresses = [
+        #   {
+        #     address = "185.10.17.209";
+        #     prefixLength = 24;
+        #   }
+        # ];
 
-      #   ipv6.addresses = [
-      #     {
-      #       address = "2a13:79c0:ffff:feff:b00b:caca:b173:25";
-      #       prefixLength = 112;
-      #     }
-      #   ];
-      # };
+        ipv6.addresses = [
+          {
+            address = "2a13:79c0:ffff:feff:b00b:3615:1:6969";
+            prefixLength = 112;
+          }
+        ];
+      };
     };
 
     # defaultGateway = {
