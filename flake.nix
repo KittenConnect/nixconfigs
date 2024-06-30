@@ -253,7 +253,7 @@
                 let
                   disableModules = [ ];
 
-                  customModules = [ "kitten/connect/loopback0" ];
+                  customModules = [ "kitten/connect/autodisko" "kitten/connect/loopback0" "kitten/connect/bird_peers" ];
                   localModules = [ "nixos/modules/services/ttys/kmscon" ];
 
                   masterModules = [
