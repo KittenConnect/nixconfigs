@@ -18,25 +18,23 @@ let
     ;
 
   birdCfg = config.services.bird2;
+  srvCfg = config.customModules.bird;
 
-  srvCfg =
-    let
-      cfg =
-        if targetConfig ? birdConfig then
-          targetConfig.birdConfig
-        else
-          let
-            p = (./. + "/${target}/birdconfig.nix");
-          in
-          if builtins.pathExists p then (import p { inherit targetConfig; }) else { };
-    in
-    if cfg ? peers then
-      cfg
-    else
-      let
-        peers = (import (./. + "/${target}/peers/") { });
-      in
-      (cfg // { inherit peers; });
+  #srvCfg =
+  #  let
+  #    cfg =
+  #      if targetConfig ? birdConfig then
+  #        targetConfig.birdConfig
+  #      else
+  #        import (./. + "/${target}/birdconfig.nix") { inherit targetConfig; };
+  #  in
+  #  if cfg ? peers then
+  #    cfg
+  #  else
+  #    let
+  #      peers = (import (./. + "/${target}/peers/") { });
+  #    in
+  #    (cfg // { inherit peers; });
 
   rrs = attrNames (filterAttrs (n: v: v ? template && v.template == "rrserver") srvCfg.peers);
 
@@ -53,11 +51,6 @@ let
       null;
 in
 {
-  imports = [
-    ./bird_peers.nix
-    # ./bird_statics.nix 
-  ]; 
-
   config = {
 
     sops.templates."bird_secrets.conf" = {
@@ -72,31 +65,6 @@ in
       179 # BGP
       1790 # Internal BGP
     ];
-
-    networking.interfaces.lo = {
-      ipv4.addresses =
-        lib.mkIf
-          (
-            lo4 != null && config.customModules.loopback0.ipv4 == [ ] || !config.customModules.loopback0.enable
-          )
-          [
-            {
-              address = "${toString srvCfg.loopback4}";
-              prefixLength = 32;
-            }
-          ];
-      ipv6.addresses =
-        lib.mkIf
-          (
-            lo6 != null && config.customModules.loopback0.ipv6 == [ ] || !config.customModules.loopback0.enable
-          )
-          [
-            {
-              address = "${toString srvCfg.loopback6}";
-              prefixLength = 128;
-            }
-          ];
-    };
 
     services.bird2.preCheckConfig = ''
       echo "Bird configuration include these resources"
@@ -168,7 +136,7 @@ in
             function is_rr_valid6_network() {
               return net ~ [
                 ${
-                  optionalString (transitIFACE != null) "::/0,"
+                  optionalString (transitIFACE != null) "# ::/0,"
                 } # Announce (or not) default route [transitInterface = ${toString transitIFACE}]
                 2a13:79c0:ff00::/40,
                 2a13:79c0:ff00::/48+, # Special case for Toinux home
@@ -191,15 +159,21 @@ in
             #             import all;       # Import to table, default is import all
             #             export all;       # Export to protocol. default is export none
             	      export filter {
-            		  if  ( is_valid4_network() || source ~ [RTS_STATIC] || proto ~ "(${concatStringsSep "|" rrs})"
-                    ) then {
-                      ${
-                        optionalString (lo4 != null) ''
-                          if source ~ [RTS_BGP] || net ~ [ 0.0.0.0/0 ] then {
-                            krt_prefsrc=${lo4};
-                          }
-                        ''
-                      }
+            		  if  ( is_valid4_network() || source ~ [RTS_STATIC] 
+                  ${
+                    let
+                      sep = "|| proto =";
+                    in
+                    optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
+                  }
+                  ) then {
+                               ${
+                                 optionalString (lo4 != null) ''
+                                        if source ~ [RTS_BGP] || net ~ [ 0.0.0.0/0 ] then {
+                                   	 krt_prefsrc=${lo4};
+                                        }
+                                 ''
+                               }
             		     accept;
             		  } else reject;
             	      };
@@ -214,14 +188,22 @@ in
             #       ipv6 { export all; };
             	ipv6 {
             	     export filter {
-            		 if  ( is_valid6_network() || source ~ [RTS_STATIC] || proto ~ "(${concatStringsSep "|" rrs})" ) then {
-                        ${
-                          optionalString (lo6 != null) ''
-                              if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
-                            krt_prefsrc=${lo6};
-                              }
-                          ''
-                        }
+            		 
+                   if  ( is_valid6_network() || source ~ [RTS_STATIC] 
+                  ${
+                    let
+                      sep = "|| proto =";
+                    in
+                    optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
+                  }
+                  ) then {
+                               ${
+                                 optionalString (lo6 != null) ''
+                                        if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
+                                   	 krt_prefsrc=${lo6};
+                                        }
+                                 ''
+                               }
             		       accept;
             		 } else reject;
             	     };
@@ -321,7 +303,7 @@ in
               ''
                 protocol static STATIC6 {
                     ipv6;
-                ${concatStringsSep "\n" (map (x: "    " + "route ${x};") srvCfg.static6)}
+                ${concatMapStringsSep "\n" (x: "    " + "route ${x};") srvCfg.static6}
                 }
               ''
             ]
