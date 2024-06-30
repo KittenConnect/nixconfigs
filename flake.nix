@@ -95,6 +95,7 @@
         getBin
         concatMapStringsSep
         optionals
+        hasSuffix
 
         nixosSystem
         ;
@@ -252,7 +253,8 @@
                 let
                   disableModules = [ ];
 
-                  localModules = [ "nixos/modules/services/ttys/kmscon.nix" ];
+                  customModules = [ "kitten/connect/loopback0" ];
+                  localModules = [ "nixos/modules/services/ttys/kmscon" ];
 
                   masterModules = [
                     # "nixos/modules/programs/kubeswitch.nix"
@@ -261,7 +263,15 @@
                   unstableModules = [ ];
                   # stableModules = [ ];
 
-                  getModule = input: (x: "${input}/${x}");
+                  getModule =
+                    input:
+                    (
+                      x:
+                      let
+                        mod = if (hasSuffix ".nix" x) then x else "${x}.nix";
+                      in
+                      "${input}/${mod}"
+                    );
                 in
                 {
                   disabledModules = map (getModule args.nixpkgs) (
@@ -270,7 +280,7 @@
                   );
 
                   imports =
-                    (map (getModule ./modules) localModules)
+                    (map (getModule ./modules) (localModules ++ customModules))
                     ++ (map (getModule args.nixpkgs-master) masterModules)
                     ++ (map (getModule args.nixpkgs-unstable) unstableModules)
                   # ++ (map (getModule args.nixpkgs-stable) stableModules)
@@ -290,7 +300,7 @@
             configs = hosts.${profile};
           in
           (mapAttrs (name: value: { inherit profile; } // value) configs) // acc
-        ) (import ./targets.nix { }) (attrNames hosts);
+        ) { } (attrNames hosts);
 
       # TODO: Move this
       masterNodes = [ "stonkstation" ];
@@ -301,6 +311,28 @@
       #   homeConfigurations = {
       #      "toinux" = home-config.lib.mkHomeConfiguration userName homeDir [ ./_home/configuration.nix ];
       #   };
+    # colmena = {
+    #   meta = {
+    #     nixpkgs = import nixpkgs {
+    #       system = "x86_64-linux";
+    #     };
+    #   };
+
+    #   # Also see the non-Flakes hive.nix example above.
+    #   host-a = { name, nodes, pkgs, ... }: {
+    #     boot.isContainer = true;
+    #     time.timeZone = nodes.host-b.config.time.timeZone;
+    #   };
+    #   host-b = {
+    #     deployment = {
+    #       targetHost = "somehost.tld";
+    #       targetPort = 1234;
+    #       targetUser = "luser";
+    #     };
+    #     boot.isContainer = true;
+    #     time.timeZone = "America/Los_Angeles";
+    #   };
+    # };
 
       nixosConfigurations = (
         genAttrs (attrNames targetConfigs) (

@@ -26,6 +26,13 @@ in
   # Define on which hard drive you want to install Grub.
   #boot.loader.grub.devices = [ "${targetConfig.bootdisk}" ]; # or "nodev" for efi only
 
+  customModules = {
+    loopback0 = {
+      enable = true;
+      ipv6 = [ "2a13:79c0:ffff:fefe::22f0" ];
+    };
+  };
+
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
