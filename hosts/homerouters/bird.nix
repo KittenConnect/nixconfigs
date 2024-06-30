@@ -56,7 +56,7 @@ in
   imports = [
     ./bird_peers.nix
     # ./bird_statics.nix 
-  ]; 
+  ];
 
   config = {
 

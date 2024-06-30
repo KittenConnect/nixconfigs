@@ -17,7 +17,6 @@
     ./firewall.nix
   ];
 
-
   customModules = {
     loopback0 = {
       enable = true;
