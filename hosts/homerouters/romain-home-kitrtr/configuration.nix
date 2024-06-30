@@ -11,9 +11,14 @@
 }:
 let
   iface = if targetConfig ? interface then targetConfig.interface else null;
-  kittenIFACE = "ens19";
+  # kittenIFACE = "ens19";
 in
 {
+  services.xserver.xkb = {
+    layout = "fr";
+    #variant = "";
+  };
+
   #imports = [ ./wireguard.nix ];
   # Bootloader.
   #boot.loader.systemd-boot.enable = true;
@@ -26,48 +31,37 @@ in
   # Define on which hard drive you want to install Grub.
   #boot.loader.grub.devices = [ "${targetConfig.bootdisk}" ]; # or "nodev" for efi only
 
+  customModules = {
+    loopback0 = {
+      enable = true;
+      ipv6 = [ "2a13:79c0:ffff:fefe::2:256" ];
+    };
+  };
+
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   networking = {
-
-    nftables.tables."nat" = {
-      family = "inet";
-      name = "nat";
-
-      content = lib.mkAfter ''
-	chain postrouting {
-		type nat hook postrouting priority srcnat; policy accept;
-		ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
-        }
-      '';
-    };
-
-    firewall = {
-      allowedTCPPorts = [ 51888 ];
-      allowedUDPPorts = [ 51888 ];
-    };
-
     #nameservers = [ "1.3.3.7" ];
     interfaces = {
       "${iface}".useDHCP = true;
 
-      "${kittenIFACE}" = {
+      # "${kittenIFACE}" = {
 
-        # ipv4.addresses = [
-        #   {
-        #     address = "185.10.17.209";
-        #     prefixLength = 24;
-        #   }
-        # ];
+      #   # ipv4.addresses = [
+      #   #   {
+      #   #     address = "185.10.17.209";
+      #   #     prefixLength = 24;
+      #   #   }
+      #   # ];
 
-        ipv6.addresses = [
-          {
-            address = "2a13:79c0:ffff:feff:b00b:3965:113:25";
-            prefixLength = 112;
-          }
-        ];
-      };
+      #   ipv6.addresses = [
+      #     {
+      #       address = "2a13:79c0:ffff:feff:b00b:caca:b173:25";
+      #       prefixLength = 112;
+      #     }
+      #   ];
+      # };
     };
 
     # defaultGateway = {
@@ -112,5 +106,5 @@ in
   # and migrated your data accordingly.
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = lib.mkForce "24.05"; # Did you read the comment?
 }
