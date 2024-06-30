@@ -51,7 +51,8 @@ let
       null;
 in
 {
-  config = {
+
+  config = lib.mkIf (false) {
 
     sops.templates."bird_secrets.conf" = {
       owner = "bird2";
@@ -159,7 +160,7 @@ in
             #             import all;       # Import to table, default is import all
             #             export all;       # Export to protocol. default is export none
             	      export filter {
-            		  if  ( is_valid4_network() || source ~ [RTS_STATIC] 
+            		  if  ( is_valid4_network() || source ~ [RTS_STATIC]
                   ${
                     let
                       sep = "|| proto =";
@@ -188,8 +189,8 @@ in
             #       ipv6 { export all; };
             	ipv6 {
             	     export filter {
-            		 
-                   if  ( is_valid6_network() || source ~ [RTS_STATIC] 
+
+                   if  ( is_valid6_network() || source ~ [RTS_STATIC]
                   ${
                     let
                       sep = "|| proto =";
@@ -208,7 +209,7 @@ in
             		 } else reject;
             	     };
             	};
-              
+
               merge paths on;
             }
           ''
