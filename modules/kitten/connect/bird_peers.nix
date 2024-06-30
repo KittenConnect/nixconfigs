@@ -17,7 +17,7 @@ let
 in
 {
 
-  sops.secrets = lib.mkIf (builtins.trace "Bird passwords    = ${builtins.toJSON passwords}" passwords != [ ]) (
+  sops.secrets = lib.mkIf (passwords != [ ]) (
     listToAttrs (
       map (n: lib.nameValuePair "bird_secrets/${n}" { reloadUnits = [ "bird2.service" ]; }) passwords
     )

@@ -36,6 +36,7 @@ let
     concatMapStringsSep
     attrNames
     filterAttrs
+    optional
     ;
 in
 
@@ -73,27 +74,32 @@ in
             define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }
           '';
 
-          extraForwardRules = ''
+          extraForwardRules = lib.concatStringsSep "\n" (
+            [
+              ''
+                ${optionalString (transitedNetworks != [ ] && transitIFACEs != [ ]) ''
+                  # iifname $wireguardIFACEs oifname $transitIFACEs counter accept
+                  ip6 saddr $transitNETs  iifname $wireguardIFACEs  oifname $transitIFACEs  counter accept
+                  ip6 daddr $transitNETs  oifname $wireguardIFACEs  iifname $transitIFACEs  counter accept
+                ''}
 
-            ${optionalString (transitedNetworks != [ ] && transitIFACEs != [ ]) ''
-              # iifname $wireguardIFACEs oifname $transitIFACEs counter accept
-              ip6 saddr $transitNETs  iifname $wireguardIFACEs  oifname $transitIFACEs  counter accept
-              ip6 daddr $transitNETs  oifname $wireguardIFACEs  iifname $transitIFACEs  counter accept
-            ''}
+                ${optionalString (
+                  wgPeers != { }
+                ) "iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept"}
 
-            ${optionalString (
-              wgPeers != { }
-            ) "iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept"}
+                # ip6 daddr 2a13:79c0:ff00::/48 counter accept
+                # ip6 daddr { 2a13:79c0:ffff:feff:b00b:3945:a51:b00b, 2a13:79c0:ffff:feff:b00b:3945:a51:dead } counter accept
 
-            # ip6 daddr 2a13:79c0:ff00::/48 counter accept
-            # ip6 daddr { 2a13:79c0:ffff:feff:b00b:3945:a51:b00b, 2a13:79c0:ffff:feff:b00b:3945:a51:dead } counter accept
+                # ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
 
-            # ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
+                # ip6 saddr 2a13:79c0:ffff:feff:b00b::/80 ip6 daddr 2a13:79c0:ffff:fefe::/64 counter accept
 
-            # ip6 saddr 2a13:79c0:ffff:feff:b00b::/80 ip6 daddr 2a13:79c0:ffff:fefe::/64 counter accept
+                # ip6 saddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } ip6 daddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } counter accept
+              ''
+            ]
 
-            # ip6 saddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } ip6 daddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } counter accept
-          '';
+            ++ optional (birdConfig ? extraForwardRules) birdConfig.extraForwardRules
+          );
         in
         mkAfter ''
           # FireWall Test Configs

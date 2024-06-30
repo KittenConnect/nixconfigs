@@ -16,6 +16,20 @@
     # loopback4 = "";
     loopback6 = "2a13:79c0:ffff:fefe::22f0";
 
+    # transitIFACEs = [ "ens19" ];
+
+    extraForwardRules = ''
+      iifname "ens19" ip6 saddr 2a13:79c0:ffff:feff:b00b:caca:b173:0/112 oifname "KIT_IG1_RTR" counter accept
+
+      ct state vmap {
+        established : accept,
+        related : accept,
+      # invalid : jump forward-allow,
+      #   new : jump forward-allow,
+      #   untracked : jump forward-allow,
+      }
+    '';
+
     static6 = [
       "::/0 recursive 2a13:79c0:ffff:fefe::b00b"
 
