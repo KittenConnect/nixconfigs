@@ -11,15 +11,12 @@
 
 {
   imports = [
-    # Include the results of the hardware scan.
-    # ./bird.nix # Bird Routing
-    # ./wireguard.nix
-    ./firewall.nix
+    ./firewall.nix # TODO: Remove
   ];
 
   customModules = {
     loopback0 = {
-      enable = true;
+      enable = lib.mkDefault true;
     };
   };
 
