@@ -194,6 +194,10 @@ in
   };
 
   config = mkIf (cfg.enable) {
+    _module.args = {
+      wgPeers = peers;
+    };
+
     #  sops --set '["wireguard_serverkey"] "'"$(wg genkey | tee >(wg pubkey > /dev/stderr))"'"' secrets/[HOSTNAME].yaml
     sops.secrets.wireguard_serverkey = { };
     environment.systemPackages = with pkgs; [ wireguard-tools ];
