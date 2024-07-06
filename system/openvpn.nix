@@ -92,7 +92,7 @@ in
     systemd.services = (
       forEachCFG (name: "openvpn-${name}") {
         serviceConfig = {
-          ExecStartPre = lib.mkIf (cfg.ensureDevice) ''${pkgs.bash}/bin/bash -c '${showPKCS11}; [[ $(''${showPKCS11} | grep DN: | wc -l) -gt 0 ]] || { echo Missing YubiKey or Certificates not found; exit 1; }' ''; # Ensure yubikey is detected
+          ExecStartPre = lib.mkIf (cfg.ensureDevice) "${pkgs.bash}/bin/bash -c '${showPKCS11}; [[ \$(${showPKCS11} | grep DN: | wc -l) -gt 0 ]] || { echo Missing YubiKey or Certificates not found; exit 1; }'"; # Ensure yubikey is detected
           TimeoutStartSec = 90;
         };
       }
