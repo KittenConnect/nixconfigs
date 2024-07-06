@@ -33,7 +33,6 @@ let
   quoteString = x: ''"${x}"'';
 
   # Main config is here
-  birdCfg = config.services.bird2;
   cfg = config.customModules.bird;
 
   # Values
@@ -246,6 +245,7 @@ in
   config = mkIf cfg.enable {
     _module.args = {
       birdConfig = cfg;
+
       birdFuncs = {
         inherit quoteString;
       };
