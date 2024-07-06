@@ -26,11 +26,12 @@ let
 
   transitIFACEs =
     [ ]
-    ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
-    # ++ lib.optional (birdConfig ? transitInterface) birdConfig.transitInterface;
+    ++ lib.optionals (birdConfig.transitInterfaces != [ ]) birdConfig.transitInterfaces;
+  # ++ lib.optional (birdConfig ? transitInterface) birdConfig.transitInterface;
 
   kittenIFACEs = (
-    (attrNames wgPeers) ++ lib.optionals (birdConfig.allowedInterfaces != []) birdConfig.allowedInterfaces
+    (attrNames wgPeers)
+    ++ lib.optionals (birdConfig.allowedInterfaces != [ ]) birdConfig.allowedInterfaces
   );
 
   inherit (lib)
@@ -44,7 +45,6 @@ let
     filterAttrs
     ;
 in
-
 {
 
   config = {
@@ -72,14 +72,20 @@ in
         let
           quoteString = x: ''"${x}"'';
 
-          defines = lib.concatStringsSep "\n" (
-            [
-              (optionalString (transitIFACEs != [ ]) ''define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }'')
-              (optionalString (transitedNetworks != [ ]) ''define transitNETs = { ${concatStringsSep ", " transitedNetworks} }'')
-              (optionalString (wgPeers != { }) ''define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }'')
-              (optionalString (kittenIFACEs != [ ]) ''define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }'')
-            ]
-          );
+          defines = lib.concatStringsSep "\n" ([
+            (optionalString (transitIFACEs != [ ])
+              "define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }"
+            )
+            (optionalString (
+              transitedNetworks != [ ]
+            ) "define transitNETs = { ${concatStringsSep ", " transitedNetworks} }")
+            (optionalString (wgPeers != { })
+              "define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }"
+            )
+            (optionalString (kittenIFACEs != [ ])
+              "define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }"
+            )
+          ]);
 
           extraForwardRules = lib.concatStringsSep "\n" (
             [

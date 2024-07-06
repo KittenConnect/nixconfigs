@@ -37,12 +37,14 @@ in
     let
       mkPeersFuncArgs = (x: { peerName = x; } // peers.${x});
 
-      toLines =
-        nindent:
-        let
-          indent = lib.concatMapStrings (_: " ") (lib.range 1 nindent);
-        in
-        builtins.concatStringsSep "\n${indent}";
+      # toLines =
+      #   nindent:
+      #   let
+      #     indent = lib.concatMapStrings (_: " ") (lib.range 1 nindent);
+      #   in
+      #   builtins.concatStringsSep ''
+
+      #     ${indent}'';
 
       withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
 
@@ -195,7 +197,9 @@ in
     lib.mkOrder 50 (
       builtins.concatStringsSep "\n" (
         [ "# Nix-OS Generated for ${target}" ]
-        ++ (map (x: "# ${x}\n${peersFunc (mkPeersFuncArgs x)}") (builtins.attrNames peers))
+        ++ (map (x: ''
+          # ${x}
+          ${peersFunc (mkPeersFuncArgs x)}'') (builtins.attrNames peers))
       )
     );
 }

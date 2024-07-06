@@ -91,7 +91,7 @@ let
       listenPort = lib.mkIf (peer.wireguard ? port) peer.wireguard.port;
 
       postUp = ''
-        ${optionalString (fwMarkString != null) ''wg set ${name} fwmark ${fwMarkString}''}
+        ${optionalString (fwMarkString != null) "wg set ${name} fwmark ${fwMarkString}"}
       '';
 
       # Path to the server's private key

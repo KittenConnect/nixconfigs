@@ -91,34 +91,42 @@ let
       listenPort = lib.mkIf (peer.wireguard ? port) peer.wireguard.port;
 
       postUp = ''
-        set - x
-
-        ${optionalString (fwMarkString != null) ''wg set ${name} fwmark ${fwMarkString}''}
-        ${optionalString (peer.wireguard ? onIFACE && peer.wireguard.onIFACE != null) ''
-          echo "TABLE=${fwMarkString}"
-          for v in 4 6; do
-            echo "[#] IPv$v"
-            ip -$v route add unreachable default metric 4294967295 table ${fwMarkString} || true
-            ip -$v route add default $(ip -$v route show default dev ${peer.wireguard.onIFACE} | grep -oE 'via [^ ]+') dev ${peer.wireguard.onIFACE} metric 42 table ${fwMarkString} || true
-            ip -$v rule add fwmark ${fwMarkString} lookup main suppress_prefixlength 0
-            ip -$v rule add fwmark ${fwMarkString} lookup ${fwMarkString}
-          done
-        ''}
+        
+                set - x
+        
+                ${optionalString (fwMarkString != null) "wg set ${name} fwmark ${fwMarkString}"}
+                ${
+                  optionalString (peer.wireguard ? onIFACE && peer.wireguard.onIFACE != null) ''
+                    
+                              echo "TABLE=${fwMarkString}"
+                              for v in 4 6; do
+                                echo "[#] IPv$v"
+                                ip -$v route add unreachable default metric 4294967295 table ${fwMarkString} || true
+                                ip -$v route add default $(ip -$v route show default dev ${peer.wireguard.onIFACE} | grep -oE 'via [^ ]+') dev ${peer.wireguard.onIFACE} metric 42 table ${fwMarkString} || true
+                                ip -$v rule add fwmark ${fwMarkString} lookup main suppress_prefixlength 0
+                                ip -$v rule add fwmark ${fwMarkString} lookup ${fwMarkString}
+                              done
+                  ''
+                }
       '';
 
       postDown = ''
-        set -x
-
-        ${optionalString (peer.wireguard ? onIFACE && peer.wireguard.onIFACE != null) ''
-          echo "TABLE=${fwMarkString}"
-          for v in 4 6; do
-            echo "[#] IPv$v"
-            # ip -$v route del unreachable default metric 4294967295 table ${fwMarkString} || true
-            ip -$v route del default metric 42 table ${fwMarkString} || true
-            while ip -$v rule del fwmark ${fwMarkString} lookup main suppress_prefixlength 0; do echo -n .; sleep 0.1; done
-            while ip -$v rule del fwmark ${fwMarkString} lookup ${fwMarkString}; do echo -n .; sleep 0.1; done
-          done
-        ''}
+        
+                set -x
+        
+                ${
+                  optionalString (peer.wireguard ? onIFACE && peer.wireguard.onIFACE != null) ''
+                    
+                              echo "TABLE=${fwMarkString}"
+                              for v in 4 6; do
+                                echo "[#] IPv$v"
+                                # ip -$v route del unreachable default metric 4294967295 table ${fwMarkString} || true
+                                ip -$v route del default metric 42 table ${fwMarkString} || true
+                                while ip -$v rule del fwmark ${fwMarkString} lookup main suppress_prefixlength 0; do echo -n .; sleep 0.1; done
+                                while ip -$v rule del fwmark ${fwMarkString} lookup ${fwMarkString}; do echo -n .; sleep 0.1; done
+                              done
+                  ''
+                }
       '';
 
       # Path to the server's private key
@@ -146,20 +154,22 @@ in
 
   environment.etc."iproute2/rt_tables.d/wgnix.conf" = {
     text = ''
-      ${concatMapStringsSep "\n"
-        (
-          peerName:
-          let
-            peer = peers.${peerName};
-          in
-          "${toString peer.wireguard.port} ${peerName}"
-        )
-        (
-          attrNames (
-            filterAttrs (n: v: v ? wireguard && v.wireguard ? onIFACE && v.wireguard.onIFACE != null) peers
-          )
-        )
-      }
+      
+            ${
+              concatMapStringsSep "\n"
+                (
+                  peerName:
+                  let
+                    peer = peers.${peerName};
+                  in
+                  "${toString peer.wireguard.port} ${peerName}"
+                )
+                (
+                  attrNames (
+                    filterAttrs (n: v: v ? wireguard && v.wireguard ? onIFACE && v.wireguard.onIFACE != null) peers
+                  )
+                )
+            }
     '';
   };
 

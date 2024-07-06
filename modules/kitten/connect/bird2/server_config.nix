@@ -1,17 +1,30 @@
-{ lib, config, birdFuncs, ... }:
+{
+  lib,
+  config,
+  birdFuncs,
+  ...
+}:
 let
   inherit (lib)
-    optional optionals optionalString mkOrder mkMerge attrNames filterAttrs
-    concatStringsSep concatMapStringsSep;
+    optional
+    optionals
+    optionalString
+    mkOrder
+    mkMerge
+    attrNames
+    filterAttrs
+    concatStringsSep
+    concatMapStringsSep
+    ;
 
   inherit (birdFuncs) quoteString;
 
   birdCfg = config.services.bird2;
   srvCfg = config.customModules.bird;
 
-  rrs = attrNames
-    (filterAttrs (n: v: v ? template && v.template == "rrserver") srvCfg.peers);
-in {
+  rrs = attrNames (filterAttrs (n: v: v ? template && v.template == "rrserver") srvCfg.peers);
+in
+{
   services.bird2.config = mkMerge [
     (mkOrder 25 ''
 
@@ -26,14 +39,14 @@ in {
       	      export filter {
       		  if  ( is_valid4_network() || source ~ [RTS_STATIC]
             ${
-              let sep = "|| proto =";
-              in optionalString (rrs != [ ]) sep
-              + (concatMapStringsSep sep quoteString rrs)
+              let
+                sep = "|| proto =";
+              in
+              optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
             }
             ) then {
                 ${
-                  optionalString
-                  (srvCfg.loopback4 != null && srvCfg.loopback4 != "") ''
+                  optionalString (srvCfg.loopback4 != null && srvCfg.loopback4 != "") ''
 
                       if source ~ [RTS_BGP] || net ~ [ 0.0.0.0/0 ] then {
                     krt_prefsrc=${srvCfg.loopback4};
@@ -57,19 +70,19 @@ in {
 
              if  ( is_valid6_network() || source ~ [RTS_STATIC]
             ${
-              let sep = "|| proto =";
-              in optionalString (rrs != [ ]) sep
-              + (concatMapStringsSep sep quoteString rrs)
+              let
+                sep = "|| proto =";
+              in
+              optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
             }
             ) then {
                          ${
-                           optionalString (srvCfg.loopback6 != null
-                             && srvCfg.loopback6 != "") ''
+                           optionalString (srvCfg.loopback6 != null && srvCfg.loopback6 != "") ''
 
-                                    if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
-                               	 krt_prefsrc=${srvCfg.loopback6};
-                                    }
-                             ''
+                                  if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
+                             	 krt_prefsrc=${srvCfg.loopback6};
+                                  }
+                           ''
                          }
       		       accept;
       		 } else reject;

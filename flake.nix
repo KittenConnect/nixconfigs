@@ -255,7 +255,10 @@
 
                   customModules = [
                     # "kitten/connect/autodisko.nix"
-                    "kitten/connect/loopback0.nix" "kitten/connect/bird2" "kitten/connect/wireguard" ];
+                    "kitten/connect/loopback0.nix"
+                    "kitten/connect/bird2"
+                    "kitten/connect/wireguard"
+                  ];
                   localModules = [
                     # "nixos/modules/services/ttys/kmscon"
                   ];
@@ -267,12 +270,7 @@
                   unstableModules = [ ];
                   # stableModules = [ ];
 
-                  getModule =
-                    input:
-                    (
-                      mod:
-                      "${input}/${mod}"
-                    );
+                  getModule = input: (mod: "${input}/${mod}");
                 in
                 {
                   disabledModules = map (getModule args.nixpkgs) (
@@ -312,28 +310,28 @@
       #   homeConfigurations = {
       #      "toinux" = home-config.lib.mkHomeConfiguration userName homeDir [ ./_home/configuration.nix ];
       #   };
-    # colmena = {
-    #   meta = {
-    #     nixpkgs = import nixpkgs {
-    #       system = "x86_64-linux";
-    #     };
-    #   };
+      # colmena = {
+      #   meta = {
+      #     nixpkgs = import nixpkgs {
+      #       system = "x86_64-linux";
+      #     };
+      #   };
 
-    #   # Also see the non-Flakes hive.nix example above.
-    #   host-a = { name, nodes, pkgs, ... }: {
-    #     boot.isContainer = true;
-    #     time.timeZone = nodes.host-b.config.time.timeZone;
-    #   };
-    #   host-b = {
-    #     deployment = {
-    #       targetHost = "somehost.tld";
-    #       targetPort = 1234;
-    #       targetUser = "luser";
-    #     };
-    #     boot.isContainer = true;
-    #     time.timeZone = "America/Los_Angeles";
-    #   };
-    # };
+      #   # Also see the non-Flakes hive.nix example above.
+      #   host-a = { name, nodes, pkgs, ... }: {
+      #     boot.isContainer = true;
+      #     time.timeZone = nodes.host-b.config.time.timeZone;
+      #   };
+      #   host-b = {
+      #     deployment = {
+      #       targetHost = "somehost.tld";
+      #       targetPort = 1234;
+      #       targetUser = "luser";
+      #     };
+      #     boot.isContainer = true;
+      #     time.timeZone = "America/Los_Angeles";
+      #   };
+      # };
 
       nixosConfigurations = (
         genAttrs (attrNames targetConfigs) (
@@ -456,13 +454,13 @@
 
                   ssh $@ xz --help
 
-
                   ${concatMapStringsSep "\n" (
                     x:
                     let
                       disk = disks.${x};
                     in
                     ''
+
                       echo "Pushing ${x} -> ''${REMOTE}:${disk.device}"
                       ${getBin pvPackage}/bin/pv ${images}/${x}.raw.xz | ssh $@ "xz -T0 -d -c - > ${disk.device}"
                     ''

@@ -25,8 +25,8 @@ let
 
   transitIFACEs =
     [ ]
-    ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
-  kittenIFACEs = [];
+    ++ lib.optionals (birdConfig.transitInterfaces != [ ]) birdConfig.transitInterfaces;
+  kittenIFACEs = [ ];
   # (
   #   (attrNames wgPeers) ++ lib.optionals (birdConfig.allowedInterfaces != []) birdConfig.allowedInterfaces
   # );
@@ -41,7 +41,6 @@ let
     optional
     ;
 in
-
 {
 
   config = {
@@ -69,14 +68,20 @@ in
         let
           quoteString = x: ''"${x}"'';
 
-          defines = lib.concatStringsSep "\n" (
-            [
-              (optionalString (transitIFACEs != [ ]) ''define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }'')
-              (optionalString (transitedNetworks != [ ]) ''define transitNETs = { ${concatStringsSep ", " transitedNetworks} }'')
-              (optionalString (wgPeers != { }) ''define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }'')
-              (optionalString (kittenIFACEs != [ ]) ''define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }'')
-            ]
-          );
+          defines = lib.concatStringsSep "\n" ([
+            (optionalString (transitIFACEs != [ ])
+              "define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }"
+            )
+            (optionalString (
+              transitedNetworks != [ ]
+            ) "define transitNETs = { ${concatStringsSep ", " transitedNetworks} }")
+            (optionalString (wgPeers != { })
+              "define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }"
+            )
+            (optionalString (kittenIFACEs != [ ])
+              "define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }"
+            )
+          ]);
 
           extraForwardRules = lib.concatStringsSep "\n" (
             [

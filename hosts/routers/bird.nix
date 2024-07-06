@@ -52,7 +52,7 @@ in
 {
   imports = [
     ./bird_peers.nix
-    # ./bird_statics.nix 
+    # ./bird_statics.nix
   ];
 
   config = {
@@ -86,6 +86,7 @@ in
     };
 
     services.bird2.preCheckConfig = ''
+
       echo "Bird configuration include these resources"
       grep include bird2.conf
 
@@ -116,6 +117,7 @@ in
           ''include "${config.sops.templates."bird_secrets.conf".path}";''
 
           ''
+
             # The Device protocol is not a real routing protocol. It does not generate any
             # routes and it only serves as a module for getting information about network
             # interfaces from the kernel. It is necessary in almost any configuration.
@@ -134,6 +136,7 @@ in
           ''
 
           ''
+
             #<== Générique
             function is_valid4_network() {
               return net ~ [
@@ -165,20 +168,21 @@ in
                 2a13:79c0:fffe::/48{56,56}
               ];
             }
-
           ''
 
           ''
+
+
             # The Kernel protocol is not a real routing protocol. Instead of communicating
             # with other routers in the network, it performs synchronization of BIRD
             # routing tables with the OS kernel. One instance per table.
             protocol kernel KERNEL4 {
-            	ipv4 {                  # Connect protocol to IPv4 table by channel
+              ipv4 {                  # Connect protocol to IPv4 table by channel
             #             table master4;    # Default IPv4 table is master4
             #             import all;       # Import to table, default is import all
             #             export all;       # Export to protocol. default is export none
-            	      export filter {
-            		  if  ( is_valid4_network() || source ~ [RTS_STATIC] 
+                    export filter {
+                  if  ( is_valid4_network() || source ~ [RTS_STATIC]
                   ${
                     let
                       sep = "|| proto =";
@@ -186,17 +190,18 @@ in
                     optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
                   }
                   ) then {
-                               ${
-                                 optionalString (lo4 != null) ''
-                                        if source ~ [RTS_BGP] || net ~ [ 0.0.0.0/0 ] then {
-                                   	 krt_prefsrc=${lo4};
-                                        }
-                                 ''
-                               }
-            		     accept;
-            		  } else reject;
-            	      };
-            	};
+                                ${
+                                  optionalString (lo4 != null) ''
+
+                                    if source ~ [RTS_BGP] || net ~ [ 0.0.0.0/0 ] then {
+                                      krt_prefsrc=${lo4};
+                                    }
+                                  ''
+                                }
+                      accept;
+                  } else reject;
+                    };
+              };
               merge paths on;
             #       learn;                  # Learn alien routes from the kernel
             #       kernel table 10;        # Kernel table to synchronize with (default: main)
@@ -205,10 +210,10 @@ in
             # Another instance for IPv6, skipping default options
             protocol kernel KERNEL6 {
             #       ipv6 { export all; };
-            	ipv6 {
-            	     export filter {
-            		 
-                   if  ( is_valid6_network() || source ~ [RTS_STATIC] 
+              ipv6 {
+                    export filter {
+
+                    if  ( is_valid6_network() || source ~ [RTS_STATIC]
                   ${
                     let
                       sep = "|| proto =";
@@ -216,18 +221,19 @@ in
                     optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
                   }
                   ) then {
-                               ${
-                                 optionalString (lo6 != null) ''
-                                        if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
-                                   	 krt_prefsrc=${lo6};
-                                        }
-                                 ''
-                               }
-            		       accept;
-            		 } else reject;
-            	     };
-            	};
-              
+                                ${
+                                  optionalString (lo6 != null) ''
+
+                                    if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
+                                      krt_prefsrc=${lo6};
+                                    }
+                                  ''
+                                }
+                        accept;
+                  } else reject;
+                    };
+              };
+
               merge paths on;
             }
           ''
@@ -267,6 +273,7 @@ in
           ''
 
           ''
+
             template bgp kittunderlay {
             #  local as 4242421945;
             #  neighbor as kittenASN;
@@ -320,6 +327,7 @@ in
           optionals (srvCfg ? static6 && builtins.typeOf srvCfg.static6 == "list" && srvCfg.static6 != [ ])
             [
               ''
+
                 protocol static STATIC6 {
                     ipv6;
                 ${concatStringsSep "\n" (map (x: "    " + "route ${x};") srvCfg.static6)}

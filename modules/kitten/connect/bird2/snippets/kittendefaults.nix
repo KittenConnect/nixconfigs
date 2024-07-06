@@ -1,9 +1,15 @@
-{ lib, config, target, targetConfig, birdFuncs, ... }:
+{
+  lib,
+  config,
+  target,
+  targetConfig,
+  birdFuncs,
+  ...
+}:
 let
-  inherit (lib)
-    optional optionals optionalString mkMerge mkOrder attrNames filterAttrs
-    concatStringsSep concatMapStringsSep;
-in {
+  inherit (lib) mkMerge mkOrder;
+in
+{
   services.bird2.config = mkMerge [
     (mkOrder 10 ''
 

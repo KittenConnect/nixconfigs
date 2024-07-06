@@ -13,11 +13,13 @@ let
   iface = if targetConfig ? interface then targetConfig.interface else null;
   kittenIFACE = "ens19";
 
-  peers = (import ./peers (args // {}));
+  peers = (import ./peers (args // { }));
 
-  wgPeers = (lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers));
+  wgPeers = (
+    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
+  );
 
-  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers);
+  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers);
 in
 {
   services.xserver.xkb = {
