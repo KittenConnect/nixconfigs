@@ -1,8 +1,13 @@
-{ lib, pkgs, config, ... }:
+args@{ lib, pkgs, config, target, ... }:
 let
   inherit (lib)
-    optional optionals optionalString mkOrder attrNames filterAttrs
-    concatStringsSep concatMapStringsSep listToAttrs nameValuePair mkMerge mkIf mkOption mkEnableOption types unique mapAttrsToList;
+    optional optionals optionalString mkOrder mkDefault attrNames filterAttrs
+    concatStringsSep concatMapStringsSep listToAttrs nameValuePair mkMerge mkIf
+    mkOption mkEnableOption types unique mapAttrsToList isType;
+
+  withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
+
+  quoteString = x: ''"${x}"'';
 
   # Main config is here
   birdCfg = config.services.bird2;
@@ -10,10 +15,12 @@ let
 
   # Values
   peers = cfg.peers;
-  peersWithPasswordRef = filterAttrs (n: v: v ? passwordRef) peers;
+  peersWithPasswordRef = filterAttrs (n: v: v.passwordRef != null) peers;
+  peersRouteReflectors =
+    attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
 
-  passwords = unique
-    (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
+  passwords =
+    unique (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
 
   # Example
   # config.customModules.bird = {
@@ -76,27 +83,56 @@ let
       };
 
       password = mkOption {
-        type = types.str;
-        default = "";
+        type = types.nullOr types.str;
+        default = null;
         description = "Password for BGP session.";
       };
 
       passwordRef = mkOption {
-        type = types.str;
-        default = "";
+        type = types.nullOr types.str;
+        default = null;
         description = "Reference to a password for BGP session.";
       };
 
-      ipv4 = mkOption {
-        type = types.attrs;
-        default = { };
-        description = "IPv4 configuration.";
+      ipv4 = {
+
+        imports = mkOption {
+          type = types.nullOr types.oneOf types.str types.lambda
+            (types.listOf types.str);
+          default = [ ];
+          description = "List of IPv4 import rules.";
+        };
+
+        exports = mkOption {
+          type = types.listOf types.str;
+          default = [ ];
+          description = "List of IPv4 export rules.";
+        };
+
       };
 
-      ipv6 = mkOption {
-        type = types.attrs;
-        default = { };
-        description = "IPv6 configuration.";
+      ipv6 = {
+
+        imports = mkOption {
+          type =
+            types.nullOr (types.oneOf [ types.str (types.listOf types.str) ]);
+          default = [ ];
+          description = "List of IPv6 import rules.";
+        };
+
+        exports = mkOption {
+          type = types.nullOr (types.oneOf [
+            types.str
+            # (types.functionTo {
+            #   description = "return filter name / filter list dynamically";
+            # })
+            (types.listOf types.str)
+          ]);
+          # type = types.listOf types.str;
+          default = [ ];
+          description = "List of IPv6 export rules.";
+        };
+
       };
 
       bgpMED = mkOption {
@@ -115,7 +151,7 @@ let
         type = types.nullOr types.str;
 
         description = "Network interface.";
-        default = config.peerName;
+        default = if config.multihop == 0 then config.peerName else null;
         # default = if config.wireguard != { } then
         #   (if config.wireguard ? interface then
         #     config.wireguard.interface
@@ -126,16 +162,15 @@ let
       };
     };
   };
+
 in {
+
+  imports = [ ./server_config.nix ];
 
   # Options
   options = {
     customModules.bird = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Enable the custom bird module.";
-      };
+      enable = mkEnableOption "Kitten Bird2 module";
 
       peers = mkOption {
         default = { };
@@ -157,9 +192,15 @@ in {
         description = "IPv6 loopback address.";
       };
 
+      interfaces = mkOption {
+        type = types.nullOr (types.listOf types.str);
+        default = null;
+        description = "Interfaces to generate direct routes for.";
+      };
+
       transitInterfaces = mkOption {
         type = types.listOf types.str;
-        default = [];
+        default = [ ];
         description = "Transit interface.";
       };
 
@@ -179,7 +220,10 @@ in {
 
   # Implementation
   config = mkIf cfg.enable {
-    _module.args = { birdConfig = cfg; };
+    _module.args = {
+      birdConfig = cfg;
+      birdFuncs = { inherit quoteString; };
+    };
 
     # Firewalling
     networking.firewall.allowedTCPPorts = [
@@ -223,8 +267,51 @@ in {
           # cat _secrets_substitute.conf bird2.conf
         fi
       '';
-      config = "";
+
+      config = mkMerge ([
+        (mkOrder 0 ''
+          log syslog all;
+
+
+          # The Device protocol is not a real routing protocol. It does not generate any
+          # routes and it only serves as a module for getting information about network
+          # interfaces from the kernel. It is necessary in almost any configuration.
+          protocol device DEV {}
+
+        '')
+      ] ++ optional (passwords != [ ]) (mkOrder 5
+        ''include "${config.sops.templates."bird_secrets.conf".path}";'')
+        ++ optional (cfg.peers != { }) (let
+          peerFunc = (import ./peer_config.nix);
+
+          mkPeersFuncArgs = (x:
+            args // {
+              inherit withType;
+            } // {
+              peer = { peerName = x; } // peers.${x};
+            });
+
+          mkPeerConfig = x: ''
+
+            # ${x}
+            ${peerFunc (mkPeersFuncArgs x)}
+
+          '';
+
+        in mkOrder 50 ''
+          # Nix-OS Generated for ${target}
+          ${lib.concatMapStringsSep "\n" mkPeerConfig
+          (builtins.attrNames peers)}
+        ''));
     };
+
+    customModules.loopback0 =
+      mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
+        enable = mkDefault true;
+
+        ipv4 = mkIf (cfg.loopback4 != null) [ cfg.loopback4 ];
+        ipv6 = mkIf (cfg.loopback6 != null) [ cfg.loopback6 ];
+      };
 
     # customModules.bird = {
     #   peers = filterAttrs (n: v: v ? template && v.template == "rrserver")

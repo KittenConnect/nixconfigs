@@ -253,8 +253,12 @@
                 let
                   disableModules = [ ];
 
-                  customModules = [ "kitten/connect/autodisko" "kitten/connect/loopback0" "kitten/connect/bird_peers" ];
-                  localModules = [ "nixos/modules/services/ttys/kmscon" ];
+                  customModules = [
+                    # "kitten/connect/autodisko.nix"
+                    "kitten/connect/loopback0.nix" "kitten/connect/bird2" "kitten/connect/wireguard" ];
+                  localModules = [
+                    # "nixos/modules/services/ttys/kmscon"
+                  ];
 
                   masterModules = [
                     # "nixos/modules/programs/kubeswitch.nix"
@@ -266,10 +270,7 @@
                   getModule =
                     input:
                     (
-                      x:
-                      let
-                        mod = if (hasSuffix ".nix" x) then x else "${x}.nix";
-                      in
+                      mod:
                       "${input}/${mod}"
                     );
                 in

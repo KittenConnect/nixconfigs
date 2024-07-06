@@ -1,9 +1,7 @@
-{ lib, pkgs, peer, ... }:
+{ lib, pkgs, peer, withType, ... }:
 let
   inherit (lib) optionalString;
   inherit (builtins) concatStringsSep toJSON;
-
-  withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
 in with peer; ''
 
 
@@ -37,13 +35,22 @@ in with peer; ''
 
   # L: AS${toString localAS} | R: AS${toString peerAS}
   protocol bgp ${toString peerName} ${
-    optionalString (template != "") "from ${toString template}"
+    optionalString (template != null) "from ${toString template}"
   } {
-    local ${optionalString (localIP != "") (toString localIP)} as ${
+    local ${optionalString (localIP != null) (toString localIP)} as ${
       toString localAS
     }; # localIP: "${toString localIP}"
     neighbor ${toString peerIP} as ${toString peerAS};
-    ${optionalString (interface != null) ''interface "${interface}";''}
+    ${
+      optionalString (interface != null) ''
+        interface "${
+          assert lib.asserts.assertMsg (multihop == 0)
+            "customModules.bird.peers.${peerName}: Multihop[${
+              toString multihop
+            }] BGP cannot be bound to interface : ${interface}";
+          interface
+        }";''
+    }
     ${
       if multihop == 0 then
         "direct;"
@@ -55,10 +62,10 @@ in with peer; ''
     } # multihop: ${toString multihop}
 
     ${
-      optionalString (password != "") ''
+      optionalString (password != null) ''
 
         password "${
-          assert lib.asserts.assertMsg (passwordRef == "")
+          assert lib.asserts.assertMsg (passwordRef == null)
             "U defined a passwordRef, why do you still want to leak password ?";
           toString (lib.warn
             "bird2 peers password is insecure consider using passwordRef with a bird_secrets file"
@@ -66,8 +73,8 @@ in with peer; ''
         }"; # Not-Secured cleartext access for @everyone''
     }
     ${
-      optionalString (passwordRef != "") "password secretPassword_${
-        toString passwordRef
+      optionalString (passwordRef != null) "password secretPassword_${
+        if passwordRef != "" then toString passwordRef else toString peerName
       }; # Defined in secrets file"
     }
 
@@ -77,12 +84,13 @@ in with peer; ''
 
         ipv6 {
           ${
-            optionalString
-            (ipv6 ? imports && ipv6.imports != "" && ipv6.imports != [ ]) (let
+            optionalString (ipv6.imports != "" && ipv6.imports != [ ]) (let
               myType = withType {
-                string = x: "  import ${x};";
+                string = x:
+                  "  import ${
+                      builtins.replaceStrings [ "%s" ] [ peerName ] x
+                    };";
                 null = x: "  import none;";
-                lambda = f: myType (f peerName);
                 list = x: ''
 
 
@@ -98,12 +106,14 @@ in with peer; ''
             in myType ipv6.imports)
           }
           ${
-            optionalString
-            (ipv6 ? exports && ipv6.exports != "" && ipv6.exports != [ ]) (let
+            optionalString (ipv6.exports != "" && ipv6.exports != [ ]) (let
               myType = withType {
-                string = x: "  export ${x};";
+                string = x:
+                  "  export ${
+                      builtins.replaceStrings [ "%s" ] [ peerName ] x
+                    };";
                 null = x: "  export none;";
-                lambda = f: myType (f peerName);
+                # lambda = f: myType (f peerName);
                 list = x: ''
 
 

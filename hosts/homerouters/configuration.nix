@@ -12,8 +12,8 @@
 {
   imports = [
     # Include the results of the hardware scan.
-    ./bird.nix # Bird Routing
-    ./wireguard.nix
+    # ./bird.nix # Bird Routing
+    # ./wireguard.nix
     ./firewall.nix
   ];
 

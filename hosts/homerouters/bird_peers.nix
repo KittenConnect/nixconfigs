@@ -104,7 +104,7 @@ in
             }
           ''}
 
-          # ${optionalString (x ? debug && x.debug == true) (toJSON x)} 
+          # ${optionalString (x ? debug && x.debug == true) (toJSON x)}
           # L: AS${toString localAS} | R: AS${toString peerAS}
           protocol bgp ${toString peerName} ${optionalString (template != "") "from ${toString template}"} {
             local ${

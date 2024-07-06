@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{
+args@{
   config,
   targetConfig,
   lib,
@@ -12,6 +12,12 @@
 let
   iface = if targetConfig ? interface then targetConfig.interface else null;
   kittenIFACE = "ens19";
+
+  peers = (import ./peers (args // {}));
+
+  wgPeers = (lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers));
+
+  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers);
 in
 {
   services.xserver.xkb = {
@@ -19,7 +25,7 @@ in
     #variant = "";
   };
 
-  #imports = [ ./wireguard.nix ];
+  imports = [ ../../../modules/kitten/connect/bird2/snippets/kittendefaults.nix ];
   # Bootloader.
   #boot.loader.systemd-boot.enable = true;
   #boot.loader.systemd-boot.configurationLimit = 5;
@@ -32,10 +38,20 @@ in
   #boot.loader.grub.devices = [ "${targetConfig.bootdisk}" ]; # or "nodev" for efi only
 
   customModules = {
-    loopback0 = {
+    bird = {
       enable = true;
-      ipv6 = [ "2a13:79c0:ffff:fefe::2:256" ];
+      loopback6 = "2a13:79c0:ffff:fefe::2:256";
+
+      peers = birdPeers;
     };
+    wireguard = {
+      enable = true;
+
+      peers = wgPeers;
+    };
+    # loopback0 = { # Enabled by bird by default
+    #   enable = true;
+    # };
   };
 
   # Pick only one of the below networking options.
@@ -50,7 +66,7 @@ in
       };
       # vlan91 = {
       #   id = 91;
-      #   interface = "${kittenIFACE}"; 
+      #   interface = "${kittenIFACE}";
       # };
     };
     interfaces = {
