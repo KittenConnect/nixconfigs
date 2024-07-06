@@ -1,3 +1,7 @@
-{ lib, pkgs, ... }: {
-
-}
+args@{
+  lib,
+  pkgs,
+  config,
+  target,
+  ...
+}: {}
