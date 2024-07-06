@@ -7,6 +7,7 @@
   pkgs,
   targetConfig,
   birdConfig,
+  wgPeers,
   ...
 }:
 let
@@ -21,7 +22,7 @@ let
         "2a13:79c0:ffff:fefe::/64"
         "2a13:79c0:ffff:feff:b00b::/80"
       ];
-  wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
+  # wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
 
   transitIFACEs =
     [ ]
