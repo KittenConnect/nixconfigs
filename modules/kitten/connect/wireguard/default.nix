@@ -1,15 +1,34 @@
-{ lib, pkgs, config, target, targetConfig, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  target,
+  targetConfig,
+  ...
+}:
 let
 
   # Imports Functions
   inherit (lib.attrsets)
-    filterAttrs mapAttrs mapAttrsToList genAttrs zipAttrs optionalAttrs;
+    filterAttrs
+    mapAttrs
+    mapAttrsToList
+    genAttrs
+    zipAttrs
+    optionalAttrs
+    ;
 
   inherit (lib.asserts) assertMsg;
 
   inherit (lib.strings) hasPrefix optionalString concatMapStringsSep;
 
-  inherit (lib) mkOption mkEnableOption mkIf mkMerge types;
+  inherit (lib)
+    mkOption
+    mkEnableOption
+    mkIf
+    mkMerge
+    types
+    ;
 
   inherit (builtins) attrNames;
 
@@ -29,35 +48,42 @@ let
   peersWithIFACE = filterAttrs hasIface peersWithPort;
 
   portsWithoutIFACE = mapAttrsToList (n: v: v.port) peersWithoutIFACE;
-  portsWithIFACE =
-    zipAttrs (mapAttrsToList (n: v: { ${v.onIFACE} = v.port; }) peersWithIFACE);
+  portsWithIFACE = zipAttrs (mapAttrsToList (n: v: { ${v.onIFACE} = v.port; }) peersWithIFACE);
 
   mkFWConf = ports: { allowedUDPPorts = ports; };
 
-  genFWMarkStr = (mark:
+  genFWMarkStr = (
+    mark:
     {
-      "string" = assert assertMsg (hasPrefix "0x" mark)
-        "fwMark is string but does not start with 0x is it an int ?";
+      "string" =
+        assert assertMsg (hasPrefix "0x" mark) "fwMark is string but does not start with 0x is it an int ?";
         mark;
 
       "int" = toString mark;
 
       "null" = null;
-    }.${builtins.typeOf mark}
+    }
+    .${builtins.typeOf mark}
 
   );
 
-  mkWireguardConf = name: peer:
+  mkWireguardConf =
+    name: peer:
     let
-      fwMarkString = (let
-        mark = if peer.fwMark != null then
-          peer.fwMark
-        else if (peer.onIFACE != null) then
-          peer.port
-        else
-          null;
-      in genFWMarkStr mark);
-    in {
+      fwMarkString = (
+        let
+          mark =
+            if peer.fwMark != null then
+              peer.fwMark
+            else if (peer.onIFACE != null) then
+              peer.port
+            else
+              null;
+        in
+        genFWMarkStr mark
+      );
+    in
+    {
       table = "off";
       # Determines the IP/IPv6 address and subnet of the client's end of the tunnel interface
       address = [ "${peer.address}/127" ];
@@ -68,8 +94,7 @@ let
 
         set - x
 
-        ${optionalString (fwMarkString != null)
-        "wg set ${name} fwmark ${fwMarkString}"}
+        ${optionalString (fwMarkString != null) "wg set ${name} fwmark ${fwMarkString}"}
         ${optionalString (peer.onIFACE != null) ''
 
           echo "TABLE=${fwMarkString}"
@@ -103,16 +128,22 @@ let
       # Path to the server's private key
       privateKeyFile = config.sops.secrets.wireguard_serverkey.path;
 
-      peers = [{
-        publicKey = peer.peerKey;
-        #presharedKeyFile = "/root/wireguard-keys/preshared_from_peer0_key";
-        persistentKeepalive = 10;
-        endpoint = mkIf (peer.endpoint != null) peer.endpoint;
+      peers = [
+        {
+          publicKey = peer.peerKey;
+          #presharedKeyFile = "/root/wireguard-keys/preshared_from_peer0_key";
+          persistentKeepalive = 10;
+          endpoint = mkIf (peer.endpoint != null) peer.endpoint;
 
-        allowedIPs = [ "0.0.0.0/0" "::/0" ];
-      }];
+          allowedIPs = [
+            "0.0.0.0/0"
+            "::/0"
+          ];
+        }
+      ];
     };
-in {
+in
+{
 
   # Options
   options.customModules.wireguard = {
@@ -122,39 +153,43 @@ in {
     peers = mkOption {
       default = { };
       description = "WireGuard peers configuration.";
-      type = types.attrsOf (types.submodule ({ name, config, ... }: {
-        options = {
-          address = mkOption {
-            type = types.str;
-            description =
-              "IP/IPv6 address and subnet of the client's end of the tunnel interface.";
-          };
-          port = mkOption {
-            type = types.nullOr types.int;
-            default = null;
-            description = "The port that WireGuard listens to.";
-          };
-          fwMark = mkOption {
-            type = types.nullOr types.int;
-            default = null;
-            description = "Firewall mark for the WireGuard interface.";
-          };
-          onIFACE = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = "Interface name for the WireGuard interface.";
-          };
-          peerKey = mkOption {
-            type = types.str;
-            description = "Public key of the WireGuard peer.";
-          };
-          endpoint = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = "Endpoint for the WireGuard peer.";
-          };
-        };
-      }));
+      type = types.attrsOf (
+        types.submodule (
+          { name, config, ... }:
+          {
+            options = {
+              address = mkOption {
+                type = types.str;
+                description = "IP/IPv6 address and subnet of the client's end of the tunnel interface.";
+              };
+              port = mkOption {
+                type = types.nullOr types.int;
+                default = null;
+                description = "The port that WireGuard listens to.";
+              };
+              fwMark = mkOption {
+                type = types.nullOr types.int;
+                default = null;
+                description = "Firewall mark for the WireGuard interface.";
+              };
+              onIFACE = mkOption {
+                type = types.nullOr types.str;
+                default = null;
+                description = "Interface name for the WireGuard interface.";
+              };
+              peerKey = mkOption {
+                type = types.str;
+                description = "Public key of the WireGuard peer.";
+              };
+              endpoint = mkOption {
+                type = types.nullOr types.str;
+                default = null;
+                description = "Endpoint for the WireGuard peer.";
+              };
+            };
+          }
+        )
+      );
     };
   };
 
@@ -166,19 +201,24 @@ in {
     environment.etc."iproute2/rt_tables.d/wgnix.conf" = mkIf (peers != [ ]) {
       text = ''
 
-        ${concatMapStringsSep "\n" (peerName:
-          let peer = peers.${peerName};
-          in "${toString peer.port} ${peerName}")
-        (attrNames (filterAttrs (n: v: v.onIFACE != null) peers))}
+        ${concatMapStringsSep "\n" (
+          peerName:
+          let
+            peer = peers.${peerName};
+          in
+          "${toString peer.port} ${peerName}"
+        ) (attrNames (filterAttrs (n: v: v.onIFACE != null) peers))}
       '';
-
     };
 
     # Open FireWall Ports
     networking.firewall = mkMerge [
-      (optionalAttrs (portsWithoutIFACE != [ ])
-        (let conf = mkFWConf portsWithoutIFACE;
-        in if IFACE != null then { interfaces.${IFACE} = conf; } else conf))
+      (optionalAttrs (portsWithoutIFACE != [ ]) (
+        let
+          conf = mkFWConf portsWithoutIFACE;
+        in
+        if IFACE != null then { interfaces.${IFACE} = conf; } else conf
+      ))
 
       (optionalAttrs (portsWithIFACE != [ ]) {
         interfaces = (mapAttrs (name: value: mkFWConf value) portsWithIFACE);
@@ -187,6 +227,5 @@ in {
 
     # networking.wg-quick.interfaces = genAttrs (attrNames peers) mkWireguardConf;
     networking.wg-quick.interfaces = mapAttrs mkWireguardConf cfg.peers;
-
   };
 }

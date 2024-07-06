@@ -24,7 +24,7 @@ in
     #exports = null;
   };
   ipv4 = {
-    imports = x: "filter filter4_IN_BGP_%s";
+    imports = lib.mkForce "filter filter4_IN_BGP_%s";
     #exports = x: "filter6_IN_BGP_${toString x}";
   };
 }

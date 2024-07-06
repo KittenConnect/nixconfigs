@@ -1,12 +1,19 @@
-{ lib, pkgs, peer, withType, ... }:
+{
+  lib,
+  pkgs,
+  peer,
+  withType,
+  ...
+}:
 let
   inherit (lib) optionalString;
   inherit (builtins) concatStringsSep toJSON;
-in with peer; ''
+in
+with peer;
+''
 
 
-  ${optionalString (bgpMED != null)
-  "define bgpMED_${toString peerName} = ${toString bgpMED};"}
+  ${optionalString (bgpMED != null) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
   ${optionalString (template == "kittunderlay") ''
 
 
@@ -34,20 +41,16 @@ in with peer; ''
   ''}
 
   # L: AS${toString localAS} | R: AS${toString peerAS}
-  protocol bgp ${toString peerName} ${
-    optionalString (template != null) "from ${toString template}"
-  } {
-    local ${optionalString (localIP != null) (toString localIP)} as ${
-      toString localAS
-    }; # localIP: "${toString localIP}"
+  protocol bgp ${toString peerName} ${optionalString (template != null) "from ${toString template}"} {
+    local ${
+      optionalString (localIP != null) (toString localIP)
+    } as ${toString localAS}; # localIP: "${toString localIP}"
     neighbor ${toString peerIP} as ${toString peerAS};
     ${
-      optionalString (interface != null) ''
-        interface "${
+      optionalString (interface != null)
+        ''interface "${
           assert lib.asserts.assertMsg (multihop == 0)
-            "customModules.bird.peers.${peerName}: Multihop[${
-              toString multihop
-            }] BGP cannot be bound to interface : ${interface}";
+            "customModules.bird.peers.${peerName}: Multihop[${toString multihop}] BGP cannot be bound to interface : ${interface}";
           interface
         }";''
     }
@@ -56,8 +59,7 @@ in with peer; ''
         "direct;"
       else
         "multihop ${
-          optionalString (multihop != -1) toString
-          (if multihop < -1 then -1 * multihop else multihop)
+          optionalString (multihop != -1) toString (if multihop < -1 then -1 * multihop else multihop)
         };"
     } # multihop: ${toString multihop}
 
@@ -65,17 +67,19 @@ in with peer; ''
       optionalString (password != null) ''
 
         password "${
-          assert lib.asserts.assertMsg (passwordRef == null)
-            "U defined a passwordRef, why do you still want to leak password ?";
-          toString (lib.warn
-            "bird2 peers password is insecure consider using passwordRef with a bird_secrets file"
-            password)
+          assert lib.asserts.assertMsg (
+            passwordRef == null
+          ) "U defined a passwordRef, why do you still want to leak password ?";
+          toString (
+            lib.warn "bird2 peers password is insecure consider using passwordRef with a bird_secrets file" password
+          )
         }"; # Not-Secured cleartext access for @everyone''
     }
     ${
-      optionalString (passwordRef != null) "password secretPassword_${
-        if passwordRef != "" then toString passwordRef else toString peerName
-      }; # Defined in secrets file"
+      optionalString (passwordRef != null)
+        "password secretPassword_${
+          if passwordRef != "" then toString passwordRef else toString peerName
+        }; # Defined in secrets file"
     }
 
     ${
@@ -84,49 +88,49 @@ in with peer; ''
 
         ipv6 {
           ${
-            optionalString (ipv6.imports != "" && ipv6.imports != [ ]) (let
-              myType = withType {
-                string = x:
-                  "  import ${
-                      builtins.replaceStrings [ "%s" ] [ peerName ] x
-                    };";
-                null = x: "  import none;";
-                list = x: ''
+            optionalString (ipv6.imports != "" && ipv6.imports != [ ]) (
+              let
+                myType = withType {
+                  string = x: "  import ${builtins.replaceStrings [ "%s" ] [ peerName ] x};";
+                  null = x: "  import none;";
+                  list = x: ''
 
 
-                  # ${toJSON x}
-                      import filter {
-                        if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
-                          accept;
-                        }
-                        reject;
-                      };
-                '';
-              };
-            in myType ipv6.imports)
+                    # ${toJSON x}
+                        import filter {
+                          if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
+                            accept;
+                          }
+                          reject;
+                        };
+                  '';
+                };
+              in
+              myType ipv6.imports
+            )
           }
           ${
-            optionalString (ipv6.exports != "" && ipv6.exports != [ ]) (let
-              myType = withType {
-                string = x:
-                  "  export ${
-                      builtins.replaceStrings [ "%s" ] [ peerName ] x
-                    };";
-                null = x: "  export none;";
-                # lambda = f: myType (f peerName);
-                list = x: ''
+            optionalString (ipv6.exports != "" && ipv6.exports != [ ]) (
+              let
+                myType = withType {
+                  string = x: "  export ${builtins.replaceStrings [ "%s" ] [ peerName ] x};";
+                  null = x: "  export none;";
+                  # lambda = f: myType (f peerName);
+                  list = x: ''
 
 
-                  # ${toJSON x}
-                      export filter {
-                        if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
-                          accept;
-                        }
-                        reject;
-                      };
-                '';
-              };
-            in myType ipv6.exports)
+                    # ${toJSON x}
+                        export filter {
+                          if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
+                            accept;
+                          }
+                          reject;
+                        };
+                  '';
+                };
+              in
+              myType ipv6.exports
+            )
           }
           };
       ''

@@ -1,9 +1,32 @@
-args@{ lib, pkgs, config, target, ... }:
+args@{
+  lib,
+  pkgs,
+  config,
+  target,
+  ...
+}:
 let
   inherit (lib)
-    optional optionals optionalString mkOrder mkDefault attrNames filterAttrs
-    concatStringsSep concatMapStringsSep listToAttrs nameValuePair mkMerge mkIf
-    mkOption mkEnableOption types unique mapAttrsToList isType;
+    optional
+    optionals
+    optionalString
+    mkOrder
+    mkDefault
+    attrNames
+    filterAttrs
+    concatStringsSep
+    concatMapStringsSep
+    listToAttrs
+    nameValuePair
+    mkMerge
+    mkIf
+    mkOption
+    mkEnableOption
+    types
+    unique
+    mapAttrsToList
+    isType
+    ;
 
   withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
 
@@ -16,11 +39,9 @@ let
   # Values
   peers = cfg.peers;
   peersWithPasswordRef = filterAttrs (n: v: v.passwordRef != null) peers;
-  peersRouteReflectors =
-    attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
+  peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
 
-  passwords =
-    unique (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
+  passwords = unique (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
 
   # Example
   # config.customModules.bird = {
@@ -37,133 +58,138 @@ let
 
   # Options
 
-  birdPeerSubmodule = { name, config, ... }: {
-    options = {
-      enable = mkEnableOption "${name} peer.";
+  birdPeerSubmodule =
+    { name, config, ... }:
+    {
+      options = {
+        enable = mkEnableOption "${name} peer.";
 
-      peerName = mkOption {
-        type = types.str;
-        default = name;
-        description = "Override name of the BGP peer.";
-      };
-
-      peerIP = mkOption {
-        type = types.str;
-        description = "IP address of the BGP peer.";
-      };
-
-      peerAS = mkOption {
-        type = types.int;
-        default = 65666;
-        description = "Autonomous System number of the BGP peer.";
-      };
-
-      localIP = mkOption {
-        type = types.str;
-        default = "";
-        description = "Local IP address.";
-      };
-
-      localAS = mkOption {
-        type = types.int;
-        default = 65666;
-        description = "Local Autonomous System number.";
-      };
-
-      multihop = mkOption {
-        type = types.int;
-        default = 0;
-        description = "Multihop TTL value.";
-      };
-
-      template = mkOption {
-        type = types.str;
-        default = "";
-        description = "Template string.";
-      };
-
-      password = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "Password for BGP session.";
-      };
-
-      passwordRef = mkOption {
-        type = types.nullOr types.str;
-        default = null;
-        description = "Reference to a password for BGP session.";
-      };
-
-      ipv4 = {
-
-        imports = mkOption {
-          type = types.nullOr types.oneOf types.str types.lambda
-            (types.listOf types.str);
-          default = [ ];
-          description = "List of IPv4 import rules.";
+        peerName = mkOption {
+          type = types.str;
+          default = name;
+          description = "Override name of the BGP peer.";
         };
 
-        exports = mkOption {
-          type = types.listOf types.str;
-          default = [ ];
-          description = "List of IPv4 export rules.";
+        peerIP = mkOption {
+          type = types.str;
+          description = "IP address of the BGP peer.";
         };
 
-      };
-
-      ipv6 = {
-
-        imports = mkOption {
-          type =
-            types.nullOr (types.oneOf [ types.str (types.listOf types.str) ]);
-          default = [ ];
-          description = "List of IPv6 import rules.";
+        peerAS = mkOption {
+          type = types.int;
+          default = 65666;
+          description = "Autonomous System number of the BGP peer.";
         };
 
-        exports = mkOption {
-          type = types.nullOr (types.oneOf [
-            types.str
-            # (types.functionTo {
-            #   description = "return filter name / filter list dynamically";
-            # })
-            (types.listOf types.str)
-          ]);
-          # type = types.listOf types.str;
-          default = [ ];
-          description = "List of IPv6 export rules.";
+        localIP = mkOption {
+          type = types.str;
+          default = "";
+          description = "Local IP address.";
         };
 
-      };
+        localAS = mkOption {
+          type = types.int;
+          default = 65666;
+          description = "Local Autonomous System number.";
+        };
 
-      bgpMED = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-        description = "BGP Multi Exit Discriminator.";
-      };
+        multihop = mkOption {
+          type = types.int;
+          default = 0;
+          description = "Multihop TTL value.";
+        };
 
-      # wireguard = mkOption {
-      #   type = types.attrs;
-      #   default = { };
-      #   description = "Wireguard configuration.";
-      # };
+        template = mkOption {
+          type = types.str;
+          default = "";
+          description = "Template string.";
+        };
 
-      interface = mkOption {
-        type = types.nullOr types.str;
+        password = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "Password for BGP session.";
+        };
 
-        description = "Network interface.";
-        default = if config.multihop == 0 then config.peerName else null;
-        # default = if config.wireguard != { } then
-        #   (if config.wireguard ? interface then
-        #     config.wireguard.interface
-        #   else
-        #     config.peerName)
-        # else
-        #   null;
+        passwordRef = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "Reference to a password for BGP session.";
+        };
+
+        ipv4 = {
+
+          imports = mkOption {
+            type = types.nullOr types.oneOf types.str types.lambda (types.listOf types.str);
+            default = [ ];
+            description = "List of IPv4 import rules.";
+          };
+
+          exports = mkOption {
+            type = types.listOf types.str;
+            default = [ ];
+            description = "List of IPv4 export rules.";
+          };
+        };
+
+        ipv6 = {
+
+          imports = mkOption {
+            type = types.nullOr (
+              types.oneOf [
+                types.str
+                (types.listOf types.str)
+              ]
+            );
+            default = [ ];
+            description = "List of IPv6 import rules.";
+          };
+
+          exports = mkOption {
+            type = types.nullOr (
+              types.oneOf [
+                types.str
+                # (types.functionTo {
+                #   description = "return filter name / filter list dynamically";
+                # })
+                (types.listOf types.str)
+              ]
+            );
+            # type = types.listOf types.str;
+            default = [ ];
+            description = "List of IPv6 export rules.";
+          };
+        };
+
+        bgpMED = mkOption {
+          type = types.nullOr types.int;
+          default = null;
+          description = "BGP Multi Exit Discriminator.";
+        };
+
+        # wireguard = mkOption {
+        #   type = types.attrs;
+        #   default = { };
+        #   description = "Wireguard configuration.";
+        # };
+
+        interface = mkOption {
+          type = types.nullOr types.str;
+
+          description = "Network interface.";
+          default = if config.multihop == 0 then config.peerName else null;
+          # default = if config.wireguard != { } then
+          #   (if config.wireguard ? interface then
+          #     config.wireguard.interface
+          #   else
+          #     config.peerName)
+          # else
+          #   null;
+        };
       };
     };
-  };
-
-in {
+in
+{
 
   imports = [ ./server_config.nix ];
 
@@ -174,9 +200,7 @@ in {
 
       peers = mkOption {
         default = { };
-        type = with types;
-          attrsOf (submodule
-            birdPeerSubmodule); # types.submodule (mkNamedOptionModule birdPeerSubmodule);
+        type = with types; attrsOf (submodule birdPeerSubmodule); # types.submodule (mkNamedOptionModule birdPeerSubmodule);
         description = "Configuration for BGP peers.";
       };
 
@@ -222,7 +246,9 @@ in {
   config = mkIf cfg.enable {
     _module.args = {
       birdConfig = cfg;
-      birdFuncs = { inherit quoteString; };
+      birdFuncs = {
+        inherit quoteString;
+      };
     };
 
     # Firewalling
@@ -233,18 +259,21 @@ in {
 
     # Secrets management
     sops = mkIf (passwords != [ ]) {
-      secrets = (listToAttrs (map (n:
-        nameValuePair "bird_secrets/${n}" {
-          reloadUnits = [ "bird2.service" ];
-        }) passwords));
+      secrets = (
+        listToAttrs (
+          map (n: nameValuePair "bird_secrets/${n}" { reloadUnits = [ "bird2.service" ]; }) passwords
+        )
+      );
 
       templates."bird_secrets.conf" = mkIf (passwords != [ ]) {
         owner = cfg.user;
-        content = (mkMerge (map (password: ''
-          define secretPassword_${password} = "${
-            config.sops.placeholder."bird_secrets/${password}"
-          }";
-        '') passwords));
+        content = (
+          mkMerge (
+            map (password: ''
+              define secretPassword_${password} = "${config.sops.placeholder."bird_secrets/${password}"}";
+            '') passwords
+          )
+        );
       };
     };
 
@@ -268,50 +297,60 @@ in {
         fi
       '';
 
-      config = mkMerge ([
-        (mkOrder 0 ''
-          log syslog all;
+      config = mkMerge (
+        [
+          (mkOrder 0 ''
+            log syslog all;
 
 
-          # The Device protocol is not a real routing protocol. It does not generate any
-          # routes and it only serves as a module for getting information about network
-          # interfaces from the kernel. It is necessary in almost any configuration.
-          protocol device DEV {}
+            # The Device protocol is not a real routing protocol. It does not generate any
+            # routes and it only serves as a module for getting information about network
+            # interfaces from the kernel. It is necessary in almost any configuration.
+            protocol device DEV {}
 
-        '')
-      ] ++ optional (passwords != [ ]) (mkOrder 5
-        ''include "${config.sops.templates."bird_secrets.conf".path}";'')
-        ++ optional (cfg.peers != { }) (let
-          peerFunc = (import ./peer_config.nix);
+          '')
+        ]
+        ++ optional (passwords != [ ]) (
+          mkOrder 5 ''include "${config.sops.templates."bird_secrets.conf".path}";''
+        )
+        ++ optional (cfg.peers != { }) (
+          let
+            peerFunc = (import ./peer_config.nix);
 
-          mkPeersFuncArgs = (x:
-            args // {
-              inherit withType;
-            } // {
-              peer = { peerName = x; } // peers.${x};
-            });
+            mkPeersFuncArgs = (
+              x:
+              args
+              // {
+                inherit withType;
+              }
+              // {
+                peer = {
+                  peerName = x;
+                } // peers.${x};
+              }
+            );
 
-          mkPeerConfig = x: ''
+            mkPeerConfig = x: ''
 
-            # ${x}
-            ${peerFunc (mkPeersFuncArgs x)}
+              # ${x}
+              ${peerFunc (mkPeersFuncArgs x)}
 
-          '';
-
-        in mkOrder 50 ''
-          # Nix-OS Generated for ${target}
-          ${lib.concatMapStringsSep "\n" mkPeerConfig
-          (builtins.attrNames peers)}
-        ''));
+            '';
+          in
+          mkOrder 50 ''
+            # Nix-OS Generated for ${target}
+            ${lib.concatMapStringsSep "\n" mkPeerConfig (builtins.attrNames peers)}
+          ''
+        )
+      );
     };
 
-    customModules.loopback0 =
-      mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
-        enable = mkDefault true;
+    customModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
+      enable = mkDefault true;
 
-        ipv4 = mkIf (cfg.loopback4 != null) [ cfg.loopback4 ];
-        ipv6 = mkIf (cfg.loopback6 != null) [ cfg.loopback6 ];
-      };
+      ipv4 = mkIf (cfg.loopback4 != null) [ cfg.loopback4 ];
+      ipv6 = mkIf (cfg.loopback6 != null) [ cfg.loopback6 ];
+    };
 
     # customModules.bird = {
     #   peers = filterAttrs (n: v: v ? template && v.template == "rrserver")
@@ -332,6 +371,5 @@ in {
     #   else
     #     [ ];
     # };
-
   };
 }

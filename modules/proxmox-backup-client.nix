@@ -109,18 +109,14 @@ in
             repository = mkOption {
               type = with types; nullOr str;
               default = null;
-              description = ''
-                repository to backup to.
-              '';
+              description = "Repository to backup to.";
               example = "sftp:backup@192.168.1.100:/backups/${name}";
             };
 
             repositoryFile = mkOption {
               type = with types; nullOr path;
               default = null;
-              description = ''
-                Path to the file containing the repository location to backup to.
-              '';
+              description = "Path to the file containing the repository location to backup to.";
             };
 
             paths = mkOption {
@@ -132,7 +128,7 @@ in
                 Which paths to backup, in addition to ones specified via
                 `dynamicFilesFrom`.  If null or an empty array and
                 `dynamicFilesFrom` is also null, no backup command will be run.
-                 This can be used to create a prune-only job.
+                  This can be used to create a prune-only job.
               '';
               example = [
                 "/var/lib/postgresql"
@@ -176,36 +172,28 @@ in
             user = mkOption {
               type = types.str;
               default = "root";
-              description = ''
-                As which user the backup should run.
-              '';
+              description = "As which user the backup should run.";
               example = "postgresql";
             };
 
             extraBackupArgs = mkOption {
               type = types.listOf types.str;
               default = [ ];
-              description = ''
-                Extra arguments passed to proxmox-backup-client backup.
-              '';
+              description = "Extra arguments passed to proxmox-backup-client backup.";
               example = [ "--exclude-file=/etc/nixos/proxmox-backup-client-ignore" ];
             };
 
             extraOptions = mkOption {
               type = types.listOf types.str;
               default = [ ];
-              description = ''
-                Extra extended options to be passed to the proxmox-backup-client --option flag.
-              '';
+              description = "Extra extended options to be passed to the proxmox-backup-client --option flag.";
               example = [ "sftp.command='ssh backup@192.168.1.100 -i /home/user/.ssh/id_rsa -s sftp'" ];
             };
 
             initialize = mkOption {
               type = types.bool;
               default = false;
-              description = ''
-                Create the repository if it doesn't exist.
-              '';
+              description = "Create the repository if it doesn't exist.";
             };
 
             pruneOpts = mkOption {
@@ -228,7 +216,7 @@ in
             runCheck = mkOption {
               type = types.bool;
               default = (builtins.length config.services.proxmox-backup-client.backups.${name}.checkOpts > 0);
-              defaultText = literalExpression ''builtins.length config.services.backups.${name}.checkOpts > 0'';
+              defaultText = literalExpression "builtins.length config.services.backups.${name}.checkOpts > 0";
               description = "Whether to run the `check` command with the provided `checkOpts` options.";
               example = true;
             };
@@ -236,9 +224,7 @@ in
             checkOpts = mkOption {
               type = types.listOf types.str;
               default = [ ];
-              description = ''
-                A list of options for 'proxmox-backup-client check'.
-              '';
+              description = "A list of options for 'proxmox-backup-client check'.";
               example = [ "--with-cache" ];
             };
 
@@ -256,17 +242,13 @@ in
             backupPrepareCommand = mkOption {
               type = with types; nullOr str;
               default = null;
-              description = ''
-                A script that must run before starting the backup process.
-              '';
+              description = "A script that must run before starting the backup process.";
             };
 
             backupCleanupCommand = mkOption {
               type = with types; nullOr str;
               default = null;
-              description = ''
-                A script that must run after finishing the backup process.
-              '';
+              description = "A script that must run after finishing the backup process.";
             };
 
             package = mkPackageOption pkgs "proxmox-backup-client" { };

@@ -36,7 +36,9 @@ in
         let
           indent = lib.concatMapStrings (_: " ") (lib.range 1 nindent);
         in
-        builtins.concatStringsSep "\n${indent}";
+        builtins.concatStringsSep ''
+
+          ${indent}'';
 
       withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
 
@@ -75,6 +77,7 @@ in
         ''
           ${optionalString (bgpMED != null) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
           ${optionalString (template == "kittunderlay") ''
+
             filter filter4_IN_BGP_${toString peerName} {
               if is_valid4_network() then {
                 if defined( bgp_med ) then
@@ -98,7 +101,7 @@ in
             }
           ''}
 
-          # ${optionalString (x ? debug && x.debug == true) (toJSON x)} 
+          # ${optionalString (x ? debug && x.debug == true) (toJSON x)}
           # L: AS${toString localAS} | R: AS${toString peerAS}
           protocol bgp ${toString peerName} ${optionalString (template != "") "from ${toString template}"} {
             local ${
@@ -134,6 +137,7 @@ in
 
             ${
               optionalString (ipv6 != { }) ''
+
                 ipv6 {
                   ${
                     optionalString (ipv6 ? imports && ipv6.imports != "" && ipv6.imports != [ ]) (
@@ -143,6 +147,7 @@ in
                           null = x: "  import none;";
                           lambda = f: myType (f peerName);
                           list = x: ''
+
                             # ${toJSON x}
                                 import filter {
                                   if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
@@ -164,6 +169,7 @@ in
                           null = x: "  export none;";
                           lambda = f: myType (f peerName);
                           list = x: ''
+
                             # ${toJSON x}
                                 export filter {
                                   if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
@@ -189,7 +195,9 @@ in
     lib.mkOrder 50 (
       builtins.concatStringsSep "\n" (
         [ "# Nix-OS Generated for ${target}" ]
-        ++ (map (x: "# ${x}\n${peersFunc (mkPeersFuncArgs x)}") (builtins.attrNames peers))
+        ++ (map (x: ''
+          # ${x}
+          ${peersFunc (mkPeersFuncArgs x)}'') (builtins.attrNames peers))
       )
     );
 }
