@@ -36,10 +36,11 @@ in
       name = "nat";
 
       content = lib.mkAfter ''
-	chain postrouting {
-		type nat hook postrouting priority srcnat; policy accept;
-		ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
-        }
+        
+        	chain postrouting {
+        		type nat hook postrouting priority srcnat; policy accept;
+        		ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
+                }
       '';
     };
 

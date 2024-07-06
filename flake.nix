@@ -214,37 +214,11 @@
                 { ... }:
                 {
                   nixpkgs.overlays = [
-                    # https://github.com/NixOS/nixpkgs/issues/97855#issuecomment-1075818028
-                    #(self: super: {
-                    #  my-nixos-option =
-                    #    let
-                    #      flake-compact = super.fetchFromGitHub {
-                    #        owner = "edolstra";
-                    #        repo = "flake-compat";
-                    #        rev = "12c64ca55c1014cdc1b16ed5a804aa8576601ff2";
-                    #        sha256 = "sha256-hY8g6H2KFL8ownSiFeMOjwPC8P0ueXpCVEbxgda3pko=";
-                    #      };
-                    #      prefix = ''(import ${flake-compact} { src = ~/src/vidbina/nixos-configuration; }).defaultNix.nixosConfigurations.${target}'';
-                    #    in
-                    #    super.runCommand "nixos-option" { buildInputs = [ super.makeWrapper ]; } ''
-                    #      makeWrapper ${super.nixos-option}/bin/nixos-option $out/bin/nixos-option \
-                    #        --add-flags --config_expr \
-                    #        --add-flags "\"${prefix}.config\"" \
-                    #        --add-flags --options_expr \
-                    #        --add-flags "\"${prefix}.options\""
-                    #    '';
-                    #})
                     krewfile.overlay
 
                     (final: prev: {
                       master = nixpkgs-master.legacyPackages.${prev.system};
                       unstable = nixpkgs-unstable.legacyPackages.${prev.system};
-                      # devenv = devenv.packages.${prev.system}.devenv;
-                      # nix-inspect = nix-inspect.packages.${prev.system}.default;
-
-                      # ferm = prev.ferm.overrideAttrs (oldAttrs: rec {
-                      #   patches = oldAttrs.patches or [ ] ++ [ ./patches/ferm_import-ferm_wrapped.patch ];
-                      # });
                     })
                   ];
                 }
@@ -253,8 +227,15 @@
                 let
                   disableModules = [ ];
 
-                  customModules = [ "kitten/connect/autodisko" "kitten/connect/loopback0" "kitten/connect/bird_peers" ];
-                  localModules = [ "nixos/modules/services/ttys/kmscon" ];
+                  customModules = [
+                    # "kitten/connect/autodisko.nix" # Borken conditional imports cannot be done in sub-modules
+                    "kitten/connect/loopback0.nix"
+                    "kitten/connect/bird2"
+                    "kitten/connect/wireguard"
+                  ];
+                  localModules = [
+                    # "nixos/modules/services/ttys/kmscon"
+                  ];
 
                   masterModules = [
                     # "nixos/modules/programs/kubeswitch.nix"
@@ -263,15 +244,7 @@
                   unstableModules = [ ];
                   # stableModules = [ ];
 
-                  getModule =
-                    input:
-                    (
-                      x:
-                      let
-                        mod = if (hasSuffix ".nix" x) then x else "${x}.nix";
-                      in
-                      "${input}/${mod}"
-                    );
+                  getModule = input: (mod: "${input}/${mod}");
                 in
                 {
                   disabledModules = map (getModule args.nixpkgs) (
@@ -308,32 +281,6 @@
     in
     {
 
-      #   homeConfigurations = {
-      #      "toinux" = home-config.lib.mkHomeConfiguration userName homeDir [ ./_home/configuration.nix ];
-      #   };
-    # colmena = {
-    #   meta = {
-    #     nixpkgs = import nixpkgs {
-    #       system = "x86_64-linux";
-    #     };
-    #   };
-
-    #   # Also see the non-Flakes hive.nix example above.
-    #   host-a = { name, nodes, pkgs, ... }: {
-    #     boot.isContainer = true;
-    #     time.timeZone = nodes.host-b.config.time.timeZone;
-    #   };
-    #   host-b = {
-    #     deployment = {
-    #       targetHost = "somehost.tld";
-    #       targetPort = 1234;
-    #       targetUser = "luser";
-    #     };
-    #     boot.isContainer = true;
-    #     time.timeZone = "America/Los_Angeles";
-    #   };
-    # };
-
       nixosConfigurations = (
         genAttrs (attrNames targetConfigs) (
           target:
@@ -366,7 +313,7 @@
               confName:
               writeShellScriptBin "bootstrap-${confName}.sh" (
                 let
-                  package = nixpkgs.legacyPackages.${system}.nix;
+                  package = nixpkgs.legacyPackages.${system}.nixVersions.nix_2_18;
                 in
                 ''
                   set -x
@@ -455,13 +402,13 @@
 
                   ssh $@ xz --help
 
-
                   ${concatMapStringsSep "\n" (
                     x:
                     let
                       disk = disks.${x};
                     in
                     ''
+
                       echo "Pushing ${x} -> ''${REMOTE}:${disk.device}"
                       ${getBin pvPackage}/bin/pv ${images}/${x}.raw.xz | ssh $@ "xz -T0 -d -c - > ${disk.device}"
                     ''

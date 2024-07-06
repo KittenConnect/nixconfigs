@@ -6,12 +6,7 @@
 }:
 
 let
-  inherit (lib)
-    mkOption
-    stringLength
-    types
-    ;
-
+  inherit (lib) mkOption stringLength types;
 
   cfg = config.customModules.loopback0;
 
@@ -41,9 +36,18 @@ let
     in
     builtins.length parts <= 8 && lib.all isHexPart parts && ip != "";
 
-  validateIPv4s = ips: if lib.all isValidIPv4 ips then canonicalizeIPs ips else throw "Invalid IPv4 address in the list";
+  validateIPv4s =
+    ips:
+    if lib.all isValidIPv4 ips then canonicalizeIPs ips else throw "Invalid IPv4 address in the list";
 
-  validateIPv6s = ips: if lib.all isValidIPv6 ips then builtins.trace "IPs: ${builtins.toJSON ips} -> ${builtins.toJSON (canonicalizeIPs ips)}" (canonicalizeIPs ips) else throw "Invalid IPv6 address in the list";
+  validateIPv6s =
+    ips:
+    if lib.all isValidIPv6 ips then
+      # builtins.trace
+      # "IPs: ${builtins.toJSON ips} -> ${builtins.toJSON (canonicalizeIPs ips)}"
+      (canonicalizeIPs ips)
+    else
+      throw "Invalid IPv6 address in the list";
 in
 {
   options.customModules.loopback0 = {
@@ -79,15 +83,19 @@ in
     );
 
     networking.interfaces.lo = lib.mkIf (hasIPv4 || hasIPv6) {
-      ipv4.addresses = lib.mkIf (hasIPv4) (map (x: {
-        address = "${toString x}";
-        prefixLength = 32;
-      }) cfg.ipv4);
+      ipv4.addresses = lib.mkIf (hasIPv4) (
+        map (x: {
+          address = "${toString x}";
+          prefixLength = 32;
+        }) cfg.ipv4
+      );
 
-      ipv6.addresses = lib.mkIf (hasIPv6) (map (x: {
-        address = "${toString x}";
-        prefixLength = 128;
-      }) cfg.ipv6);
+      ipv6.addresses = lib.mkIf (hasIPv6) (
+        map (x: {
+          address = "${toString x}";
+          prefixLength = 128;
+        }) cfg.ipv6
+      );
     };
   };
 }
