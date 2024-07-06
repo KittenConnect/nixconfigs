@@ -131,5 +131,5 @@ in
     })
   ];
 
-  networking.wg-quick.interfaces = genAttrs (attrNames peers) mkWireguardConf;
+  networking.wg-quick.interfaces = mapAttrs mkWireguardConf config.peers;
 }

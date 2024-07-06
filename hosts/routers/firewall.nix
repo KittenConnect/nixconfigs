@@ -26,11 +26,11 @@ let
 
   transitIFACEs =
     [ ]
-    ++ lib.optionals (birdConfig ? transitInterfaces) birdConfig.transitInterfaces
-    ++ lib.optional (birdConfig ? transitInterface) birdConfig.transitInterface;
+    ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
+    # ++ lib.optional (birdConfig ? transitInterface) birdConfig.transitInterface;
 
   kittenIFACEs = (
-    (attrNames wgPeers) ++ lib.optionals (birdConfig ? allowedInterfaces) birdConfig.allowedInterfaces
+    (attrNames wgPeers) ++ lib.optionals (birdConfig.allowedInterfaces != []) birdConfig.allowedInterfaces
   );
 
   inherit (lib)
@@ -72,17 +72,24 @@ in
         let
           quoteString = x: ''"${x}"'';
 
-          defines = ''
-            define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }
-            define transitNETs = { ${concatStringsSep ", " transitedNetworks} }
-
-            define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }
-          '';
+          defines = lib.concatStringsSep "\n" (
+            [
+              (optionalString (transitIFACEs != [ ]) ''define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }'')
+              (optionalString (transitedNetworks != [ ]) ''define transitNETs = { ${concatStringsSep ", " transitedNetworks} }'')
+              (optionalString (wgPeers != { }) ''define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }'')
+              (optionalString (kittenIFACEs != [ ]) ''define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }'')
+            ]
+          );
 
           extraForwardRules = lib.concatStringsSep "\n" (
             [
 
               ''
+                ${optionalString (transitedNetworks != [ ] && transitIFACEs != [ ] && kittenIFACEs != [ ]) ''
+                  # iifname $kittenIFACEs oifname $transitIFACEs counter accept
+                  ip6 saddr $transitNETs  iifname $kittenIFACEs  oifname $transitIFACEs  counter accept
+                  ip6 daddr $transitNETs  oifname $kittenIFACEs  iifname $transitIFACEs  counter accept
+                ''}
                 # ip6 daddr 2a13:79c0:ff00::/48 counter accept
                 # ip6 daddr { 2a13:79c0:ffff:feff:b00b:3945:a51:b00b, 2a13:79c0:ffff:feff:b00b:3945:a51:dead } counter accept
 
@@ -90,11 +97,6 @@ in
 
                 # ip6 saddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } ip6 daddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } counter accept
 
-                ${optionalString (transitedNetworks != [ ] && transitIFACEs != [ ] && kittenIFACEs != [ ]) ''
-                  # iifname $kittenIFACEs oifname $transitIFACEs counter accept
-                  ip6 saddr $transitNETs  iifname $kittenIFACEs  oifname $transitIFACEs  counter accept
-                  ip6 daddr $transitNETs  oifname $kittenIFACEs  iifname $transitIFACEs  counter accept
-                ''}
 
                 ${optionalString (kittenIFACEs != [ ]) ''
                   iifname $kittenIFACEs oifname $kittenIFACEs counter accept

@@ -1,7 +1,18 @@
-{ lib, ... }:
-let inherit (lib) mkOrder mkMerge;
+{ lib, config, birdFuncs, ... }:
+let
+  inherit (lib)
+    optional optionals optionalString mkOrder mkMerge attrNames filterAttrs
+    concatStringsSep concatMapStringsSep;
+
+  inherit (birdFuncs) quoteString;
+
+  birdCfg = config.services.bird2;
+  srvCfg = config.customModules.bird;
+
+  rrs = attrNames
+    (filterAttrs (n: v: v ? template && v.template == "rrserver") srvCfg.peers);
 in {
-  service.bird2.config = mkMerge [
+  services.bird2.config = mkMerge [
     (mkOrder 25 ''
 
       # The Kernel protocol is not a real routing protocol. Instead of communicating
@@ -21,10 +32,11 @@ in {
             }
             ) then {
                 ${
-                  optionalString (lo4 != null) ''
+                  optionalString
+                  (srvCfg.loopback4 != null && srvCfg.loopback4 != "") ''
 
                       if source ~ [RTS_BGP] || net ~ [ 0.0.0.0/0 ] then {
-                    krt_prefsrc=${lo4};
+                    krt_prefsrc=${srvCfg.loopback4};
                       }
                   ''
                 }
@@ -51,12 +63,13 @@ in {
             }
             ) then {
                          ${
-                           optionalString (lo6 != null) ''
+                           optionalString (srvCfg.loopback6 != null
+                             && srvCfg.loopback6 != "") ''
 
-                                  if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
-                             	 krt_prefsrc=${lo6};
-                                  }
-                           ''
+                                    if source ~ [RTS_BGP] || net ~ [ ::/0 ] then {
+                               	 krt_prefsrc=${srvCfg.loopback6};
+                                    }
+                             ''
                          }
       		       accept;
       		 } else reject;
