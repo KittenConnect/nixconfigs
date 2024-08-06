@@ -33,7 +33,7 @@ let
   quoteString = x: ''"${x}"'';
 
   # Main config is here
-  cfg = config.customModules.bird;
+  cfg = config.kittenModules.bird;
 
   # Values
   peers = cfg.peers;
@@ -43,7 +43,7 @@ let
   passwords = unique (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
 
   # Example
-  # config.customModules.bird = {
+  # config.kittenModules.bird = {
   #   # Example values, replace with actual srvCfg structure
   #   peers = {
   #     peer1 = { template = "rrserver"; };
@@ -194,7 +194,7 @@ in
 
   # Options
   options = {
-    customModules.bird = {
+    kittenModules.bird = {
       enable = mkEnableOption "Kitten Bird2 module";
 
       peers = mkOption {
@@ -345,14 +345,14 @@ in
       );
     };
 
-    customModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
+    kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
       enable = mkDefault true;
 
       ipv4 = mkIf (cfg.loopback4 != null) [ cfg.loopback4 ];
       ipv6 = mkIf (cfg.loopback6 != null) [ cfg.loopback6 ];
     };
 
-    # customModules.bird = {
+    # kittenModules.bird = {
     #   peers = filterAttrs (n: v: v ? template && v.template == "rrserver")
     #     srvCfg.peers;
     #   loopback4 = if (srvCfg ? loopback4 && srvCfg.loopback4 != null) then

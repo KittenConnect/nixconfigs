@@ -34,7 +34,7 @@ let
 
   # Variables / Functions
 
-  cfg = config.customModules.wireguard;
+  cfg = config.kittenModules.wireguard;
   IFACE = if targetConfig ? interface then targetConfig.interface else null;
 
   peers = cfg.peers;
@@ -146,7 +146,7 @@ in
 {
 
   # Options
-  options.customModules.wireguard = {
+  options.kittenModules.wireguard = {
     enable = mkEnableOption "Kitten Wireguard module";
     allowFirewall = mkEnableOption "automatic firewall rules creation";
 

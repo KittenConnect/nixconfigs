@@ -50,7 +50,7 @@ with peer;
       optionalString (interface != null)
         ''interface "${
           assert lib.asserts.assertMsg (multihop == 0)
-            "customModules.bird.peers.${peerName}: Multihop[${toString multihop}] BGP cannot be bound to interface : ${interface}";
+            "kittenModules.bird.peers.${peerName}: Multihop[${toString multihop}] BGP cannot be bound to interface : ${interface}";
           interface
         }";''
     }

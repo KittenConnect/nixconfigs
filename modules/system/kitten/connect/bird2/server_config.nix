@@ -20,7 +20,7 @@ let
   inherit (birdFuncs) quoteString;
 
   birdCfg = config.services.bird2;
-  srvCfg = config.customModules.bird;
+  srvCfg = config.kittenModules.bird;
 
   rrs = attrNames (filterAttrs (n: v: v ? template && v.template == "rrserver") srvCfg.peers);
 in
