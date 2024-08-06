@@ -12,11 +12,11 @@
 {
 
   imports = [
-    ./nixConfig.nix
-    ./packages.nix # Install system-wide pkgs
+    # ./nixConfig.nix
+    # ./packages.nix # Install system-wide pkgs
     ./inputrc.nix # ReadLine config
     ./security.nix # PAM + SSH + Keys
-    ./firewall.nix
+    # ./firewall.nix
 
     # VPNs
     ./openvpn.nix

@@ -1,6 +1,12 @@
 let
+  pkgConfig = {
+   allowUnfree = true;
+  };
+
   sources = import ./npins;
-  pkgs = import sources.nixpkgs { };
+
+  pkgs = import sources.nixpkgs { config = pkgConfig; };
+
   inherit (pkgs) lib;
 
   hosts = import ./hosts ({ inherit pkgs lib; });
@@ -8,7 +14,7 @@ let
   defConf = {
     meta = {
       specialArgs = {
-        inherit sources;
+        inherit sources pkgConfig;
       };
 
       nixpkgs = pkgs;
@@ -28,7 +34,7 @@ let
       # machinesFile = ./machines.client-a;
     };
 
-    defaults = import ./hosts/defaults.nix;
+    defaults = import ./hosts/_defaults.nix;
 
   };
 in

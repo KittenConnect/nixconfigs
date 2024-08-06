@@ -15,25 +15,45 @@
       "url": "https://api.github.com/repos/nix-community/disko/tarball/v1.6.1",
       "hash": "1p9vsml07bm3riw703dv83ihlmgyc11qv882qa6bqzqdgn86y8z4"
     },
+    "lix": {
+      "type": "Git",
+      "repository": {
+        "type": "Git",
+        "url": "https://git.lix.systems/lix-project/lix.git"
+      },
+      "branch": "main",
+      "revision": "66469fc281fc4abb3284574f77a8051fee8116b9",
+      "url": null,
+      "hash": "1ra5vrlxcwdbd0hq91drj0d8qyb3cj1jky5gsf0l5rp2vw639cqn"
+    },
     "lix-module": {
-      "type": "GitRelease",
+      "type": "Git",
       "repository": {
         "type": "Git",
         "url": "https://git.lix.systems/lix-project/nixos-module.git"
       },
-      "pre_releases": false,
-      "version_upper_bound": null,
-      "release_prefix": null,
-      "version": "2.90.0",
-      "revision": "5c48c833c15bb80d127a398a8c2484d42fdd8257",
+      "branch": "main",
+      "revision": "e350380d72f94035c309e19fda2fd550f6ab7376",
       "url": null,
-      "hash": "1lb0xljlbhcjd1y79sspfrd15jar7q10sqkwzmqnzkk0cdqbchy8"
+      "hash": "1kwr97zmwmq9v2rg3b1pwcp00ng0cs1ja8gh66y46hc5crwm3d7v"
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixos-24.05",
       "url": "https://releases.nixos.org/nixos/24.05/nixos-24.05.3485.05405724efa1/nixexprs.tar.xz",
       "hash": "18s6h63ksrkvxf441sqr6218mymw4ibrgjgiq2vp9i59lqya9nkh"
+    },
+    "sops-nix": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "Mic92",
+        "repo": "sops-nix"
+      },
+      "branch": "master",
+      "revision": "eb34eb588132d653e4c4925d862f1e5a227cc2ab",
+      "url": "https://github.com/Mic92/sops-nix/archive/eb34eb588132d653e4c4925d862f1e5a227cc2ab.tar.gz",
+      "hash": "1z8lbp452wv5fzjhxfxfj15mx7f1fl4jy1f2w770ph87qlij39mk"
     },
     "unstable": {
       "type": "Channel",

@@ -1,6 +1,12 @@
-args@{ pkgs, ... }:
+args@{ pkgs, sources, ... }:
 {
-  imports = [ ../_common ];
+  imports = [
+    ../system
+    ../modules/system
+
+    (import "${sources.lix-module}/module.nix" { lix = sources.lix; })
+    "${sources.sops-nix}/modules/sops"
+  ];
 
   time.timeZone = "Europe/Paris";
 
