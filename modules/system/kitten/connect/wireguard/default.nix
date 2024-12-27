@@ -35,7 +35,7 @@ let
   # Variables / Functions
 
   cfg = config.kittenModules.wireguard;
-  IFACE = if targetConfig ? interface then targetConfig.interface else null;
+  # IFACE = if targetConfig ? interface then targetConfig.interface else null;
 
   peers = cfg.peers;
 
@@ -75,7 +75,7 @@ let
           mark =
             if peer.fwMark != null then
               peer.fwMark
-            else if (peer.onIFACE != null) then
+            else if peer.onIFACE != null then
               peer.port
             else
               null;
@@ -150,6 +150,12 @@ in
     enable = mkEnableOption "Kitten Wireguard module";
     allowFirewall = mkEnableOption "automatic firewall rules creation";
 
+    defaultIFACE = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "default interface name for the WireGuard interface.";
+    };
+
     peers = mkOption {
       default = { };
       description = "WireGuard peers configuration.";
@@ -174,7 +180,7 @@ in
               };
               onIFACE = mkOption {
                 type = types.nullOr types.str;
-                default = null;
+                default = cfg.defaultIFACE;
                 description = "Interface name for the WireGuard interface.";
               };
               peerKey = mkOption {
@@ -218,16 +224,31 @@ in
     # Open FireWall Ports
     networking.firewall = mkMerge [
       (optionalAttrs (portsWithoutIFACE != [ ]) (
-        let
-          conf = mkFWConf portsWithoutIFACE;
-        in
-        if IFACE != null then { interfaces.${IFACE} = conf; } else conf
+        # let
+        #   conf = mkFWConf portsWithoutIFACE;
+        # in
+        # if IFACE != null then { interfaces.${IFACE} = conf; } else conf
+        mkFWConf portsWithoutIFACE
       ))
 
       (optionalAttrs (portsWithIFACE != [ ]) {
         interfaces = (mapAttrs (name: value: mkFWConf value) portsWithIFACE);
       })
     ];
+    kittenModules.firewall.forward = lib.mkIf (config.kittenModules.firewall.forward.enable) {
+      variables = {
+        wireguardIFACEs =
+          let
+            inherit (lib) attrNames concatMapStringsSep mkIf;
+            quoteString = s: ''"${builtins.toString s}"'';
+
+            wgIFs = attrNames peers;
+            wgIFstr = concatMapStringsSep ", " quoteString wgIFs;
+          in
+          ''{ ${if peers != {} then wgIFstr else "lo"} }'';
+      };
+      rules = lib.mkIf (peers != { }) ''iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept'';
+    };
 
     # networking.wg-quick.interfaces = genAttrs (attrNames peers) mkWireguardConf;
     networking.wg-quick.interfaces = mapAttrs mkWireguardConf cfg.peers;

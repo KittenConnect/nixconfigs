@@ -1,5 +1,17 @@
 {
   "pins": {
+    "colmena": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "zhaofengli",
+        "repo": "colmena"
+      },
+      "branch": "main",
+      "revision": "0fca61acc23bd95dc377758eb76885a8bce99f6a",
+      "url": "https://github.com/zhaofengli/colmena/archive/0fca61acc23bd95dc377758eb76885a8bce99f6a.tar.gz",
+      "hash": "11241lxwqhh2ys9lh4xg0873d57mwlxcgh22p5da3f3l15qi3v7x"
+    },
     "disko": {
       "type": "GitRelease",
       "repository": {
@@ -10,10 +22,10 @@
       "pre_releases": false,
       "version_upper_bound": null,
       "release_prefix": null,
-      "version": "v1.6.1",
-      "revision": "4677f6c53482a8b01ee93957e3bdd569d51261d6",
-      "url": "https://api.github.com/repos/nix-community/disko/tarball/v1.6.1",
-      "hash": "1p9vsml07bm3riw703dv83ihlmgyc11qv882qa6bqzqdgn86y8z4"
+      "version": "v1.8.0",
+      "revision": "624fd86460e482017ed9c3c3c55a3758c06a4e7f",
+      "url": "https://api.github.com/repos/nix-community/disko/tarball/v1.8.0",
+      "hash": "06ifryv6rw25cz8zda4isczajdgrvcl3aqr145p8njxx5jya2d77"
     },
     "lix": {
       "type": "Git",
@@ -22,9 +34,9 @@
         "url": "https://git.lix.systems/lix-project/lix.git"
       },
       "branch": "main",
-      "revision": "66469fc281fc4abb3284574f77a8051fee8116b9",
+      "revision": "ed9b7f4f84fd60ad8618645cc1bae2d686ff0db6",
       "url": null,
-      "hash": "1ra5vrlxcwdbd0hq91drj0d8qyb3cj1jky5gsf0l5rp2vw639cqn"
+      "hash": "05kxga8fs9h4qm0yvp5l7jvsda7hzqs7rvxcn8r52dqg3c80hva9"
     },
     "lix-module": {
       "type": "Git",
@@ -33,15 +45,15 @@
         "url": "https://git.lix.systems/lix-project/nixos-module.git"
       },
       "branch": "main",
-      "revision": "e350380d72f94035c309e19fda2fd550f6ab7376",
+      "revision": "fd186f535a4ac7ae35d98c1dd5d79f0a81b7976d",
       "url": null,
-      "hash": "1kwr97zmwmq9v2rg3b1pwcp00ng0cs1ja8gh66y46hc5crwm3d7v"
+      "hash": "0jxpqaz12lqibg03iv36sa0shfvamn2yhg937llv3kl4csijd34f"
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixos-24.05",
-      "url": "https://releases.nixos.org/nixos/24.05/nixos-24.05.3485.05405724efa1/nixexprs.tar.xz",
-      "hash": "18s6h63ksrkvxf441sqr6218mymw4ibrgjgiq2vp9i59lqya9nkh"
+      "url": "https://releases.nixos.org/nixos/24.05/nixos-24.05.5480.6e6b3dd395c3/nixexprs.tar.xz",
+      "hash": "077ws6fnkjkz49r015l34ix7lxkpak389mh1j9z810n7c59rgdq3"
     },
     "sops-nix": {
       "type": "Git",
@@ -51,15 +63,15 @@
         "repo": "sops-nix"
       },
       "branch": "master",
-      "revision": "eb34eb588132d653e4c4925d862f1e5a227cc2ab",
-      "url": "https://github.com/Mic92/sops-nix/archive/eb34eb588132d653e4c4925d862f1e5a227cc2ab.tar.gz",
-      "hash": "1z8lbp452wv5fzjhxfxfj15mx7f1fl4jy1f2w770ph87qlij39mk"
+      "revision": "3198a242e547939c5e659353551b0668ec150268",
+      "url": "https://github.com/Mic92/sops-nix/archive/3198a242e547939c5e659353551b0668ec150268.tar.gz",
+      "hash": "0b7x86lvjfkxpxnf2dl7mf8rvsyhsn0xjmgaw8m58286191wp3lb"
     },
     "unstable": {
       "type": "Channel",
       "name": "nixos-unstable",
-      "url": "https://releases.nixos.org/nixos/unstable/nixos-24.11pre660624.9f918d616c53/nixexprs.tar.xz",
-      "hash": "1c6dp08xs72ajs0m9mwlnhw1qmvxq7sxqgylwms8zjdw528gyz65"
+      "url": "https://releases.nixos.org/nixos/unstable/nixos-24.11pre688563.bc947f541ae5/nixexprs.tar.xz",
+      "hash": "1jsaxwi128fiach3dj8rdj5agqivsr4sidb8lmdnl7g07fl9x0kj"
     }
   },
   "version": 3

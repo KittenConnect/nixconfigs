@@ -9,12 +9,12 @@
   pkgs,
   ...
 }:
-
 {
   imports = [
     # Include the results of the hardware scan.
+    ../default.nix
     ./hardware-configuration.nix
-    ../.
+    ./network-configuration.nix
     ./packages.nix
   ];
 
@@ -27,6 +27,13 @@
     targetHost = null;
   };
 
+
+  # system.includeBuildDependencies = true;
+  # system.extraDependencies = [
+  #   (../../..)
+  # ];
+  # environment.etc."kittenconfig".source = ../../..;
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -36,9 +43,6 @@
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
-  networking.networkmanager.enable = true;
 
   # Set your time zone.
   time.timeZone = "Europe/Paris";
@@ -96,12 +100,17 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+  environment.variables = {
+    EDITOR = "vim";
+  };
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.toinux = {
     isNormalUser = true;
     description = "toinux";
     extraGroups = [
       "networkmanager"
+      "docker"
       "wheel"
     ];
     packages = with pkgs; [
@@ -113,6 +122,11 @@
   services.displayManager.autoLogin = {
     enable = true;
     user = "toinux";
+  };
+
+  services.code-server = {
+    enable = true;
+    host = "[::]";
   };
 
   # Install firefox.
@@ -129,14 +143,23 @@
 
   # List services that you want to enable:
 
+  services.hydra = {
+    enable = true;
+    hydraURL = "http://localhost:3000";
+    notificationSender = "hydra@localhost";
+    buildMachinesFiles = [];
+    useSubstitutes = true;
+  };
+
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
+  virtualisation.docker.enable = true;
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 4444 ];
+  networking.firewall.allowedUDPPorts = [ ];
   # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  networking.firewall.enable = lib.mkDefault true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

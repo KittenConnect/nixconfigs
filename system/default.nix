@@ -41,6 +41,10 @@
   boot.supportedFilesystems = [ "nfs" ];
   services.rpcbind.enable = true; # NFS - Client
 
+  services.chrony = {
+    enable = true;
+  };
+
   programs.zsh.enable = true; # Install System-Wide -> Config is done with home-manager
 
   environment.shells = with pkgs; [ zsh ];

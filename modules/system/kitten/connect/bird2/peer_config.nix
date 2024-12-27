@@ -88,7 +88,7 @@ with peer;
 
         ipv6 {
           ${
-            optionalString (ipv6.imports != "" && ipv6.imports != [ ]) (
+            optionalString (ipv6.bgpImports != "" && ipv6.bgpImports != [ ]) (
               let
                 myType = withType {
                   string = x: "  import ${builtins.replaceStrings [ "%s" ] [ peerName ] x};";
@@ -106,11 +106,11 @@ with peer;
                   '';
                 };
               in
-              myType ipv6.imports
+              myType ipv6.bgpImports
             )
           }
           ${
-            optionalString (ipv6.exports != "" && ipv6.exports != [ ]) (
+            optionalString (ipv6.bgpExports != "" && ipv6.bgpExports != [ ]) (
               let
                 myType = withType {
                   string = x: "  export ${builtins.replaceStrings [ "%s" ] [ peerName ] x};";
@@ -129,7 +129,7 @@ with peer;
                   '';
                 };
               in
-              myType ipv6.exports
+              myType ipv6.bgpExports
             )
           }
           };

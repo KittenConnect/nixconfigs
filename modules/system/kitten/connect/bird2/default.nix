@@ -1,8 +1,9 @@
 args@{
   lib,
+  kittenLib,
   pkgs,
   config,
-  target,
+  name,
   ...
 }:
 let
@@ -28,9 +29,9 @@ let
     isType
     ;
 
-  withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
+  inherit (kittenLib.strings) indentedLines quotedString;
 
-  quoteString = x: ''"${x}"'';
+  withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
 
   # Main config is here
   cfg = config.kittenModules.bird;
@@ -118,13 +119,13 @@ let
 
         ipv4 = {
 
-          imports = mkOption {
+          bgpImports = mkOption {
             type = types.nullOr types.oneOf types.str types.lambda (types.listOf types.str);
             default = [ ];
             description = "List of IPv4 import rules.";
           };
 
-          exports = mkOption {
+          bgpExports = mkOption {
             type = types.listOf types.str;
             default = [ ];
             description = "List of IPv4 export rules.";
@@ -133,7 +134,7 @@ let
 
         ipv6 = {
 
-          imports = mkOption {
+          bgpImports = mkOption {
             type = types.nullOr (
               types.oneOf [
                 types.str
@@ -144,7 +145,7 @@ let
             description = "List of IPv6 import rules.";
           };
 
-          exports = mkOption {
+          bgpExports = mkOption {
             type = types.nullOr (
               types.oneOf [
                 types.str
@@ -196,6 +197,7 @@ in
   options = {
     kittenModules.bird = {
       enable = mkEnableOption "Kitten Bird2 module";
+      # defaultSnippet = (mkEnableOption "Kitten Bird2 default config") // { default = true; example = false; };
 
       peers = mkOption {
         default = { };
@@ -247,7 +249,7 @@ in
       birdConfig = cfg;
 
       birdFuncs = {
-        inherit quoteString;
+        inherit quotedString;
       };
     };
 
@@ -279,6 +281,8 @@ in
 
     # Service configuration
     services.bird2 = {
+      enable = cfg.enable;
+      
       preCheckConfig = mkIf (passwords != [ ]) ''
         echo "Bird configuration include these resources"
         grep include bird2.conf
@@ -338,7 +342,13 @@ in
             '';
           in
           mkOrder 50 ''
-            # Nix-OS Generated for ${target}
+            # Nix-OS Generated for ${name}
+
+	    protocol static STATIC6 {
+	        ipv6;
+	        ${indentedLines 4 (concatStringsSep "\n" (map (x: "route ${x};") cfg.static6))}
+	    }
+
             ${lib.concatMapStringsSep "\n" mkPeerConfig (builtins.attrNames peers)}
           ''
         )

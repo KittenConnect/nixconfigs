@@ -1,20 +1,21 @@
 let
   pkgConfig = {
-   allowUnfree = true;
+    allowUnfree = true;
   };
 
   sources = import ./npins;
-
+  
   pkgs = import sources.nixpkgs { config = pkgConfig; };
-
   inherit (pkgs) lib;
+
+  kittenLib = import ./lib { inherit pkgs lib; };
 
   hosts = import ./hosts ({ inherit pkgs lib; });
 
   defConf = {
     meta = {
       specialArgs = {
-        inherit sources pkgConfig;
+        inherit kittenLib sources pkgConfig;
       };
 
       nixpkgs = pkgs;
@@ -43,7 +44,8 @@ lib.foldl' (
   let
     configs = hosts.${profile};
   in
-  (lib.mapAttrs (
+  acc
+  // (lib.mapAttrs (
     n: value:
     (
       args@{
@@ -52,8 +54,18 @@ lib.foldl' (
         pkgs,
         ...
       }:
-      value (args // { inherit profile; }) // { networking.hostName = name; }
+      let
+        v = (value (args // { inherit profile; }));
+      in
+      v
+      // {
+        networking = (v.networking or { }) // {
+          hostName = name;
+        };
+        sops = (v.sops or { }) // {
+          defaultSopsFile = ./secrets/${name}.yaml;
+        };
+      }
     )
   ) configs)
-  // acc
 ) defConf (lib.attrNames hosts)

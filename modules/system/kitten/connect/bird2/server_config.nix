@@ -17,7 +17,7 @@ let
     concatMapStringsSep
     ;
 
-  inherit (birdFuncs) quoteString;
+  inherit (birdFuncs) quotedString;
 
   birdCfg = config.services.bird2;
   srvCfg = config.kittenModules.bird;
@@ -42,7 +42,7 @@ in
               let
                 sep = "|| proto =";
               in
-              optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
+              optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quotedString rrs)
             }
             ) then {
                 ${
@@ -73,7 +73,7 @@ in
               let
                 sep = "|| proto =";
               in
-              optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quoteString rrs)
+              optionalString (rrs != [ ]) sep + (concatMapStringsSep sep quotedString rrs)
             }
             ) then {
                          ${

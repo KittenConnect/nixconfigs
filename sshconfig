@@ -1,0 +1,25 @@
+Host ig1rtr
+	HostName 100.100.100.102
+	ProxyJump 78.40.121.76
+
+Host ig1nixrtr
+	HostName 100.100.100.108
+	ProxyJump 78.40.121.76
+
+Host ig1rr
+	HostName 2a13:79c0:ffff:feff:b00b:3965:113:92 
+	ProxyJump 78.40.121.76,100.100.100.102
+
+Host aureRouter
+	HostName 10.77.35.62
+	# ProxyJump root@78.40.121.76,root@100.100.100.102,root@[2a01:e0a:185:2f35:b0a4:b5ff:fe25:f4c0]
+
+Host aureBots
+	HostName 10.77.35.65
+	ProxyJump 78.40.121.76,100.100.100.102,[2a01:e0a:185:2f35:b0a4:b5ff:fe25:f4c0]
+
+Host romainRouter
+	HostName  2a01:e0a:3eb:7f0:be24:11ff:fe3d:a14f 
+
+Host ig1bots
+	ProxyJump 78.40.121.76

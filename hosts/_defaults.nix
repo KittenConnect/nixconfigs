@@ -5,12 +5,13 @@ args@{ pkgs, sources, ... }:
     ../modules/system
 
     (import "${sources.lix-module}/module.nix" { lix = sources.lix; })
+    "${sources.disko}/module.nix"
     "${sources.sops-nix}/modules/sops"
   ];
 
   time.timeZone = "Europe/Paris";
 
-  nixpkgs.overlays = (import ../overlays.nix args);
+  nixpkgs.overlays = (import ../_overlays.nix args).overlays;
 
   # By default, Colmena will replace unknown remote profile
   # (unknown means the profile isn't in the nix store on the
