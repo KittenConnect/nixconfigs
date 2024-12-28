@@ -22,10 +22,11 @@ let
   peers = builtins.attrNames (
     lib.filterAttrs (
       n: v:
-      lib.hasSuffix ".nix" n
+      n != "default.nix"
+      && lib.hasSuffix ".nix" n
       && !lib.hasPrefix "_" n
       && !lib.hasPrefix "." n
-      && !builtins.elem (removeSuffix ".nix" x) blacklist
+      && !builtins.elem (lib.removeSuffix ".nix" n) blacklist
     ) (builtins.readDir ./.)
   );
 in
