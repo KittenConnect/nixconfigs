@@ -18,7 +18,7 @@ let
     "/run/current-system/sw/bin/nixos-rebuild *"
   ];
 
-  noPasswdServices = [ "openvpn-*" ];
+  noPasswdServices = [ ];
 in
 {
   users.users.root = {
@@ -27,6 +27,7 @@ in
     openssh.authorizedKeys.keys = lib.mkDefault [
       # change this to your ssh key
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPxJpIrlaMMuw+zqOlZa35ehViBytyROvdf73poXTlVz"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINC+U2GVzJm2vPdmeSwiImGuZ82prwMybkjmrfLdOsWu"
     ];
   };
 
