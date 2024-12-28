@@ -5,9 +5,12 @@ let
     attrNames
     concatStringsSep
     length
+    elem
     elemAt
+    foldl'
     ;
   flatten = list: builtins.foldl' (acc: v: acc ++ v) [ ] list;
+  unique = foldl' (acc: e: if elem e acc then acc else acc ++ [ e ]) [ ];
   getPath = v: (builtins.filter builtins.isString (builtins.split "\\." v));
   getValue =
     v: if nixActions.attrSuffix != "" then attrByPath (getPath nixActions.attrSuffix) v else v;
@@ -57,14 +60,14 @@ let
     attrSuffix = "nixos-system";
 
     checks = {
-      "x86_64-linux" = mapAttrs (n: v: getValue v) workflows;
+      "x86_64-linux" = (mapAttrs (n: v: getValue v) workflows);
     };
   };
 in
 {
   # inherit (nixActions) checks;
 
-  include = flatten (
+  include = /* unique (map (n: builtins.toString workflows.${n}.nix-package) (attrNames workflows)) ++ */ flatten (
     attrValues (
       mapAttrs (
         system: pkgs:
