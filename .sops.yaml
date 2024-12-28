@@ -92,7 +92,7 @@ creation_rules:
     mac_only_encrypted: true
 
   - path_regex: secrets/romain-home-kitrtr([_/][^/]*)?\.(yaml|json|env|ini)$
-    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    encrypted_regex: ^[^_]
     key_groups:
       - age:
           - *router_romain_home
