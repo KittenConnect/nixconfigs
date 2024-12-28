@@ -1,15 +1,4 @@
-# {
-#   clients = import ./clients { };
-#   miscservers = import ./miscservers { };
-
-#   homerouters = import ./homerouters { };
-#   routers = import ./routers { };
-#   routereflectors = import ./routereflectors { };
-
-#   stonkmembers = import ./stonkmembers { };
-# }
-
-args@{ lib, ... }:
+{ lib, ... }:
 let
   blacklist = [
 
@@ -25,4 +14,12 @@ let
 
   folders = builtins.attrNames (lib.filterAttrs filterFunc (builtins.readDir ./.));
 in
-lib.genAttrs folders (folder: (import (./. + "/${folder}") (args // { })))
+lib.genAttrs folders (
+  folder:
+  (
+    let
+      configs = builtins.attrNames (lib.filterAttrs filterFunc (builtins.readDir (./. + "/${folder}")));
+    in
+    lib.genAttrs configs (confName: (import (./. + "/${folder}/${confName}")))
+  )
+)
