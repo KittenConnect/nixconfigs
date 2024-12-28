@@ -13,7 +13,7 @@
   networking.firewall = {
     enable = lib.mkDefault false; # TODO: Enable IT
 
-    allowedTCPPorts = [
+    allowedTCPPorts = lib.mkDefault [
       22
       # 80
       # 443
