@@ -1,8 +1,8 @@
 { ... }:
 let
-  defaultPeers = import ../../_peers { };
+  profilePeers = import ../../_peers { };
 in
-defaultPeers
+profilePeers
 // {
 
   # Transit
