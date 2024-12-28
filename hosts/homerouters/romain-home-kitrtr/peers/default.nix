@@ -1,6 +1,9 @@
-{ ... }:
+x@{ ... }:
 let
-  defaultPeers = import ../../_peers { };
+  args = x // {
+
+  };
+  defaultPeers = import ../../_peers args;
 in
 defaultPeers
 // {
@@ -10,7 +13,7 @@ defaultPeers
   # TRS_virtua6_RS02 = import ./TRS-virtua6-RS02.nix { };
 
   # # Internal Tunnels
-  KIT_IG1_RTR = import ./KIT-IG1-RTR.nix { };
+  KIT_IG1_RTR = import ./KIT-IG1-RTR.nix args;
   # virtuaNix_PAR = import ./KIT-VIRTUA-EDGE.nix { };
   # vultrNix_PAR = import ./KIT-VULTR-EDGE.nix { };
   # # LGC_virtua_PAR = import ./KIT-VIRTUA-EDGE.legacy.nix { };
