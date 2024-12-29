@@ -4,7 +4,7 @@ args@{ pkgs, sources, ... }:
     ../system
     ../modules/system
 
-    (import "${sources.lix-module}/module.nix" { lix = sources.lix; })
+    # (import "${sources.lix-module}/module.nix" { lix = sources.lix; })
     "${sources.disko}/module.nix"
     "${sources.sops-nix}/modules/sops"
   ];
