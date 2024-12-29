@@ -5,6 +5,7 @@
 args@{
   config,
   lib,
+  kittenLib,
   pkgs,
   ...
 }:
@@ -14,7 +15,7 @@ let
     bootdisk = "/dev/vda";
   };
 
-  peers = (import ./peers (args // { }));
+  peers = import ./peers args;
 
   wgPeers = (
     lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
