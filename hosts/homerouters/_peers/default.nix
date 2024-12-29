@@ -1,5 +1,8 @@
 { ... }:
+let
+  globalPeers = import ../../_peers {};
+in
 {
   # Internal RR
-  IG1_RR91 = import ./KIT-IG1-RR91.nix { };
+  inherit (globalPeers) IG1_RR91;
 }
