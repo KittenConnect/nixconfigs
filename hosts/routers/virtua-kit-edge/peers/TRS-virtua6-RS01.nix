@@ -8,8 +8,8 @@
   passwordRef = "virtua";
 
   ipv6 = {
-    imports = null;
-    exports = [
+    bgpImports = null;
+    bgpExports = [
       "2a13:79c0:ff00::/40" # Prod /40
 
       # "2a12:dd47:9330::/44"
