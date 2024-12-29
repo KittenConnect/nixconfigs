@@ -1,7 +1,7 @@
 { lib, ... }:
 let
   blacklist = [
-
+    "stonkmembers"
   ];
 
   filterFunc = (
