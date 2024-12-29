@@ -36,7 +36,7 @@ in
 
   kittenModules = {
     disko = {
-      enable = true;
+      enable = false;
       profile = diskoProfile;
 
       ${diskoProfile} = diskoConfig;
