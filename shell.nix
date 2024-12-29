@@ -1,5 +1,5 @@
 {
-  pkgs ? import <nixpkgs> { },
+  pkgs ? import (import ./npins).nixpkgs { },
 }:
 pkgs.mkShell {
   # nativeBuildInputs is usually what you want -- tools you need to run
@@ -10,6 +10,9 @@ pkgs.mkShell {
 
   nativeBuildInputs = with pkgs; [
     colmena
+    act
+    # nixel
+    nixfmt-rfc-style
     npins
   ];
 }
