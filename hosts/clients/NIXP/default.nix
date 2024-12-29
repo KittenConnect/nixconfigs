@@ -9,6 +9,13 @@
   pkgs,
   ...
 }:
+let
+  diskoProfile = "simple";
+  diskoConfig = {
+    bootdisk = "/dev/vda";
+    # crypted = true;
+  };
+in
 {
   imports = [
     # Include the results of the hardware scan.
@@ -27,12 +34,14 @@
     targetHost = null;
   };
 
+  kittenModules = {
+    disko = {
+      enable = true;
+      profile = diskoProfile;
 
-  # system.includeBuildDependencies = true;
-  # system.extraDependencies = [
-  #   (../../..)
-  # ];
-  # environment.etc."kittenconfig".source = ../../..;
+      ${diskoProfile} = diskoConfig;
+    };
+  };
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -147,7 +156,7 @@
     enable = true;
     hydraURL = "http://localhost:3000";
     notificationSender = "hydra@localhost";
-    buildMachinesFiles = [];
+    buildMachinesFiles = [ ];
     useSubstitutes = true;
   };
 
