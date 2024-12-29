@@ -65,7 +65,7 @@ in
             let
               lvmRootPV = {
                 type = "lvm_pv";
-                vg = cfg.lvm.vg;
+                vg = profileConf.lvm.vg;
               };
             in
             { # Common setup (/boot + EFI)
