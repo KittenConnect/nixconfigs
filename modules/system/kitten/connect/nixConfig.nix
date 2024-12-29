@@ -76,6 +76,8 @@ in
         auto-optimise-store = true;
       };
 
+      package = pkgs.lix;
+
       gc = lib.mkIf (cfg.autoGc) {
         dates = "daily";
         automatic = lib.mkDefault true;
