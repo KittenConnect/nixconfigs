@@ -25,7 +25,7 @@ in
 // (lib.mapAttrs' (
   file: _:
   let
-    v = import (./. + "/${file}") args;
+    v = import (host + "/${file}") args;
     name = v._name or sanitize file;
     value = lib.removeAttrs v [ "_name" ];
   in
