@@ -20,7 +20,6 @@
 
     # VPNs
     ./openvpn.nix
-    ./wireguard.nix
 
     # Kernel / Bootloader
     # ./serial-com.nix
