@@ -119,7 +119,7 @@ in
 
       # LVM settings
       lvm_vg = {
-        "${cfg.lvm.vg}" = {
+        "${profileConf.lvm.vg}" = {
           type = "lvm_vg";
           lvs = {
 
