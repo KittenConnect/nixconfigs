@@ -7,6 +7,7 @@
   pkgs,
   targetConfig,
   birdConfig,
+  wgPeers,
   ...
 }:
 let
@@ -21,13 +22,15 @@ let
         "2a13:79c0:ffff:fefe::/64"
         "2a13:79c0:ffff:feff:b00b::/80"
       ];
+  # wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
 
   transitIFACEs =
     [ ]
-    ++ lib.optionals (birdConfig ? transitInterfaces) birdConfig.transitInterfaces
-    ++ lib.optional (birdConfig ? transitInterface) birdConfig.transitInterface;
-
-  wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
+    ++ lib.optionals (birdConfig.transitInterfaces != [ ]) birdConfig.transitInterfaces;
+  kittenIFACEs = [ ];
+  # (
+  #   (attrNames wgPeers) ++ lib.optionals (birdConfig.allowedInterfaces != []) birdConfig.allowedInterfaces
+  # );
 
   inherit (lib)
     mkAfter
@@ -39,7 +42,6 @@ let
     optional
     ;
 in
-
 {
 
   config = {
@@ -67,12 +69,20 @@ in
         let
           quoteString = x: ''"${x}"'';
 
-          defines = ''
-            define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }
-            define transitNETs = { ${concatStringsSep ", " transitedNetworks} }
-
-            define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }
-          '';
+          defines = lib.concatStringsSep "\n" ([
+            (optionalString (transitIFACEs != [ ])
+              "define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }"
+            )
+            (optionalString (
+              transitedNetworks != [ ]
+            ) "define transitNETs = { ${concatStringsSep ", " transitedNetworks} }")
+            (optionalString (wgPeers != { })
+              "define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }"
+            )
+            (optionalString (kittenIFACEs != [ ])
+              "define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }"
+            )
+          ]);
 
           extraForwardRules = lib.concatStringsSep "\n" (
             [
