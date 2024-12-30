@@ -1,3 +1,5 @@
+#! /usr/bin/env nix-shell
+#! nix shell -f 
 {
   pkgs ? import (import ./npins).nixpkgs { },
 }:
