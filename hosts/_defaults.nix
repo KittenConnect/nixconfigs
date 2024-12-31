@@ -1,7 +1,7 @@
 args@{ pkgs, sources, ... }:
 {
   imports = [
-    ../system
+    ../modules/system/kitten/legacy
     ../modules/system
 
     # (import "${sources.lix-module}/module.nix" { lix = sources.lix; })
