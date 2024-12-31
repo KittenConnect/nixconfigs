@@ -11,7 +11,7 @@ args@{ pkgs, sources, ... }:
 
   time.timeZone = "Europe/Paris";
 
-  nixpkgs.overlays = (import ../_overlays.nix args).overlays;
+  nixpkgs.overlays = import ../overlays args;
 
   # By default, Colmena will replace unknown remote profile
   # (unknown means the profile isn't in the nix store on the
