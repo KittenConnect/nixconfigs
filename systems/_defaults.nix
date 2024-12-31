@@ -1,7 +1,7 @@
 args@{ pkgs, sources, ... }:
 {
   imports = [
-    ../modules/system/kitten/legacy
+    ../modules/system/kitten/legacy # TODO: Remove this
     ../modules/system
 
     # (import "${sources.lix-module}/module.nix" { lix = sources.lix; })
