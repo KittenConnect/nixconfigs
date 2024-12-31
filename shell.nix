@@ -1,7 +1,8 @@
 #! /usr/bin/env nix-shell
 #! nix shell -f 
 {
-  pkgs ? import (import ./npins).nixpkgs { },
+  pkgsConfig ? (import ./nixpkgs.config.nix),
+  pkgs ? import (import ./npins).nixpkgs pkgsConfig,
 }:
 pkgs.mkShell {
   # nativeBuildInputs is usually what you want -- tools you need to run
