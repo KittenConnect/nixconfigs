@@ -10,7 +10,7 @@ let
 
   kittenLib = import ./lib { inherit pkgs lib; };
 
-  hosts = import ./hosts ({ inherit pkgs lib; });
+  hosts = import ./systems { inherit pkgs lib; };
 
   defConf = {
     meta = {
@@ -35,7 +35,7 @@ let
       # machinesFile = ./machines.client-a;
     };
 
-    defaults = import ./hosts/_defaults.nix;
+    defaults = import ./systems/_defaults.nix;
 
   };
 in
