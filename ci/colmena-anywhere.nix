@@ -28,7 +28,7 @@ let
     {
       nix-package = config.nix.package;
       nixos-system = config.system.build.toplevel;
-      disko-script = config.system.build.diskoScriptNoDeps;
+      disko-script = config.system.build.diskoScriptNoDeps; # TODO: expose format&mount scripts 
     };
 in
 # mkOutput = (name: value: mkValue value.config);
