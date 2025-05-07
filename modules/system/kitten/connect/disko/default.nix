@@ -28,7 +28,7 @@ in
     enable = mkEnableOption "KittenConnect common disko module";
 
     profile = mkOption {
-      type = types.str;
+      type = types.nullOr types.str;
       default = "simple";
     };
   };

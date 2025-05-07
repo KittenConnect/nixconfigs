@@ -8,10 +8,11 @@
 let
   inherit (lib) optionalString;
   inherit (builtins) concatStringsSep toJSON;
+
+  fromTemplateString = t: optionalString (t != null) "from ${toString t}";
 in
 with peer;
 ''
-
 
   ${optionalString (bgpMED != null) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
   ${optionalString (template == "kittunderlay") ''
@@ -41,7 +42,7 @@ with peer;
   ''}
 
   # L: AS${toString localAS} | R: AS${toString peerAS}
-  protocol bgp ${toString peerName} ${optionalString (template != null) "from ${toString template}"} {
+  protocol bgp ${toString peerName} ${fromTemplateString template} {
     local ${
       optionalString (localIP != null) (toString localIP)
     } as ${toString localAS}; # localIP: "${toString localIP}"

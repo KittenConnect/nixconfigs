@@ -3,7 +3,7 @@ let
   pkgs = import sources.nixpkgs { };
   lib = pkgs.lib;
 
-  getNodes = (import ./_makeHive.nix (import ../hive.nix)).nodes;
+  hive = import ./hive.nix;
 
   isEligible =
     n: v:
@@ -18,7 +18,7 @@ let
       && config.system.build ? diskoScriptNoDeps
     );
 
-  nodes = lib.filterAttrs isEligible getNodes;
+  nodes = lib.filterAttrs isEligible hive.nodes;
 
   mkOutput =
     v:
@@ -26,6 +26,7 @@ let
       config = v.config;
     in
     {
+      nix-package = config.nix.package;
       nixos-system = config.system.build.toplevel;
       disko-script = config.system.build.diskoScriptNoDeps;
     };

@@ -27,6 +27,18 @@
       "url": "https://api.github.com/repos/nix-community/disko/tarball/v1.8.0",
       "hash": "06ifryv6rw25cz8zda4isczajdgrvcl3aqr145p8njxx5jya2d77"
     },
+    "homefiles": {
+      "type": "Git",
+      "repository": {
+        "type": "GitLab",
+        "repo_path": "toinux/homefiles",
+        "server": "https://gitlab.com/"
+      },
+      "branch": "main",
+      "revision": "3dba72a2a993876e3efe321a492deb3669a1f7fa",
+      "url": "https://gitlab.com/api/v4/projects/toinux%2Fhomefiles/repository/archive.tar.gz?sha=3dba72a2a993876e3efe321a492deb3669a1f7fa",
+      "hash": "1bpb4rk4cf4ig8qpr7cybfy2kwmim0wvpw22k3p93p2d988ddh8n"
+    },
     "lix": {
       "type": "Git",
       "repository": {

@@ -3,6 +3,8 @@
   imports = [
     ./kitten/connect/nixConfig.nix
     ./kitten/connect/packages.nix
+    ./kitten/connect/misc.nix
+    
     ./kitten/connect/firewall
     ./kitten/connect/disko
     ./kitten/connect/packages
@@ -11,5 +13,5 @@
     ./kitten/connect/loopback0.nix
     ./kitten/connect/bird2
   ];
-  # ../system
+  # ./kitten/legacy
 }

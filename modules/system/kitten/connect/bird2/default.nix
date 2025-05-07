@@ -82,8 +82,8 @@ let
         };
 
         localIP = mkOption {
-          type = types.str;
-          default = "";
+          type = types.nullOr types.str;
+          default = null;
           description = "Local IP address.";
         };
 
@@ -100,9 +100,9 @@ let
         };
 
         template = mkOption {
-          type = types.str;
-          default = "";
-          description = "Template string.";
+          type = types.nullOr types.str;
+          default = null;
+          description = "bird template to use";
         };
 
         password = mkOption {
