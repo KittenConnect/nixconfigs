@@ -57,7 +57,7 @@ jobs:
           mkdir -vp outputs
 
           nix build -L -f ci/build-all-nix.nix _allPackages -o result-allNix
-          readlink -f result-allNix/* | sort -u | tee nixPackages
+          readlink -f result-allNix/* | sort -u | xargs nix copy --to file://$PWD/nixPackages
       - uses: actions/upload-artifact@v4
         with:
           name: toplevel-all-nixPackages
