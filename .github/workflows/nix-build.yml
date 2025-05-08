@@ -47,7 +47,14 @@ jobs:
         run: |
           set -Eeu
           
+          mkdir -vp outputs
+
           nix build -L -f ci/build-all-nix.nix _allPackages -o result-allNix
+          readlink -f result-allNix/* | sort -u | tee nixPackages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toplevel-all-nixPackages
+          path: nixPackages
 
   nix-build:
     name: ${{ matrix.name }} (${{ matrix.system }})
@@ -62,4 +69,42 @@ jobs:
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
       - uses: DeterminateSystems/magic-nix-cache-action@v2
-      - run: nix build -L -f '${{ matrix.file }}' '${{ matrix.attr }}'
+      - run: |
+          set -Eeu
+          nix build -L --print-out-path -f '${{ matrix.file }}' '${{ matrix.attr }}' --print-out-path | tee 'toplevel-${{matrix.name}}'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: toplevel-${{matrix.name}}
+          path: toplevel-${{matrix.name}}
+
+  # Single deploy job since we're just deploying
+  nix-pages:
+    needs: nix-build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    # on: Runs on pushes targeting the default branch
+    #  push:
+    #   branches: ["main"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: outputs
+          pattern: toplevel-*
+          merge-multiple: true
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: 'outputs'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
