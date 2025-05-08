@@ -59,13 +59,13 @@ let
     attrPrefix = "";
     attrSuffix = "nixos-system";
 
-    checks = {
+    jobs = {
       "x86_64-linux" = (mapAttrs (n: v: getValue v) workflows);
     };
   };
 in
 {
-  # inherit (nixActions) checks;
+  # inherit (nixActions) jobs;
 
   include = /* unique (map (n: builtins.toString workflows.${n}.nix-package) (attrNames workflows)) ++ */ flatten (
     attrValues (
@@ -92,7 +92,7 @@ in
               "\"${attr}\""
           );
         }) (attrNames pkgs)
-      ) nixActions.checks
+      ) nixActions.jobs
     )
   );
 }
