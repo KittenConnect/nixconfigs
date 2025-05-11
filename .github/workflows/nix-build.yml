@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   nix-matrix:
+    name: Register all build jobs
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -41,6 +42,7 @@ jobs:
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   build-nix:
+    name: Build all nix versions
     runs-on: ubuntu-latest
     outputs:
       artifact: ${{steps.upload.outputs.artifact_id}}
@@ -59,7 +61,7 @@ jobs:
           mkdir -vp outputs
 
           nix build -L -f ci/build-all-nix.nix _allPackages -o result-allNix
-          readlink -f result-allNix/* | sort -u | xargs nix copy --to file://$PWD/nixPackages
+          readlink -f result-allNix/* | sort -u | xargs nix copy --to $PWD/nixPackages
       - uses: actions/upload-artifact@v4
         id: upload
         with:
@@ -67,14 +69,14 @@ jobs:
           path: nixPackages
 
   build-toplevel:
-    name: ${{ matrix.name }} (${{ matrix.system }})
+    name: "toplevel: ${{ matrix.name }} (${{ matrix.system }})"
     needs: [nix-matrix, build-nix]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
     outputs:
       artifact: ${{ steps.artifact-upload-step.outputs.artifact_id }}
-      toplevels: ${{ toJson(steps.nix-toplevel.outputs.toplevel) }}
+      toplevels: ${{ toJson(steps.nix-toplevel.outputs) }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -82,13 +84,19 @@ jobs:
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
 
+      # - name: Download Nix versions
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: nixVersions
+      #     pattern: toplevel-all-nixPackages
+
       - name: Nix build ${{matrix.name}}
         id: nix-toplevel
         run: |
           set -Eeu
           while IFS= read -r storePath <&3; do
             nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
-            echo "toplevel_${{matrix.attr}}=$storePath" | tee -a "$GITHUB_OUTPUT" 
+            echo "toplevel.${{matrix.attr}}=$storePath" | tee -a "$GITHUB_OUTPUT" 
           done 3< <(nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | tee 'storePath-${{ matrix.name }}')
 
       - uses: actions/upload-artifact@v4
