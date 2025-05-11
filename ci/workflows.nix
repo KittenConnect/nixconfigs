@@ -27,7 +27,7 @@ let
   onlyWanted =
     jobs:
     let
-      withoutUnwanted = filterAttrs (n: v: !builtins.elem n withoutJobs) jobs;
+      withoutUnwanted = filterAttrs (n: v: !builtins.elem n withoutJobs);
       getJobs = if withoutJobs == null then jobs else withoutUnwanted jobs;
     in
     if onlyJobs == null then getJobs else filterAttrs (n: v: builtins.elem n onlyJobs) getJobs;
