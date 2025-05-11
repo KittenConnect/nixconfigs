@@ -102,9 +102,9 @@ jobs:
   # Single deploy job since we're just deploying
   nix-pages:
     needs: nix-build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # environment:
+    #   name: github-pages
+    #   url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     # if: github.ref == 'refs/heads/main'
     # on: Runs on pushes targeting the default branch
@@ -113,8 +113,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+      # - name: Setup Pages
+      #   uses: actions/configure-pages@v5
       # - name: Download All Artifacts
       #   uses: actions/download-artifact@v4
       #   with:
@@ -130,6 +130,6 @@ jobs:
         with:
           # Upload entire repository
           path: 'outputs'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # - name: Deploy to GitHub Pages
+      #   id: deployment
+      #   uses: actions/deploy-pages@v4
