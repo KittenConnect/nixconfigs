@@ -22,7 +22,7 @@ permissions:
 
 
 jobs:
-  nix-init:
+  nix-matrix:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -40,7 +40,7 @@ jobs:
           matrix="$(nix eval --json -f ./ci/workflows.nix)"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  nix-prepare:
+  build-nix:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,15 +63,15 @@ jobs:
           name: toplevel-all-nixPackages
           path: nixPackages
 
-  nix-build:
+  build-toplevel:
     name: ${{ matrix.name }} (${{ matrix.system }})
-    needs: [nix-init, nix-prepare]
+    needs: [nix-matrix, build-nix]
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{fromJSON(needs.nix-init.outputs.matrix)}}
+      matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
     outputs:
       artifact: ${{ steps.artifact-upload-step.outputs.artifact_id }}
-      toplevel: ${{ steps.artifact-upload-step.outputs.toplevel }}
+      toplevel: ${{ steps.nix-toplevel.outputs.toplevel }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -79,7 +79,9 @@ jobs:
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
 
-      - run: |
+      - name: Nix build ${{matrix.name}}
+        id: nix-toplevel
+        run: |
           set -Eeu
           while IFS= read -r storePath <&3; do
             nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
@@ -101,7 +103,7 @@ jobs:
           
   # Single deploy job since we're just deploying
   nix-pages:
-    needs: nix-build
+    needs: build-toplevel
     # environment:
     #   name: github-pages
     #   url: ${{ steps.deployment.outputs.page_url }}
@@ -123,7 +125,7 @@ jobs:
       #     merge-multiple: true
       - name: Deploy artifact
         env:
-          TOPLEVELS: ${{ toJson(needs.nix-build.outputs.toplevel) }}
+          TOPLEVELS: ${{ toJson(needs.build-toplevel.outputs.toplevel) }}
         run: echo "Deploying artifact from $TOPLEVELS"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
