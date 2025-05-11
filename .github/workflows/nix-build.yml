@@ -58,7 +58,6 @@ jobs:
         run: |
           set -Eeu
           
-          # mkdir -vp nixPackages
           nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages | xargs nix copy --no-check-sigs --to '$PWD/nixPackages&trusted=true'
       - uses: actions/upload-artifact@v4
         id: upload
