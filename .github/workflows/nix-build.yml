@@ -69,6 +69,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix: ${{fromJSON(needs.nix-init.outputs.matrix)}}
+    outputs:
+      toplevel: ${{ steps.artifact-upload-step.outputs }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -81,6 +83,7 @@ jobs:
           nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | xargs nix copy --to file://$PWD/'toplevel-${{matrix.name}}' 
 
       - uses: actions/upload-artifact@v4
+        id: artifact-upload-step
         with:
           name: toplevel-${{matrix.name}}
           path: toplevel-${{matrix.name}}
@@ -107,6 +110,8 @@ jobs:
           path: outputs
           pattern: toplevel-*
           merge-multiple: true
+      - name: Deploy artifact
+        run: echo "Deploying artifact from ${{ needs.nix-build.outputs.toplevel }}"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
