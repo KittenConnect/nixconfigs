@@ -32,7 +32,7 @@ jobs:
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+        # 
       - id: set-matrix
         name: Generate Nix Matrix
         run: |
@@ -48,7 +48,7 @@ jobs:
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      
       - id: build-all-nix
         name: Build Nix packages
         run: |
@@ -75,7 +75,7 @@ jobs:
         # with:
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
+
       - run: |
           set -Eeu
           nix build -L --print-out-path -f '${{ matrix.file }}' '${{ matrix.attr }}' --print-out-path | tee 'toplevel-${{matrix.name}}'
