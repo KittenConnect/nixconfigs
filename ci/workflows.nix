@@ -22,8 +22,15 @@ let
   onlyJobs = # nullOr
     null; # [ "" ];
 
+  withoutJobs = [ "laptaupe" ]; # nullOr
+
   onlyWanted =
-    jobs: if onlyJobs == null then jobs else filterAttrs (n: v: builtins.elem n onlyJobs) jobs;
+    jobs:
+    let
+      withoutUnwanted = filterAttrs (n: v: !builtins.elem n withoutJobs) jobs;
+      getJobs = if withoutJobs == null then jobs else withoutUnwanted jobs;
+    in
+    if onlyJobs == null then getJobs else filterAttrs (n: v: builtins.elem n onlyJobs) getJobs;
 
   flatten = list: builtins.foldl' (acc: v: acc ++ v) [ ] list;
   unique = foldl' (acc: e: if elem e acc then acc else acc ++ [ e ]) [ ];
