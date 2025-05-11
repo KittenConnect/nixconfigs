@@ -1,2 +1,5 @@
 # nixconfigs
-Big pile of shit containg a bunch of Nix-Related stuff
+
+[![Nix build](https://github.com/KittenConnect/nixconfigs/actions/workflows/nix-build.yml/badge.svg)](https://github.com/KittenConnect/nixconfigs/actions/workflows/nix-build.yml)
+
+NixOS-based machines configurations inside our infrastructure
