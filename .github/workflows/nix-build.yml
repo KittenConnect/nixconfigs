@@ -125,7 +125,7 @@ jobs:
       #     merge-multiple: true
       - name: Deploy artifact
         env:
-          TOPLEVELS: ${{ toJson(needs.build-toplevel.outputs.toplevel) }}
+          TOPLEVELS: ${{ toJson(needs.build-toplevel.outputs) }}
         run: echo "Deploying artifact from $TOPLEVELS"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
