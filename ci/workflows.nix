@@ -22,7 +22,7 @@ let
   onlyJobs = # nullOr
     null; # [ "" ];
 
-  withoutJobs = [ "laptaupe" ]; # nullOr
+  withoutJobs = [ "laptaupe" "NIXP" ]; # nullOr
 
   onlyWanted =
     jobs:
