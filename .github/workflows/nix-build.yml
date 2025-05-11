@@ -111,7 +111,9 @@ jobs:
           pattern: toplevel-*
           merge-multiple: true
       - name: Deploy artifact
-        run: echo "Deploying artifact from ${{ needs.nix-build.outputs.toplevel }}"
+        run: echo "Deploying artifact from $TOPLEVELS"
+        env:
+          TOPLEVELS: ${{ needs.nix-build.outputs.toplevel }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
