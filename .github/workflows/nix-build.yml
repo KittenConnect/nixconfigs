@@ -70,7 +70,7 @@ jobs:
     strategy:
       matrix: ${{fromJSON(needs.nix-init.outputs.matrix)}}
     outputs:
-      toplevel: ${{ steps.artifact-upload-step.outputs }}
+      toplevel: ${{ steps.artifact-upload-step.outputs.artifact_id }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
