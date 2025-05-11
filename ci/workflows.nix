@@ -20,8 +20,7 @@ let
     );
 
   onlyJobs = # nullOr
-    # null;
-  [ "iguane-kit-rtr" ];
+    null; # [ "" ];
 
   onlyWanted =
     jobs: if onlyJobs == null then jobs else filterAttrs (n: v: builtins.elem n onlyJobs) jobs;

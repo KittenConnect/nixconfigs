@@ -42,6 +42,8 @@ jobs:
 
   build-nix:
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{steps.upload.outputs.artifact_id}}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -59,6 +61,7 @@ jobs:
           nix build -L -f ci/build-all-nix.nix _allPackages -o result-allNix
           readlink -f result-allNix/* | sort -u | xargs nix copy --to file://$PWD/nixPackages
       - uses: actions/upload-artifact@v4
+        id: upload
         with:
           name: toplevel-all-nixPackages
           path: nixPackages
