@@ -57,7 +57,7 @@ jobs:
           mkdir -vp outputs
 
           nix build -L -f ci/build-all-nix.nix _allPackages -o result-allNix
-          readlink -f result-allNix/* | sort -u | tee nixPackages
+          readlink -f result-allNix/* | sort -u | xargs nix copy --to file://$PWD/nixPackages
       - uses: actions/upload-artifact@v4
         with:
           name: toplevel-all-nixPackages
@@ -69,6 +69,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix: ${{fromJSON(needs.nix-init.outputs.matrix)}}
+    outputs:
+      toplevel: ${{ steps.artifact-upload-step.outputs.artifact_id }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -78,9 +80,10 @@ jobs:
 
       - run: |
           set -Eeu
-          nix build -L --print-out-path -f '${{ matrix.file }}' '${{ matrix.attr }}' --print-out-path | tee 'toplevel-${{matrix.name}}'
+          nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | xargs nix copy --to file://$PWD/'toplevel-${{matrix.name}}' 
 
       - uses: actions/upload-artifact@v4
+        id: artifact-upload-step
         with:
           name: toplevel-${{matrix.name}}
           path: toplevel-${{matrix.name}}
@@ -101,12 +104,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: outputs
-          pattern: toplevel-*
-          merge-multiple: true
+      # - name: Download All Artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: outputs
+      #     pattern: toplevel-*
+      #     merge-multiple: true
+      - name: Deploy artifact
+        run: echo "Deploying artifact from $TOPLEVELS"
+        env:
+          TOPLEVELS: ${{ needs.nix-build.outputs.toplevel }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
