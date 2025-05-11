@@ -81,7 +81,7 @@ jobs:
 
       - run: |
           set -Eeu
-          while IFS= read -r storePath; do
+          while IFS= read -r storePath <&3; do
             nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
             echo "toplevel=$storePath" >> "$GITHUB_OUTPUT" 
           done 3< <(nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | tee 'storePath-${{ matrix.name }}')
@@ -122,9 +122,9 @@ jobs:
       #     pattern: toplevel-*
       #     merge-multiple: true
       - name: Deploy artifact
-        run: echo "Deploying artifact from $TOPLEVELS"
         env:
-          TOPLEVELS: ${{ needs.nix-build.outputs.toplevel }}
+          TOPLEVELS: ${{ toJson(needs.nix-build.outputs.toplevel) }}
+        run: echo "Deploying artifact from $TOPLEVELS"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
