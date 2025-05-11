@@ -9,6 +9,23 @@ let
     elemAt
     foldl'
     ;
+
+  filterAttrs =
+    f: as:
+    builtins.listToAttrs (
+      map (name: {
+        inherit name;
+        value = as.${name};
+      }) (builtins.filter (n: f n (as.${n})) (builtins.attrNames as))
+    );
+
+  onlyJobs = # nullOr
+    # null;
+  [ "iguane-kit-rtr" ];
+
+  onlyWanted =
+    jobs: if onlyJobs == null then jobs else filterAttrs (n: v: builtins.elem n onlyJobs) jobs;
+
   flatten = list: builtins.foldl' (acc: v: acc ++ v) [ ] list;
   unique = foldl' (acc: e: if elem e acc then acc else acc ++ [ e ]) [ ];
   getPath = v: (builtins.filter builtins.isString (builtins.split "\\." v));
@@ -60,39 +77,40 @@ let
     attrSuffix = "nixos-system";
 
     jobs = {
-      "x86_64-linux" = (mapAttrs (n: v: getValue v) workflows);
+      "x86_64-linux" = (mapAttrs (n: v: getValue v) (onlyWanted workflows));
     };
   };
 in
 {
   # inherit (nixActions) jobs;
 
-  include = /* unique (map (n: builtins.toString workflows.${n}.nix-package) (attrNames workflows)) ++ */ flatten (
-    attrValues (
-      mapAttrs (
-        system: pkgs:
-        builtins.map (attr: {
-          name = attr;
-          inherit system;
-          os =
-            let
-              os = nixActions.githubPlatforms.${system};
-            in
-            if builtins.typeOf os == "list" then os else [ os ];
-          file = nixActions.ciFile;
-          attr = (
-            if nixActions.attrPrefix != "" then
-              if nixActions.attrSuffix != "" then
-                "${nixActions.attrPrefix}.\"${attr}\".${nixActions.attrSuffix}"
+  include = # unique (map (n: builtins.toString workflows.${n}.nix-package) (attrNames workflows)) ++
+    flatten (
+      attrValues (
+        mapAttrs (
+          system: pkgs:
+          builtins.map (attr: {
+            name = attr;
+            inherit system;
+            os =
+              let
+                os = nixActions.githubPlatforms.${system};
+              in
+              if builtins.typeOf os == "list" then os else [ os ];
+            file = nixActions.ciFile;
+            attr = (
+              if nixActions.attrPrefix != "" then
+                if nixActions.attrSuffix != "" then
+                  "${nixActions.attrPrefix}.\"${attr}\".${nixActions.attrSuffix}"
+                else
+                  "${nixActions.attrPrefix}.\"${attr}\""
+              else if nixActions.attrSuffix != "" then
+                "\"${attr}\".${nixActions.attrSuffix}"
               else
-                "${nixActions.attrPrefix}.\"${attr}\""
-            else if nixActions.attrSuffix != "" then
-              "\"${attr}\".${nixActions.attrSuffix}"
-            else
-              "\"${attr}\""
-          );
-        }) (attrNames pkgs)
-      ) nixActions.jobs
-    )
-  );
+                "\"${attr}\""
+            );
+          }) (attrNames pkgs)
+        ) nixActions.jobs
+      )
+    );
 }
