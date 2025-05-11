@@ -70,7 +70,8 @@ jobs:
     strategy:
       matrix: ${{fromJSON(needs.nix-init.outputs.matrix)}}
     outputs:
-      toplevel: ${{ steps.artifact-upload-step.outputs.artifact_id }}
+      artifact: ${{ steps.artifact-upload-step.outputs.artifact_id }}
+      toplevel: ${{ steps.artifact-upload-step.outputs.toplevel }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -80,7 +81,10 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v2
       - run: |
           set -Eeu
-          nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | xargs nix copy --to file://$PWD/'toplevel-${{matrix.name}}' 
+          while IFS= read -r storePath; do
+            nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
+            echo "toplevel=$storePath" >> "$GITHUB_OUTPUT" 
+          done 3< <(nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | tee 'storePath-${{ matrix.name }}')
 
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
@@ -88,6 +92,13 @@ jobs:
           name: toplevel-${{matrix.name}}
           path: toplevel-${{matrix.name}}
 
+      # - uses: actions/upload-artifact@v4
+      #   id: artifact-upload-storePath
+      #   with:
+      #     name: storepath-${{matrix.name}}
+      #     path: storepath-${{matrix.name}}
+
+          
   # Single deploy job since we're just deploying
   nix-pages:
     needs: nix-build
@@ -95,7 +106,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     # on: Runs on pushes targeting the default branch
     #  push:
     #   branches: ["main"]
