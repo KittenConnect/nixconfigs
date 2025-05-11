@@ -73,7 +73,7 @@ jobs:
       matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
     outputs:
       artifact: ${{ steps.artifact-upload-step.outputs.artifact_id }}
-      toplevels: ${{ steps.nix-toplevel.outputs }}
+      toplevels: ${{ steps.nix-toplevel.outputs[format('toplevel-{0}', matrix.name)] }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
