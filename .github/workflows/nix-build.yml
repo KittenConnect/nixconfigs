@@ -60,7 +60,10 @@ jobs:
           
           while read -r OUT <&3; do
             nix copy --no-check-sigs --to "file://$PWD/nixPackages" "$OUT"
-            cp -v "$OUT" "$PWD/nixPackages/result"
+            mkdir -vp "$PWD/nixPackages/result"
+            for l in $(find "$OUT" -type l -maxdepth 1 -print); do
+              ln -sf $(readlink -f $l) "$PWD/nixPackages/result/$(basename $l)"
+            done 
           done 3< <(nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages)
       - uses: actions/upload-artifact@v4
         id: upload
