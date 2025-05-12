@@ -126,19 +126,19 @@ jobs:
   # Single deploy job since we're just deploying
   nix-pages:
     needs: build-toplevel
-    # environment:
-    #   name: github-pages
-    #   url: ${{ steps.deployment.outputs.page_url }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     # on: Runs on pushes targeting the default branch
     #  push:
     #   branches: ["main"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      # - name: Setup Pages
-      #   uses: actions/configure-pages@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
         
   
       - uses: cloudposse/github-action-matrix-outputs-read@v1
@@ -153,14 +153,18 @@ jobs:
       #     pattern: toplevel-*
       #     merge-multiple: true
       - name: Deploy artifact
-        env:
-          ARTIFACTS: ${{ toJson(fromJson(steps.read.outputs.result).artifact) }}
-        run: echo "Deploying artifact from $ARTIFACTS"
+        run: |
+          mkdir -vp outputs
+
+          while IFS= read -r key value <&3; do
+            echo "Deploying artifact from $key = $value"
+            echo "$value" > outputs/$key
+          done 3< <(jq -r '. | to_entries | .[] | "\(.key): \(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result).artifact) }}')
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
           path: 'outputs'
-      # - name: Deploy to GitHub Pages
-      #   id: deployment
-      #   uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
