@@ -22,7 +22,8 @@ permissions:
 
 
 jobs:
-  nix-init:
+  nix-matrix:
+    name: Register all build jobs
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -40,8 +41,11 @@ jobs:
           matrix="$(nix eval --json -f ./ci/workflows.nix)"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
-  nix-prepare:
+  build-nix:
+    name: Build all nix versions
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{steps.upload.outputs.artifact_id}}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -54,23 +58,25 @@ jobs:
         run: |
           set -Eeu
           
-          mkdir -vp outputs
-
-          nix build -L -f ci/build-all-nix.nix _allPackages -o result-allNix
-          readlink -f result-allNix/* | sort -u | xargs nix copy --to file://$PWD/nixPackages
+          while read -r OUT <&3; do
+            nix copy --no-check-sigs --to "file://$PWD/nixPackages" "$OUT"
+            mkdir -vp "$PWD/nixPackages/result"
+            for l in $(find "$OUT" -type l -maxdepth 1 -print); do
+              ln -sf $(readlink -f $l) "$PWD/nixPackages/result/$(basename $l)"
+            done 
+          done 3< <(nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages)
       - uses: actions/upload-artifact@v4
+        id: upload
         with:
           name: toplevel-all-nixPackages
           path: nixPackages
 
-  nix-build:
-    name: ${{ matrix.name }} (${{ matrix.system }})
-    needs: [nix-init, nix-prepare]
+  build-toplevel:
+    name: "nix: ${{ matrix.name }} (${{ matrix.system }})"
+    needs: [nix-matrix, build-nix]
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{fromJSON(needs.nix-init.outputs.matrix)}}
-    outputs:
-      toplevel: ${{ steps.artifact-upload-step.outputs.artifact_id }}
+      matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -78,9 +84,20 @@ jobs:
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
 
-      - run: |
+      # - name: Download Nix versions
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: nixVersions
+      #     pattern: toplevel-all-nixPackages
+
+      - name: Nix build ${{matrix.name}}
+        id: nix-toplevel
+        run: |
           set -Eeu
-          nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | xargs nix copy --to file://$PWD/'toplevel-${{matrix.name}}' 
+          while IFS= read -r storePath <&3; do
+            nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
+            echo "toplevel=$storePath" | tee -a "$GITHUB_OUTPUT" 
+          done 3< <(nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | tee 'storePath-${{ matrix.name }}')
 
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
@@ -88,9 +105,27 @@ jobs:
           name: toplevel-${{matrix.name}}
           path: toplevel-${{matrix.name}}
 
+      # - uses: actions/upload-artifact@v4
+      #   id: artifact-upload-storePath
+      #   with:
+      #     name: storepath-${{matrix.name}}
+      #     path: storepath-${{matrix.name}}
+
+       ## Write for matrix outputs workaround 
+      - uses: cloudposse/github-action-matrix-outputs-write@v1
+        id: out
+        with:
+          matrix-step-name: ${{ github.job }}
+          matrix-key: ${{ matrix.name }}
+          outputs: |
+            artifact: ${{ steps.artifact-upload-step.outputs.artifact-url }}
+            toplevel: ${{ steps.nix-toplevel.outputs.toplevel }}
+
+
+          
   # Single deploy job since we're just deploying
   nix-pages:
-    needs: nix-build
+    needs: build-toplevel
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -104,6 +139,13 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        
+  
+      - uses: cloudposse/github-action-matrix-outputs-read@v1
+        id: read
+        with:
+          matrix-step-name: build-toplevel
+
       # - name: Download All Artifacts
       #   uses: actions/download-artifact@v4
       #   with:
@@ -111,9 +153,13 @@ jobs:
       #     pattern: toplevel-*
       #     merge-multiple: true
       - name: Deploy artifact
-        run: echo "Deploying artifact from $TOPLEVELS"
-        env:
-          TOPLEVELS: ${{ needs.nix-build.outputs.toplevel }}
+        run: |
+          mkdir -vp outputs
+
+          while IFS= read -r key value <&3; do
+            echo "Deploying artifact from $key = $value"
+            echo "$value" > outputs/$key
+          done 3< <(jq -r '. | to_entries | .[] | "\(.key): \(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result).artifact) }}')
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
