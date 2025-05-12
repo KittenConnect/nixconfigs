@@ -156,10 +156,14 @@ jobs:
         run: |
           mkdir -vp outputs
 
-          while IFS= read -r key value <&3; do
+          while IFS= read -r line <&3; do
+            [[ -n "$line" ]] || continue
+            key=$(cut -d: -f1 <<< "$line")
+            value=$(cut -d: -f2- <<< "$line")
+            [[ -n "$key" ]] || [[ -n "$value" ]] || continue
             echo "Deploying artifact from $key = $value"
-            echo "$value" > outputs/$key
-          done 3< <(jq -r '. | to_entries | .[] | "\(.key): \(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result).artifact) }}')
+            echo "$value" > "outputs/$key"
+          done 3< <(jq -r '. | to_entries | .[] | "\(.key):\(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result).artifact) }}')
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
