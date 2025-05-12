@@ -118,7 +118,7 @@ jobs:
           matrix-step-name: ${{ github.job }}
           matrix-key: ${{ matrix.attr }}
           outputs: |-
-            artifact: ${{ steps.artifact-upload-step.outputs.artifact_id }}
+            artifact: ${{ toJson(steps.artifact-upload-step.outputs) }}
             toplevel: ${{ steps.nix-toplevel.outputs.toplevel }}
 
 
