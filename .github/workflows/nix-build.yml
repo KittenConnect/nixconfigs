@@ -58,7 +58,10 @@ jobs:
         run: |
           set -Eeu
           
-          nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages | xargs nix copy --no-check-sigs --to "$PWD/nixPackages"
+          while read -r OUT <&3; do
+            nix copy --no-check-sigs --to "file://$PWD/nixPackages" "$OUT"
+            cp -v "$OUT" "$PWD/nixPackages/result"
+          done 3< <(nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages)
       - uses: actions/upload-artifact@v4
         id: upload
         with:
@@ -66,7 +69,7 @@ jobs:
           path: nixPackages
 
   build-toplevel:
-    name: "toplevel: ${{ matrix.name }} (${{ matrix.system }})"
+    name: "nix: ${{ matrix.name }} (${{ matrix.system }})"
     needs: [nix-matrix, build-nix]
     runs-on: ${{ matrix.os }}
     strategy:
