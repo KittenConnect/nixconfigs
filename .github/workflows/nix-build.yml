@@ -77,9 +77,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
-    outputs:
-      artifact: ${{ steps.artifact-upload-step.outputs.artifact_id }}
-      toplevels: ${{ steps.nix-toplevel.outputs[format('toplevel-{0}', matrix.name)] }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
@@ -99,7 +96,7 @@ jobs:
           set -Eeu
           while IFS= read -r storePath <&3; do
             nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
-            echo "toplevel.${{matrix.attr}}=$storePath" | tee -a "$GITHUB_OUTPUT" 
+            echo "toplevel=$storePath" | tee -a "$GITHUB_OUTPUT" 
           done 3< <(nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | tee 'storePath-${{ matrix.name }}')
 
       - uses: actions/upload-artifact@v4
@@ -113,6 +110,17 @@ jobs:
       #   with:
       #     name: storepath-${{matrix.name}}
       #     path: storepath-${{matrix.name}}
+
+       ## Write for matrix outputs workaround 
+      - uses: cloudposse/github-action-matrix-outputs-write@v1
+        id: out
+        with:
+          matrix-step-name: ${{ github.job }}
+          matrix-key: ${{ matrix.attr }}
+          outputs: |-
+            artifact: ${{ steps.artifact-upload-step.outputs.artifact_id }}
+            toplevel: ${{ steps.nix-toplevel.outputs.toplevel }}
+
 
           
   # Single deploy job since we're just deploying
@@ -131,6 +139,13 @@ jobs:
         uses: actions/checkout@v4
       # - name: Setup Pages
       #   uses: actions/configure-pages@v5
+        
+  
+      - uses: cloudposse/github-action-matrix-outputs-read@v1
+        id: read
+        with:
+          matrix-step-name: build
+
       # - name: Download All Artifacts
       #   uses: actions/download-artifact@v4
       #   with:
@@ -139,8 +154,8 @@ jobs:
       #     merge-multiple: true
       - name: Deploy artifact
         env:
-          TOPLEVELS: ${{ toJson(needs.build-toplevel.outputs) }}
-        run: echo "Deploying artifact from $TOPLEVELS"
+          ARTIFACTS: ${{ toJson(fromJson(steps.read.outputs.result).artifact) }}
+        run: echo "Deploying artifact from $ARTIFACTS"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
