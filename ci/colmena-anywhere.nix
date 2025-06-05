@@ -1,7 +1,5 @@
 let
-  inherit ((import ../. {}).inputs) pkgs lib;
-
-  hive = import ./hive.nix;
+  inherit ((import ../. {}).inputs) pkgs lib hive;
 
   isEligible =
     n: v:
