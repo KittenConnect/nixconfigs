@@ -1,7 +1,5 @@
 let
-  sources = import ../npins;
-  pkgs = import sources.nixpkgs { };
-  lib = pkgs.lib;
+  inherit ((import ../. {}).inputs) pkgs lib;
 
   hive = import ./hive.nix;
 
