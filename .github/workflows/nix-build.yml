@@ -64,7 +64,7 @@ jobs:
             for l in $(find "$OUT" -type l -maxdepth 1 -print); do
               ln -sf $(readlink -f $l) "$PWD/nixPackages/result/$(basename $l)"
             done 
-          done 3< <(nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages)
+          done 3< <(nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages || exit $?)
       - uses: actions/upload-artifact@v4
         id: upload
         with:
@@ -97,7 +97,7 @@ jobs:
           while IFS= read -r storePath <&3; do
             nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
             echo "toplevel=$storePath" | tee -a "$GITHUB_OUTPUT" 
-          done 3< <(nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | tee 'storePath-${{ matrix.name }}')
+          done 3< <(nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' || exit $? | tee 'storePath-${{ matrix.name }}')
 
       - uses: actions/upload-artifact@v4
         id: artifact-upload-step
