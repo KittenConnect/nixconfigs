@@ -56,7 +56,7 @@ jobs:
       - id: build-all-nix
         name: Build Nix packages
         run: |
-          set -Eeu
+          set -Eeuo pipefail
           
           while read -r OUT <&3; do
             nix copy --no-check-sigs --to "file://$PWD/nixPackages" "$OUT"
