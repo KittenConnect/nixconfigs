@@ -1,21 +1,18 @@
 let
-  pkgConfig = {
-    allowUnfree = true;
-  };
-
-  sources = import ./npins;
-  
-  pkgs = import sources.nixpkgs { config = pkgConfig; };
-  inherit (pkgs) lib;
-
-  kittenLib = import ./lib { inherit pkgs lib; };
-
-  hosts = import ./systems { inherit pkgs lib; };
+  inherit ((import ./. {}).inputs)
+    sources
+    pkgs
+    lib
+    kittenLib
+    hosts
+    hostsDefaults
+    pkgsConfig
+    ;
 
   defConf = {
     meta = {
       specialArgs = {
-        inherit kittenLib sources pkgConfig;
+        inherit kittenLib sources pkgsConfig;
       };
 
       nixpkgs = pkgs;
@@ -35,8 +32,7 @@ let
       # machinesFile = ./machines.client-a;
     };
 
-    defaults = import ./systems/_defaults.nix;
-
+    defaults = hostsDefaults;
   };
 in
 lib.foldl' (
@@ -56,16 +52,21 @@ lib.foldl' (
       }:
       let
         v = (value (args // { inherit profile; }));
+
+        customConfig =
+          config:
+          config
+          // {
+            networking = (config.networking or { }) // {
+              hostName = name;
+            };
+
+            sops = (config.sops or { }) // {
+              defaultSopsFile = ./secrets/${name}.yaml;
+            };
+          };
       in
-      v
-      // {
-        networking = (v.networking or { }) // {
-          hostName = name;
-        };
-        sops = (v.sops or { }) // {
-          defaultSopsFile = ./secrets/${name}.yaml;
-        };
-      }
+      customConfig v
     )
   ) configs)
 ) defConf (lib.attrNames hosts)
