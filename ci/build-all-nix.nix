@@ -1,10 +1,6 @@
 let
-  sources = import ../npins;
+  inherit ((import ../. {}).inputs) pkgs lib hive;
 
-  pkgs = import sources.nixpkgs { };
-  inherit (pkgs) lib;
-
-  hive = import ./hive.nix;
   isEligible =
     n: v:
     let
