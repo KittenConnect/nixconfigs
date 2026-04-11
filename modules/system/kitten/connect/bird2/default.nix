@@ -120,7 +120,7 @@ let
         ipv4 = {
 
           bgpImports = mkOption {
-            type = types.nullOr types.oneOf types.str types.lambda (types.listOf types.str);
+            type = types.nullOr (types.oneOf [types.str (types.listOf types.str)]);
             default = [ ];
             description = "List of IPv4 import rules.";
           };
