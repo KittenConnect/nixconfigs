@@ -71,10 +71,10 @@ in rec {
   outputs =
     let
       inherit (inputs) usefullFunctions;
-      nixosConfigurations = inputs.hive.nodes;
 
-      byMachines = lib.mapAttrs (_: f: lib.mapAttrs f nixosConfigurations);
+      byMachines = lib.mapAttrs (_: f: lib.mapAttrs f inputs.hive.nodes);
     in {
+      nixosConfigurations = inputs.hive.nodes;
       packages =
         {
           inherit (pkgs) nixos-anywhere;

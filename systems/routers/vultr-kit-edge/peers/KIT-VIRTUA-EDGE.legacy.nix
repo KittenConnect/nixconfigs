@@ -24,27 +24,28 @@ in
   # 
   # }
   peerAS = kittenASN;
-  peerIP = "2a13:79c0:ffff:feff::113";
+  peerIP = "2a13:79c0:ffff:feff::10d";
   localAS = kittenASN;
 
   wireguard = {
-    # onIFACE = "test";
-    address = "2a13:79c0:ffff:feff::112";
-    port = 51802;
-    endpoint = "[2a05:f480:1c00:5c0:5400:4ff:fe12:b47d]:51867";
-    peerKey = "WYwm2mpTPQD5ZlKRI/l0GxJPUybN0cOyWxlTzNrZ7zY=";
+    # onIFACE = "enp1s0";
+    address = "2a13:79c0:ffff:feff::10c";
+    port = 51800;
+    # endpoint = "[2a07:8dc0:19:1cf::1]:51800";
+    # peerKey = "p200ujtoVhMNnbrdljxoHqAF7cbfRDRFTA+6ibGvIEg=";
+    peerKey = "rMTaMWJYlgTKJoE0PnVOo9SKHTppEfYK5KtWjBI9mC8=";
   };
   template = "kittunderlay";
   bgpMED = 6666;
   ipv6 = {
     #imports = null;
-    imports = x: "filter filter6_IN_BGP_${toString x}";
+    bgpImports = "filter filter6_IN_BGP_%s";
     #exports = [ "2a12:dd47:9330::/44" ];
 
     #exports = null;
   };
   ipv4 = {
-    imports = x: "filter filter4_IN_BGP_${toString x}";
+    bgpImports = "filter filter4_IN_BGP_%s";
     #exports = x: "filter6_IN_BGP_${toString x}";
   };
 }
