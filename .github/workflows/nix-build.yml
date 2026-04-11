@@ -158,11 +158,11 @@ jobs:
           ls -lah
           mkdir -vp outputs
 
-          jq -r '. as $output | .artifact | to_entries | .[] | "\(.key) \($root.toplevel) \(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result)) }}' \
+          jq -r '. as $output | .artifact | to_entries | .[] | "\(.key) \($output[$key].toplevel) \(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result)) }}' \
           | while read -r key toplevel value; do
             if [[ -z "$key" ]] || [[ -z "$value" ]] || [[ -z "$toplevel" ]]; then continue; fi
             echo "Deploying artifact $key with toplevel $toplevel from $value" >&2
-            mkdir outputs/$key
+            cp -rv toplevel-$key outputs/$key
             echo "$key $toplevel" >> "outputs/index.txt"
           done
       - name: Upload artifact
