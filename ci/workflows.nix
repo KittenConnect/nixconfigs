@@ -80,7 +80,7 @@ let
     ciFile = (./. + "/${nixActions.fileName}");
 
     attrPrefix = "";
-    attrSuffix = "nixos-system";
+    attrSuffix = "system";
 
     jobs = {
       "x86_64-linux" = (mapAttrs (n: v: getValue v) (onlyWanted workflows));
