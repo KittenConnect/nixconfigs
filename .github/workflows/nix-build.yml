@@ -162,8 +162,8 @@ jobs:
           | while read -r key toplevel value; do
             if [[ -z "$key" ]] || [[ -z "$value" ]] || [[ -z "$toplevel" ]]; then continue; fi
             echo "Deploying artifact $key with toplevel $toplevel from $value" >&2
-            echo "$toplevel" > "outputs/$key/toplevel"
-            # echo "$value" > "outputs/$key"
+            mkdir outputs/$key
+            echo "$key $toplevel" >> "outputs/index.txt
           done
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
