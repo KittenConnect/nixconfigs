@@ -72,7 +72,7 @@ jobs:
           path: nixPackages
 
   build-toplevel:
-    name: "nix: ${{ matrix.name }} (${{ matrix.system }})"
+    name: "nixOS: ${{ matrix.name }} (${{ matrix.system }})"
     needs: [nix-matrix, build-nix]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -95,7 +95,7 @@ jobs:
         run: |
           set -Eeuo pipefail
 
-          nix build --print-out-paths -vL -f '${{ matrix.file }}' '${{ matrix.attr }}' | tee 'storePath-${{ matrix.name }}' | while read -r storePath; do
+          nix build --print-out-paths -vL -f '${{ matrix.file }}' '${{ matrix.attr }}' | while read -r storePath; do
             nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
             echo "toplevel=$storePath" | tee -a "$GITHUB_OUTPUT"
           done
@@ -155,16 +155,16 @@ jobs:
       #     merge-multiple: true
       - name: Deploy artifact
         run: |
+          ls -lah
           mkdir -vp outputs
 
-          while IFS= read -r line <&3; do
-            [[ -n "$line" ]] || continue
-            key=$(cut -d: -f1 <<< "$line")
-            value=$(cut -d: -f2- <<< "$line")
-            [[ -n "$key" ]] || [[ -n "$value" ]] || continue
-            echo "Deploying artifact from $key = $value"
-            echo "$value" > "outputs/$key"
-          done 3< <(jq -r '. | to_entries | .[] | "\(.key):\(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result).artifact) }}')
+          jq -r '. as $output | .artifact | to_entries | .[] | "\(.key) \($root.toplevel) \(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result)) }}' \
+          | while read -r key toplevel value; do
+            if [[ -z "$key" ]] || [[ -z "$value" ]] || [[ -z "$toplevel" ]]; then continue; fi
+            echo "Deploying artifact $key with toplevel $toplevel from $value" >&2
+            echo "$toplevel" > "outputs/$key/toplevel"
+            # echo "$value" > "outputs/$key"
+          done
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
