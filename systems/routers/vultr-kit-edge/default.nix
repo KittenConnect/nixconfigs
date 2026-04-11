@@ -13,7 +13,7 @@ let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/vda";
-    swapSize = 1024;
+    # swapSize = 1024;
   };
 
   peers = import ./peers args;
