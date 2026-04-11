@@ -7,7 +7,7 @@ Host ig1nixrtr
 	ProxyJump 78.40.121.76
 
 Host ig1rr
-	HostName 2a13:79c0:ffff:feff:b00b:3965:113:92 
+	HostName 1010:cafe:ffff:feff:b00b:3965:113:92 
 	ProxyJump 78.40.121.76,100.100.100.102
 
 Host aureRouter
