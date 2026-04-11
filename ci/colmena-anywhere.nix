@@ -22,8 +22,8 @@ let
       config = v.config;
     in
     {
-      nix-package = config.nix.package;
-      nixos-system = config.system.build.toplevel;
+      nix = config.nix.package;
+      system = config.system.build.toplevel;
       disko-script = config.system.build.diskoScriptNoDeps; # TODO: expose format&mount scripts 
     };
 in

@@ -1,6 +1,6 @@
 args@{ lib, ... }:
 let
-  sanitize = s: builtins.replaceStrings ["-"] ["_"] (lib.removeSuffix ".nix" s);
+  sanitize = s: builtins.replaceStrings ["-" "."] ["_" "__"] (lib.removeSuffix ".nix" s);
 in {
   profile, # ../..,
   host, # ./.
@@ -15,8 +15,8 @@ let
     && lib.hasSuffix ".nix" n
     && !lib.hasPrefix "_" n
     && !lib.hasPrefix "." n
-    && !builtins.elem (lib.removeSuffix ".nix" n) blacklist
-    && !builtins.elem (sanitize n) blacklist
+    && !builtins.elem (lib.removeSuffix ".nix" n) (map (lib.removeSuffix ".nix") blacklist)
+    && !builtins.elem (sanitize n) (map sanitize blacklist)
     && !builtins.elem (host + "/${n}") (lib.attrValues manual)
   ) (builtins.readDir host);
 in
