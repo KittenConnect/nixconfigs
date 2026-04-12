@@ -157,13 +157,14 @@ jobs:
         run: |
           set -Eeuo pipefail
           ls -lah
-          mkdir -vp outputs
+          mkdir -vp outputs/cache
 
           jq -r '. as $root | .artifact | to_entries | .[] | "\(.key) \($root.toplevel[.key]) \(.value)"' <<< '${{ toJson(fromJson(steps.read.outputs.result)) }}' \
           | while read -r key toplevel value; do
             if [[ -z "$key" ]] || [[ -z "$value" ]] || [[ -z "$toplevel" ]]; then continue; fi
             echo "Deploying artifact $key with toplevel $toplevel from $value" >&2
             cp -rv toplevel-$key outputs/$key
+            nix copy --option extra-substituters ./toplevel-$key --to outputs/cache "$toplevel"
             echo "$key $toplevel" >> "outputs/index.txt"
           done
       - name: Upload artifact

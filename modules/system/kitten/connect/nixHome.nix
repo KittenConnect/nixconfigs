@@ -8,13 +8,14 @@
     };
 
     config = {
-#         users.users.root.shell = pkgs.zsh;
-        home-manager.users.root = {pkgs, lib, osConfig, ...}: {
-            home.stateVersion = lib.mkDefault osConfig.system.stateVersion;
-            imports = [../../../home];
+        users.users.root.shell = pkgs.zsh;
+        home-manager = {
+            backupFileExtension = "hm_bkp";
+
+            users.root = {pkgs, lib, osConfig, ...}: {
+                home.stateVersion = lib.mkDefault osConfig.system.stateVersion;
+                imports = [../../../home];
+            };
         };
-#         home-config.lib.mkHomeConfiguration "root" "/root" [
-#             ./_home/configuration.nix
-#         ];
     };
 }
