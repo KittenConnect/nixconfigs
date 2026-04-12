@@ -45,11 +45,6 @@
     enable = true;
   };
 
-  programs.zsh.enable = true; # Install System-Wide -> Config is done with home-manager
-
-  environment.shells = with pkgs; [ zsh ];
-  environment.pathsToLink = [ "/share/zsh" ]; # ZSH Completion
-
   # tmpFS on /tmp
   boot.tmp.useTmpfs = lib.mkDefault true;
 

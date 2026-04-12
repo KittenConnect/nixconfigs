@@ -1,4 +1,4 @@
-{lib,...}: {
+{lib, pkgs, config, ...}: let cfg = config.kittenModules.nixHome; in {
     imports = [
         ../../external/home-manager.nix
     ];
@@ -7,8 +7,13 @@
         enable = lib.mkEnableOption "use home-manager for root environment";
     };
 
-    config = {
+    config = lib.mkIf cfg.enable {
         users.users.root.shell = pkgs.zsh;
+        programs.zsh.enable = true; # Install System-Wide -> Config is done with home-manager
+
+        environment.shells = with pkgs; [ zsh ];
+        environment.pathsToLink = [ "/share/zsh" ]; # ZSH Completions
+
         home-manager = {
             backupFileExtension = "hm_bkp";
 
