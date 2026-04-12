@@ -124,6 +124,10 @@ in
 
         #   iifname ens19 oifname $wireguardIFACEs counter accept
         # '';
+        natRules = ''
+          oifname "${iface}" ip6 saddr 2a13:79c0:ffff:feff::/64 snat ip6 prefix to 2a12:5844:1311:feff::/64
+          oifname "${iface}" ip6 saddr 2a13:79c0:ffff:fefe::/64 snat ip6 prefix to 2a12:5844:1311:fefe::/64
+        '';
       };
     };
   };
