@@ -138,6 +138,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v30
       - name: Setup Pages
         uses: actions/configure-pages@v5
         
@@ -163,8 +164,7 @@ jobs:
           | while read -r key toplevel value; do
             if [[ -z "$key" ]] || [[ -z "$value" ]] || [[ -z "$toplevel" ]]; then continue; fi
             echo "Deploying artifact $key with toplevel $toplevel from $value" >&2
-            cp -rv toplevel-$key outputs/$key
-            nix copy --option extra-substituters ./toplevel-$key --to outputs/cache "$toplevel"
+            nix copy --option extra-substituters ./toplevel-$key --to file://$PWD/outputs/cache "$toplevel"
             echo "$key $toplevel" >> "outputs/index.txt"
           done
       - name: Upload artifact
