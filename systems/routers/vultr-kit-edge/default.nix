@@ -16,6 +16,8 @@ let
     # swapSize = 1024;
   };
 
+  iface = "enp1s0";
+
   peers = import ./peers args;
 
   wgPeers = (
@@ -27,7 +29,7 @@ in
 {
   imports = [
     ./hardware-configuration.nix
-    ./network-configuration.nix
+#     ./network-configuration.nix # included here because of its simplicity
 
     ../../../modules/system/kitten/connect/bird2/snippets/kittenCores.nix
   ];
@@ -42,6 +44,33 @@ in
   # Bootloader.
   boot.loader.grub.efiSupport = false;
   boot.loader.grub.enable = true;
+
+  # Networking
+
+
+  services.cloud-init = {
+    enable = true;
+    ext4.enable = true;
+    network.enable = true;
+    settings = {
+      datasource_list = [ "Vultr" ];
+      disable_root = false;
+      ssh_pwauth = 0;
+      updates = {
+        network = {
+          when = [
+            "boot"
+            "boot-legacy"
+            "boot-new-instance"
+            "hotplug"
+          ];
+        };
+      };
+    };
+  };
+
+  networking.useDHCP = false;
+  systemd.network.enable = true;
 
   kittenModules = {
     disko = {
@@ -61,13 +90,17 @@ in
       
       loopback6 = "2a13:79c0:ffff:fefe::b48d";
       
-    static6 = [
-      "2a13:79c0:ffff:fefe::b00b/128 unreachable" # Special Anycast "loopback" for default gateways
+      transitInterfaces = [ iface ];
+      static6 = [
+        "2a13:79c0:ffff:fefe::b00b/128 unreachable" # Special Anycast "loopback" for default gateways
 
-      #"2a13:79c0:ffff::/48 unreachable" # Networking stuff
-      #"2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
-      "2a13:79c0:ff00::/40 unreachable" # full range /40
-    ];
+        # "2a13:79c0:ffff::/48 unreachable" # Networking stuff
+        # "2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
+        # "2a13:79c0:ff00::/40 unreachable" # full range /40
+        "2a12:5844:1310::/44 unreachable" # New range /44
+      ] ++ lib.mapAttrsToList (n: v: ''${n} via "fe80::${v}%${iface}"'') {
+        "2001:19f0::/32" = "fc00:4ff:fe82:5c6e";
+      };
 
       peers = birdPeers;
     };
