@@ -167,7 +167,7 @@ jobs:
           | while read -r key toplevel value; do
             if [[ -z "$key" ]] || [[ -z "$value" ]] || [[ -z "$toplevel" ]]; then continue; fi
             echo "Deploying artifact $key with toplevel $toplevel from $value" >&2
-            nix copy --from "./toplevel-$key" "$toplevel"
+            nix copy --from "file://$PWD/toplevel-$key" "$toplevel"
             nix-store --query -R "$toplevel" | nix -v store sign -k ./sign.key --stdin
             nix copy --to file://$PWD/outputs/cache "$toplevel"
             echo "$key $toplevel" >> "outputs/index.txt"
