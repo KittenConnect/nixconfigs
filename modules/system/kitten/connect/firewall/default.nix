@@ -60,6 +60,11 @@ in
         type = types.lines;
         default = "";
       };
+
+      natRules = mkOption {
+        type = types.lines;
+        default = "";
+      };
     };
 
     profile = mkOption {
@@ -78,6 +83,16 @@ in
     };
     networking.nftables = {
       enable = true;
+
+      tables."nat" = {
+        family = "inet";
+        content = ''
+          chain srcnat {
+            type nat hook postrouting priority srcnat; policy accept;
+            ${indented 2 cfg.forward.natRules}
+          }
+        '';
+      };
 
       tables."nixos-fw".content = lib.mkIf (cfg.forward.enable) (
         mkAfter (
