@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  options,
   osConfig,
   ...
 }:
@@ -14,7 +15,7 @@ in
     enable = lib.mkEnableOption "KittenK3s common configuration" // { default = true; example = false; };
   };
 
-  config = lib.mkIf (kubeCfg.enable && kubeCfg.role == "server") {
+  config = lib.optionalAttrs (kubeCfg.enable && kubeCfg.role == "server" && options.home ? kubenv) {
     home.kubenv.enable = true;
     home.sessionVariables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
   };

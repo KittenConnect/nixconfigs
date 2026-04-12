@@ -11,6 +11,7 @@
 #         users.users.root.shell = pkgs.zsh;
         home-manager.users.root = {pkgs, lib, osConfig, ...}: {
             home = { inherit (osConfig.system) stateVersion; };
+            imports = [../../../home];
         };
 #         home-config.lib.mkHomeConfiguration "root" "/root" [
 #             ./_home/configuration.nix
