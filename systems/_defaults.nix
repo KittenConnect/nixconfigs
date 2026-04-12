@@ -3,10 +3,9 @@ args@{ pkgs, sources, ... }:
   imports = [
     ../modules/system/kitten/legacy # TODO: Remove this
     ../modules/system
+    ../modules/system/external
 
     # (import "${sources.lix-module}/module.nix" { lix = sources.lix; })
-    "${sources.disko}/module.nix"
-    "${sources.sops-nix}/modules/sops"
   ];
 
   time.timeZone = "Europe/Paris";

@@ -1,7 +1,7 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./kitten/connect/nixConfig.nix
+    ./kitten/connect/nixHome.nix
     ./kitten/connect/packages.nix
     ./kitten/connect/misc.nix
     
@@ -13,5 +13,4 @@
     ./kitten/connect/loopback0.nix
     ./kitten/connect/bird2
   ];
-  # ./kitten/legacy
 }
