@@ -3,21 +3,35 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.kittenModules.sysupgrade;
-in
-{
+in {
   options.kittenModules.sysupgrade = {
-    enable = lib.mkEnableOption "Kitten System Upgrade package" // {
+    enable =
+      lib.mkEnableOption "Kitten System Upgrade package"
+      // {
         default = true;
         example = false;
-    };
+      };
   };
 
   config = {
-    nixpkgs.overlays = [ (final: prev: { kitten-sysupgrade = pkgs.callPackage ./package.nix { }; }) ];
+    nixpkgs.overlays = [
+      (final: prev: {
+        kitten-sysupgrade = pkgs.writeShellApplication {
+          name = "kitten-sysupgrade";
 
-    environment.systemPackages = lib.mkIf (cfg.enable) (with pkgs; [ kitten-sysupgrade ]);
+          runtimeInputs = [
+            nix
+            curl
+            jq
+          ];
+
+          text = builtins.readFile ./script.sh;
+        };
+      })
+    ];
+
+    environment.systemPackages = lib.mkIf (cfg.enable) (with pkgs; [kitten-sysupgrade]);
   };
 }
