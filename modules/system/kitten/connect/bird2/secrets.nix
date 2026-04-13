@@ -8,30 +8,15 @@ args @ {
 }: let
   inherit
     (lib)
-    optional
-    optionals
-    optionalString
     mkOrder
-    mkDefault
-    attrNames
     filterAttrs
-    concatStringsSep
-    concatMapStringsSep
     listToAttrs
     nameValuePair
     mkMerge
     mkIf
-    mkOption
-    mkEnableOption
-    types
     unique
     mapAttrsToList
-    isType
     ;
-
-  inherit (kittenLib.strings) indentedLines quotedString;
-
-  withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
 
   # Main config is here
   cfg = config.kittenModules.bird;

@@ -9,24 +9,16 @@ args @ {
   inherit
     (lib)
     optional
-    optionals
     optionalString
     mkOrder
     mkDefault
     attrNames
     filterAttrs
     concatStringsSep
-    concatMapStringsSep
-    listToAttrs
-    nameValuePair
     mkMerge
     mkIf
-    mkOption
-    mkEnableOption
-    types
     unique
     mapAttrsToList
-    isType
     ;
 
   inherit (kittenLib.strings) indentedLines quotedString;
@@ -38,10 +30,8 @@ args @ {
 
   # Values
   peers = cfg.peers;
-  peersWithPasswordRef = filterAttrs (n: v: v.passwordRef != null) peers;
   peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
 
-  passwords = unique (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
 
   directInterfaces = let noLoopback = (builtins.elem "-lo" cfg.interfaces); in
     if (cfg.interfaces != null)
