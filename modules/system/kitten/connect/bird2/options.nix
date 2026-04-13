@@ -8,53 +8,11 @@ args@{
 }:
 let
   inherit (lib)
-    optional
-    optionals
-    optionalString
-    mkOrder
-    mkDefault
-    attrNames
-    filterAttrs
-    concatStringsSep
-    concatMapStringsSep
-    listToAttrs
-    nameValuePair
-    mkMerge
-    mkIf
     mkOption
     mkEnableOption
     types
-    unique
-    mapAttrsToList
-    isType
     ;
 
-  inherit (kittenLib.strings) indentedLines quotedString;
-
-  withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
-
-  # Main config is here
-  cfg = config.kittenModules.bird;
-
-  # Values
-  peers = cfg.peers;
-  peersWithPasswordRef = filterAttrs (n: v: v.passwordRef != null) peers;
-  peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
-
-  passwords = unique (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
-
-  directInterfaces =
-    let
-      noLoopback = (builtins.elem "-lo" cfg.interfaces);
-    in
-    if (cfg.interfaces != null) then
-      lib.concatMapStringsSep ", " quotedString (
-        (optional (!(noLoopback) && (cfg.loopback4 != null || cfg.loopback6 != null)) "lo")
-        ++ cfg.interfaces
-        ++ (optional (builtins.all (lib.hasPrefix "-") cfg.interfaces) "*")
-      )
-    else
-      quotedString "*";
 
   # Example
   # config.kittenModules.bird = {
