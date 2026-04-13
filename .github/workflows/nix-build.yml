@@ -58,7 +58,7 @@ jobs:
         run: |
           set -Eeuo pipefail
 
-          nix build --print-out-paths -vL -f ci/build-all-nix.nix _allPackages | while read -r OUT; do
+          nix build --print-out-paths -L -f ci/build-all-nix.nix _allPackages | while read -r OUT; do
             nix copy --no-check-sigs --to "file://$PWD/nixPackages" "$OUT"
             mkdir -vp "$PWD/nixPackages/result"
             for l in $(find "$OUT" -type l -maxdepth 1 -print); do
@@ -96,7 +96,7 @@ jobs:
         run: |
           set -Eeuo pipefail
 
-          nix build --print-out-paths -vL -f '${{ matrix.file }}' '${{ matrix.attr }}' | while read -r storePath; do
+          nix build --print-out-paths -L -f '${{ matrix.file }}' '${{ matrix.attr }}' | while read -r storePath; do
             nix copy --to file://$PWD/'toplevel-${{matrix.name}}' $storePath
             echo "$storePath" > toplevel-${{matrix.name}}/toplevel
             echo "toplevel=$storePath" | tee -a "$GITHUB_OUTPUT"
