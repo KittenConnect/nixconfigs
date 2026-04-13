@@ -1,9 +1,8 @@
-args@{
+{
   lib,
   kittenLib,
-  pkgs,
-  config,
-  name,
+
+  configHome, # Bird
   ...
 }:
 let
@@ -13,6 +12,7 @@ let
     types
     ;
 
+  inherit (kittenLib.types) fileType;
 
   # Example
   # config.kittenModules.bird = {
@@ -37,7 +37,9 @@ let
     }:
     {
       options = {
-        enable = mkEnableOption "${name} peer.";
+        enable = mkEnableOption "${name} peer." // {
+          default = true; example = false;
+        };
 
         peerName = mkOption {
           type = types.str;
@@ -176,6 +178,15 @@ in
     default = { };
     type = with types; attrsOf (submodule birdPeerSubmodule); # types.submodule (mkNamedOptionModule birdPeerSubmodule);
     description = "Configuration for BGP peers.";
+  };
+
+  extraConfigs = mkOption {
+    type = fileType "kittenModules.bird.extraConfigs" configHome configHome;
+    default = { };
+    description = ''
+      Attribute set of files to link into the bird's configuration directory.
+      And include in bird.conf
+    '';
   };
 
   loopback4 = mkOption {

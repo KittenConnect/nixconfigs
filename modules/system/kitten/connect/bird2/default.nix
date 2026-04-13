@@ -27,6 +27,7 @@ args @ {
 
   # Main config is here
   cfg = config.kittenModules.bird;
+  configHome = "bird";
 
   # Values
   peers = cfg.peers;
@@ -62,7 +63,7 @@ in {
   ];
 
   # Options
-  options.kittenModules.bird = import ./options.nix args;
+  options.kittenModules.bird = import ./options.nix args // { inherit configHome; };
 
   # Implementation
   config = mkIf cfg.enable {
@@ -80,14 +81,21 @@ in {
       1790 # Internal BGP
     ];
 
+    environment.etc = (lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" file) cfg.extraConfigs);
+
     # Service configuration
     services.bird2 = {
       enable = cfg.enable;
 
-      preCheckConfig = ''
+      preCheckConfig = let
+        configDir = pkgs.linkFarm "bird-directory" (lib.mapAttrs (n: v: v.source) cfg.extraConfigs);
+        getIncludes = lib.optionalAttrs (cfg.extraConfigs != {}) "${pkgs.rsync}/bin/rsync -arvp ${configDir}/ ./";
+      in ''
         echo "Found the following include in bird configuration" >&2
         grep include bird2.conf >&2 || true
         echo "EOF" >&2
+
+        ${getIncludes}
       '';
 
       config = mkMerge (
@@ -113,6 +121,8 @@ in {
                 interface ${directInterfaces};
             }
           '')
+
+          (mkOrder 10 (concatMapStringsSep "\n" (x: ''include "${x}";'') (builtins.attrNames cfg.extraConfigs)))
         ]
         ++ optional (cfg.peers != {}) (
           let
