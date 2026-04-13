@@ -21,7 +21,7 @@ in {
         kitten-sysupgrade = pkgs.writeShellApplication {
           name = "kitten-sysupgrade";
 
-          runtimeInputs = [
+          runtimeInputs = with pkgs; [
             nix
             curl
             jq
