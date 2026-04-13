@@ -34,7 +34,6 @@ in {
       then config.sops.secrets.k3s_cluster_token.path
       else config.sops.secrets.k3s_token.path;
     clusterInit = kubeConfig.master;
-    #serverAddr = lib.mkIf (master == false) "https://[2a13:79c0:ffff:feff:b00b:3945:a51:210]:6443";
     serverAddr = lib.mkIf (!kubeConfig.master) "https://stonkstation:6443";
     extraFlags = toString (
       ["--flannel-iface=vlan91"]

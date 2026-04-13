@@ -45,7 +45,7 @@
       ];
       vlan91.ipv6.addresses = [
         {
-          address = "2a13:79c0:ffff:feff:b00b:3945:a51:202";
+          address = "1010:cafe:ffff:feff:b00b:3945:a51:202";
           prefixLength = 112;
         }
       ];
@@ -61,7 +61,7 @@
       metric = 1042;
     };
     defaultGateway6 = {
-      address = "2a13:79c0:ffff:feff:b00b:3945:a51:10";
+      address = "1010:cafe:ffff:feff:b00b:3945:a51:10";
     };
     useDHCP = false;
     #dhcpcd.enable = true;

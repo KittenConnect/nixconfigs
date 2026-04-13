@@ -27,7 +27,7 @@
     interfaces = {
       ens18.ipv6.addresses = [
         {
-          address = "2a13:79c0:ffff:feff:b00b:3945:a51:200";
+          address = "1010:cafe:ffff:feff:b00b:3945:a51:200";
           prefixLength = 112;
         }
       ];
@@ -37,7 +37,7 @@
       #    }];
     };
     defaultGateway6 = {
-      address = "2a13:79c0:ffff:feff:b00b:3945:a51:10";
+      address = "1010:cafe:ffff:feff:b00b:3945:a51:10";
       interface = "ens18";
     };
     dhcpcd.enable = true;
