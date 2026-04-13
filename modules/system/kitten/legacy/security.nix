@@ -3,9 +3,7 @@
   pkgs,
   config,
   ...
-}:
-
-let
+}: let
   noPasswdCommands = [
     "/run/current-system/sw/bin/reboot"
     "/run/current-system/sw/bin/poweroff"
@@ -18,9 +16,8 @@ let
     "/run/current-system/sw/bin/nixos-rebuild *"
   ];
 
-  noPasswdServices = [ ];
-in
-{
+  noPasswdServices = [];
+in {
   users.users.root = {
     initialPassword = lib.mkDefault "toor";
 
@@ -42,30 +39,32 @@ in
       extraRules =
         [
           {
-            commands = map (cmd: {
-              command = cmd;
-              options = [ "NOPASSWD" ];
-            }) (noPasswdCommands);
+            commands =
+              map (cmd: {
+                command = cmd;
+                options = ["NOPASSWD"];
+              })
+              noPasswdCommands;
 
-            groups = [ "wheel" ];
+            groups = ["wheel"];
           }
         ]
         ++ map (svc: {
           commands =
             map
-              (cmd: {
-                command = cmd;
-                options = [ "NOPASSWD" ];
-              })
+            (cmd: {
+              command = cmd;
+              options = ["NOPASSWD"];
+            })
+            [
+              "/run/current-system/sw/bin/systemctl start ${svc}"
+              "/run/current-system/sw/bin/systemctl restart ${svc}"
+              "/run/current-system/sw/bin/systemctl stop ${svc}"
+            ];
 
-              [
-                "/run/current-system/sw/bin/systemctl start ${svc}"
-                "/run/current-system/sw/bin/systemctl restart ${svc}"
-                "/run/current-system/sw/bin/systemctl stop ${svc}"
-              ];
-
-          groups = [ "wheel" ];
-        }) noPasswdServices;
+          groups = ["wheel"];
+        })
+        noPasswdServices;
 
       # ++ lib.flatten (
       #   map (svc: [

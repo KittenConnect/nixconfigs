@@ -5,14 +5,17 @@
   options,
   osConfig,
   ...
-}:
-let
+}: let
   kubeCfg = osConfig.services.k3s;
   cfg = config.kittenModules.kube;
-in
-{
+in {
   options.kittenModules.kube = {
-    enable = lib.mkEnableOption "KittenK3s common configuration" // { default = true; example = false; };
+    enable =
+      lib.mkEnableOption "KittenK3s common configuration"
+      // {
+        default = true;
+        example = false;
+      };
   };
 
   config = lib.optionalAttrs (kubeCfg.enable && kubeCfg.role == "server" && options.home ? kubenv) {

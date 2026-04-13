@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   imports = [
     ./rhabbit-consumer
     ./sysupgrade

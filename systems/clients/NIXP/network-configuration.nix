@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   networking = {
     #nameservers = [ "1.3.3.7" ];
 
@@ -7,7 +6,6 @@
       ens18.useDHCP = true;
 
       ens19 = {
-
         # ipv4.addresses = [
         #   {
         #     address = "185.10.17.209";
@@ -51,5 +49,4 @@
   };
 
   systemd.network.enable = true;
-
 }

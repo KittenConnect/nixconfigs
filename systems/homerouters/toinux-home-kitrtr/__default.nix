@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   bootdisk = "/dev/vda";
   diskTemplate = "simple_singleFullRoot";
 

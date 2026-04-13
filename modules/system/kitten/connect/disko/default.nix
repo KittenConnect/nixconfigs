@@ -1,11 +1,10 @@
-args@{
+args @ {
   lib,
   pkgs,
   config,
   profile,
   ...
-}:
-let
+}: let
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.strings) optionalString concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
@@ -13,8 +12,7 @@ let
 
   quoteString = x: ''"${x}"'';
 
-  mkEnabledOption =
-    desc:
+  mkEnabledOption = desc:
     lib.mkEnableOption desc
     // {
       example = false;
@@ -22,8 +20,7 @@ let
     };
 
   cfg = config.kittenModules.disko;
-in
-{
+in {
   options.kittenModules.disko = {
     enable = mkEnableOption "KittenConnect common disko module";
 
@@ -37,5 +34,5 @@ in
     ./profiles
   ];
 
-  config = lib.mkIf (cfg.enable) {  };
+  config = lib.mkIf (cfg.enable) {};
 }

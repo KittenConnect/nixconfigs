@@ -1,9 +1,7 @@
-{ lib, ... }:
-let
+{lib, ...}: let
   iface = "ens18";
   kittenIFACE = "ens19";
-in
-{
+in {
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -15,16 +13,16 @@ in
       name = "nat";
 
       content = lib.mkAfter ''
-	chain postrouting {
-	  type nat hook postrouting priority srcnat; policy accept;
-	  ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
-	}
+        chain postrouting {
+          type nat hook postrouting priority srcnat; policy accept;
+          ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
+        }
       '';
     };
 
     firewall = {
-      allowedTCPPorts = [ 51888 ];
-      allowedUDPPorts = [ 51888 ];
+      allowedTCPPorts = [51888];
+      allowedUDPPorts = [51888];
     };
 
     #nameservers = [ "1.3.3.7" ];
@@ -32,7 +30,6 @@ in
       "${iface}".useDHCP = true;
 
       "${kittenIFACE}" = {
-
         # ipv4.addresses = [
         #   {
         #     address = "185.10.17.209";

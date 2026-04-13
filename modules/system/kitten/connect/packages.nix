@@ -1,13 +1,12 @@
-args@{
+args @ {
   lib,
   pkgs,
   sources,
   config,
   options,
   ...
-}:
-let
-  nixOSutils = import "${sources.nixpkgs}/nixos/lib/utils.nix" { inherit (args) lib config pkgs; };
+}: let
+  nixOSutils = import "${sources.nixpkgs}/nixos/lib/utils.nix" {inherit (args) lib config pkgs;};
 
   inherit (lib.options) mkEnableOption;
   inherit (nixOSutils) removePackagesByName;
@@ -20,8 +19,7 @@ let
     nixfmt
   ];
 
-  mkEnabledOption =
-    desc:
+  mkEnabledOption = desc:
     lib.mkEnableOption desc
     // {
       example = false;
@@ -32,8 +30,7 @@ let
   # notExcluded = pkg: (!(lib.elem pkg config.environment.pantheon.excludePackages));
 
   cfg = config.kittenModules.packages;
-in
-{
+in {
   options.kittenModules.packages = {
     enable = mkEnabledOption "common kitten packages installation";
 
@@ -45,7 +42,7 @@ in
 
     excludedPackages = lib.options.mkOption {
       type = lib.types.listOf lib.types.package;
-      default = [ ];
+      default = [];
       description = "The list of default packages to ignore.";
     };
   };

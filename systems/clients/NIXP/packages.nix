@@ -1,5 +1,8 @@
-{ config, pkgs, ... }:
 {
+  config,
+  pkgs,
+  ...
+}: {
   # kittenModules.rhabbit-consumer.enable = true;
   # List packages installed in system profile. To search, run:
   # $ nix search wget

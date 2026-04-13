@@ -1,5 +1,6 @@
 let
-  inherit ((import ./. {}).inputs)
+  inherit
+    ((import ./. {}).inputs)
     sources
     pkgs
     lib
@@ -35,38 +36,40 @@ let
     defaults = hostsDefaults;
   };
 in
-lib.foldl' (
-  acc: profile:
-  let
-    configs = hosts.${profile};
-  in
-  acc
-  // (lib.mapAttrs (
-    n: value:
-    (
-      args@{
-        name,
-        nodes,
-        pkgs,
-        ...
-      }:
-      let
-        v = (value (args // { inherit profile; }));
+  lib.foldl' (
+    acc: profile: let
+      configs = hosts.${profile};
+    in
+      acc
+      // (lib.mapAttrs (
+          n: value: (
+            args @ {
+              name,
+              nodes,
+              pkgs,
+              ...
+            }: let
+              v = value (args // {inherit profile;});
 
-        customConfig =
-          config:
-          config
-          // {
-            networking = (config.networking or { }) // {
-              hostName = name;
-            };
+              customConfig = config:
+                config
+                // {
+                  networking =
+                    (config.networking or {})
+                    // {
+                      hostName = name;
+                    };
 
-            sops = (config.sops or { }) // {
-              defaultSopsFile = ./secrets/${name}.yaml;
-            };
-          };
-      in
-      customConfig v
-    )
-  ) configs)
-) defConf (lib.attrNames hosts)
+                  sops =
+                    (config.sops or {})
+                    // {
+                      defaultSopsFile = ./secrets/${name}.yaml;
+                    };
+                };
+            in
+              customConfig v
+          )
+        )
+        configs)
+  )
+  defConf (lib.attrNames hosts)

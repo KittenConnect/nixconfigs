@@ -5,11 +5,9 @@
   targetConfig,
   birdFuncs,
   ...
-}:
-let
+}: let
   inherit (lib) mkMerge mkOrder;
-in
-{
+in {
   services.bird2.config = mkMerge [
     (mkOrder 10 ''
 

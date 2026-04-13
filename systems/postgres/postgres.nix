@@ -1,33 +1,33 @@
-{ lib, ... }: {
-  services.postgresql = { 
+{lib, ...}: {
+  services.postgresql = {
     enable = lib.mkDefault true;
     # ... conf ...
 
-    ensureDatabases = [ "netbox" ];
+    ensureDatabases = ["netbox"];
 
     ensureUsers = [
       {
-          name = "superkitten";
-          ensureClauses = {
-              # superuser = true;
-              createrole = true;
-              createdb = true;
-              login = true;
-          };
+        name = "superkitten";
+        ensureClauses = {
+          # superuser = true;
+          createrole = true;
+          createdb = true;
+          login = true;
+        };
       }
       {
-          name = "netbox";
-          ensureDBOwnership = true;
-          ensureClauses = {
-              login = true;
-          };
+        name = "netbox";
+        ensureDBOwnership = true;
+        ensureClauses = {
+          login = true;
+        };
       }
     ];
 
     enableTCPIP = lib.mkDefault true;
 
-#    settings = {
-#      listen_addresses = "";
-#    };
+    #    settings = {
+    #      listen_addresses = "";
+    #    };
   };
 }

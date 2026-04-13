@@ -3,15 +3,18 @@
   lib,
   targetConfig,
   ...
-}:
-
-let
-  bootloader = if targetConfig ? bootloader then targetConfig.bootloader else "";
-  grubBoot = (bootloader == "grub");
-  serialPort = if targetConfig ? mainSerial then targetConfig.mainSerial else 0;
-in
-{
-  config.boot.loader.grub = lib.mkIf (grubBoot) {
+}: let
+  bootloader =
+    if targetConfig ? bootloader
+    then targetConfig.bootloader
+    else "";
+  grubBoot = bootloader == "grub";
+  serialPort =
+    if targetConfig ? mainSerial
+    then targetConfig.mainSerial
+    else 0;
+in {
+  config.boot.loader.grub = lib.mkIf grubBoot {
     memtest86.enable = true;
 
     ipxe = {

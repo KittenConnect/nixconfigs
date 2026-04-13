@@ -3,7 +3,6 @@
   description = "System configurations";
 
   inputs = {
-
     nixpkgs = {
       url = "github:NixOS/nixpkgs/nixos-24.05";
     };
@@ -65,225 +64,215 @@
     # };
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      nixpkgs-unstable,
-      nixpkgs-master,
-      nixos-hardware,
-      nix-inspect,
-      disko,
-      sops-nix,
-      home-manager,
-      home-config,
-      krewfile,
-      ...
+  outputs = {
+    self,
+    nixpkgs,
+    nixpkgs-unstable,
+    nixpkgs-master,
+    nixos-hardware,
+    nix-inspect,
+    disko,
+    sops-nix,
+    home-manager,
+    home-config,
+    krewfile,
+    ...
     # devenv,
     # darwin,
-    }@args:
-    let
-      inherit (builtins) pathExists toJSON;
+  } @ args: let
+    inherit (builtins) pathExists toJSON;
 
-      inherit (nixpkgs.lib)
-        foldl'
-        mapAttrs
-        attrNames
-        filterAttrs
-        assertMsg
-        genAttrs
-        getBin
-        concatMapStringsSep
-        optionals
-        hasSuffix
+    inherit
+      (nixpkgs.lib)
+      foldl'
+      mapAttrs
+      attrNames
+      filterAttrs
+      assertMsg
+      genAttrs
+      getBin
+      concatMapStringsSep
+      optionals
+      hasSuffix
+      nixosSystem
+      ;
 
-        nixosSystem
-        ;
-
-      # TODO: Use flake-utils to do this well
-      mkLinuxSystem =
+    # TODO: Use flake-utils to do this well
+    mkLinuxSystem = {
+      target,
+      targetConfig,
+      profile ? targetConfig.profile,
+      system ? "x86_64-linux",
+      kubeConfig ? {},
+    }:
+      nixosSystem (
+        # let
+        #   inherit (nixpkgs.legacyPackages.${system}) writeShellScriptBin;
+        # in
         {
-          target,
-          targetConfig,
-          profile ? targetConfig.profile,
-          system ? "x86_64-linux",
-          kubeConfig ? { },
-        }:
-        nixosSystem (
-          # let
-          #   inherit (nixpkgs.legacyPackages.${system}) writeShellScriptBin;
-          # in
-          {
-            inherit system;
+          inherit system;
 
-            modules = [
+          modules = [
+            (
+              if targetConfig ? config
+              then {config = targetConfig.config;}
+              else {}
+            )
 
-              (if targetConfig ? config then { config = targetConfig.config; } else { })
+            # Pass options + Args
+            {
+              _module.args = {
+                targetConfig = targetConfig;
+                targetProfile = profile;
+                target = target;
+                bootdisk = targetConfig.bootdisk;
+                kubeConfig = kubeConfig;
+              };
+            }
 
-              # Pass options + Args
+            # Home + Users config
+            (
               {
-                _module.args = {
-                  targetConfig = targetConfig;
-                  targetProfile = profile;
-                  target = target;
-                  bootdisk = targetConfig.bootdisk;
-                  kubeConfig = kubeConfig;
+                config,
+                lib,
+                pkgs,
+                ...
+              }: let
+                userName = "toinux";
+                homeDir = "/home/${userName}";
+              in {
+                config = {
+                  networking.hostName = "${target}";
+
+                  users.users.${userName} = {
+                    isNormalUser = true;
+                    home = homeDir;
+                    # description = "Antoine '${userName}'";
+                    shell = pkgs.zsh;
+                    extraGroups =
+                      ["wheel"]
+                      ++ optionals (config.services.xserver.enable) ["input"]
+                      ++ optionals (config.networking.networkmanager.enable) ["networkmanager"]
+                      ++ optionals (config.virtualisation.docker.enable) ["docker"]
+                      ++ optionals (config.virtualisation.libvirtd.enable) ["libvirtd"];
+
+                    initialPassword = "totofaitsestests";
+                  };
+
+                  home-manager.users.${userName} = home-config.lib.mkHomeConfiguration userName homeDir [
+                    ./_home/configuration.nix
+                  ];
+
+                  users.users.root.shell = pkgs.zsh;
+                  home-manager.users.root = home-config.lib.mkHomeConfiguration "root" "/root" [
+                    ./_home/configuration.nix
+                  ];
                 };
               }
+            )
 
-              # Home + Users config
-              (
-                {
-                  config,
-                  lib,
-                  pkgs,
-                  ...
-                }:
+            ./_system/configuration.nix # Global System config
 
-                let
-                  userName = "toinux";
-                  homeDir = "/home/${userName}";
-                in
-                {
-                  config = {
-                    networking.hostName = "${target}";
+            (./hosts + "/${profile}/configuration.nix")
 
-                    users.users.${userName} = {
-                      isNormalUser = true;
-                      home = homeDir;
-                      # description = "Antoine '${userName}'";
-                      shell = pkgs.zsh;
-                      extraGroups =
-                        [ "wheel" ]
-                        ++ optionals (config.services.xserver.enable) [ "input" ]
-                        ++ optionals (config.networking.networkmanager.enable) [ "networkmanager" ]
-                        ++ optionals (config.virtualisation.docker.enable) [ "docker" ]
-                        ++ optionals (config.virtualisation.libvirtd.enable) [ "libvirtd" ];
+            # Disk Partitioning
+            disko.nixosModules.disko
+            (
+              if targetConfig ? diskTemplate && targetConfig.diskTemplate != null
+              then ./_diskos + "/${targetConfig.diskTemplate}.nix"
+              else let
+                diskoCfg = ./hosts + "/${profile}/${target}/disk-config.nix";
+              in
+                assert assertMsg (pathExists diskoCfg)
+                "${target}: diskTemplate undefined and ${diskoCfg} inexistant, dunno what to do"; diskoCfg
+            )
 
-                      initialPassword = "totofaitsestests";
-                    };
+            # Host-Specific config
+            (./hosts + "/${profile}/${target}/configuration.nix") # HostSpecific configuration
+            (./hosts + "/${profile}/${target}/hardware-configuration.nix") # Hardware Detection
 
-                    home-manager.users.${userName} = home-config.lib.mkHomeConfiguration userName homeDir [
-                      ./_home/configuration.nix
-                    ];
+            # Home-Manager + options
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              # Optionally, use home-manager.extraSpecialArgs to pass arguments to home.nix
+            }
 
-                    users.users.root.shell = pkgs.zsh;
-                    home-manager.users.root = home-config.lib.mkHomeConfiguration "root" "/root" [
-                      ./_home/configuration.nix
-                    ];
-                  };
-                }
-              )
+            # Use Mozilla SOPS as secrets manager
+            sops-nix.nixosModules.sops
+            {sops.defaultSopsFile = ./secrets/${target}.yaml;}
 
-              ./_system/configuration.nix # Global System config
+            # Overlays
+            (
+              {...}: {
+                nixpkgs.overlays = [
+                  krewfile.overlay
 
-              (./hosts + "/${profile}/configuration.nix")
-
-              # Disk Partitioning
-              disko.nixosModules.disko
-              (
-                if targetConfig ? diskTemplate && targetConfig.diskTemplate != null then
-                  ./_diskos + "/${targetConfig.diskTemplate}.nix"
-                else
-                  let
-                    diskoCfg = (./hosts + "/${profile}/${target}/disk-config.nix");
-                  in
-                  assert assertMsg (pathExists diskoCfg)
-                    "${target}: diskTemplate undefined and ${diskoCfg} inexistant, dunno what to do";
-                  diskoCfg
-              )
-
-              # Host-Specific config
-              (./hosts + "/${profile}/${target}/configuration.nix") # HostSpecific configuration
-              (./hosts + "/${profile}/${target}/hardware-configuration.nix") # Hardware Detection
-
-              # Home-Manager + options
-              home-manager.nixosModules.home-manager
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                # Optionally, use home-manager.extraSpecialArgs to pass arguments to home.nix
+                  (final: prev: {
+                    master = nixpkgs-master.legacyPackages.${prev.system};
+                    unstable = nixpkgs-unstable.legacyPackages.${prev.system};
+                  })
+                ];
               }
+            )
+            (
+              let
+                disableModules = [];
 
-              # Use Mozilla SOPS as secrets manager
-              sops-nix.nixosModules.sops
-              { sops.defaultSopsFile = ./secrets/${target}.yaml; }
+                customModules = [
+                  # "kitten/connect/autodisko.nix" # Borken conditional imports cannot be done in sub-modules
+                  "kitten/connect/loopback0.nix"
+                  "kitten/connect/bird2"
+                  "kitten/connect/wireguard"
+                ];
+                localModules = [
+                  # "nixos/modules/services/ttys/kmscon"
+                ];
 
-              # Overlays
-              (
-                { ... }:
-                {
-                  nixpkgs.overlays = [
-                    krewfile.overlay
+                masterModules = [
+                  # "nixos/modules/programs/kubeswitch.nix"
+                ];
 
-                    (final: prev: {
-                      master = nixpkgs-master.legacyPackages.${prev.system};
-                      unstable = nixpkgs-unstable.legacyPackages.${prev.system};
-                    })
-                  ];
-                }
-              )
-              (
-                let
-                  disableModules = [ ];
+                unstableModules = [];
+                # stableModules = [ ];
 
-                  customModules = [
-                    # "kitten/connect/autodisko.nix" # Borken conditional imports cannot be done in sub-modules
-                    "kitten/connect/loopback0.nix"
-                    "kitten/connect/bird2"
-                    "kitten/connect/wireguard"
-                  ];
-                  localModules = [
-                    # "nixos/modules/services/ttys/kmscon"
-                  ];
+                getModule = input: (mod: "${input}/${mod}");
+              in {
+                disabledModules = map (getModule args.nixpkgs) (
+                  disableModules ++ localModules ++ masterModules ++ unstableModules
+                  # ++ stableModules
+                );
 
-                  masterModules = [
-                    # "nixos/modules/programs/kubeswitch.nix"
-                  ];
-
-                  unstableModules = [ ];
-                  # stableModules = [ ];
-
-                  getModule = input: (mod: "${input}/${mod}");
-                in
-                {
-                  disabledModules = map (getModule args.nixpkgs) (
-                    disableModules ++ localModules ++ masterModules ++ unstableModules
-                    # ++ stableModules
-                  );
-
-                  imports =
-                    (map (getModule ./modules) (localModules ++ customModules))
-                    ++ (map (getModule args.nixpkgs-master) masterModules)
-                    ++ (map (getModule args.nixpkgs-unstable) unstableModules)
+                imports =
+                  (map (getModule ./modules) (localModules ++ customModules))
+                  ++ (map (getModule args.nixpkgs-master) masterModules)
+                  ++ (map (getModule args.nixpkgs-unstable) unstableModules)
                   # ++ (map (getModule args.nixpkgs-stable) stableModules)
                   ;
-                }
-              )
-            ];
-          });
+              }
+            )
+          ];
+        }
+      );
 
-      targetConfigs =
-        let
-          hosts = import ./hosts (args // { lib = args.nixpkgs.lib; });
-        in
-        foldl' (
-          acc: profile:
-          let
-            configs = hosts.${profile};
-          in
-          (mapAttrs (name: value: { inherit profile; } // value) configs) // acc
-        ) { } (attrNames hosts);
-
-      # TODO: Move this
-      masterNodes = [ "stonkstation" ];
-      controllers = [ "stonkstation" ];
+    targetConfigs = let
+      hosts = import ./hosts (args // {lib = args.nixpkgs.lib;});
     in
-    {
+      foldl' (
+        acc: profile: let
+          configs = hosts.${profile};
+        in
+          (mapAttrs (name: value: {inherit profile;} // value) configs) // acc
+      ) {} (attrNames hosts);
 
-      nixosConfigurations = (
-        genAttrs (attrNames targetConfigs) (
-          target:
+    # TODO: Move this
+    masterNodes = ["stonkstation"];
+    controllers = ["stonkstation"];
+  in {
+    nixosConfigurations = (
+      genAttrs (attrNames targetConfigs) (
+        target:
           mkLinuxSystem {
             inherit target;
 
@@ -296,66 +285,59 @@
             # This good
             targetConfig = targetConfigs.${target};
           }
-        )
-      );
+      )
+    );
 
-      packages =
-        let
-          systems = [ "x86_64-linux" ];
-        in
-        genAttrs systems (
-          system:
-          let
-            inherit (nixpkgs.legacyPackages.${system}) writeShellScriptBin;
-          in
-          {
-            bootstrap = genAttrs (attrNames self.outputs.nixosConfigurations) (
-              confName:
+    packages = let
+      systems = ["x86_64-linux"];
+    in
+      genAttrs systems (
+        system: let
+          inherit (nixpkgs.legacyPackages.${system}) writeShellScriptBin;
+        in {
+          bootstrap = genAttrs (attrNames self.outputs.nixosConfigurations) (
+            confName:
               writeShellScriptBin "bootstrap-${confName}.sh" (
                 let
                   package = nixpkgs.legacyPackages.${system}.nixVersions.nix_2_18;
-                in
-                ''
+                in ''
                   set -x
                   [[ $# -gt 0 ]] || set -- --help
 
                   ${getBin package}/bin/nix --extra-experimental-features 'nix-command flakes' run github:nix-community/nixos-anywhere -- --option show-trace true --flake ${self.outPath}#${confName} $@
                 ''
               )
-            );
+          );
 
-            rebuild = genAttrs (attrNames self.outputs.nixosConfigurations) (
-              confName:
+          rebuild = genAttrs (attrNames self.outputs.nixosConfigurations) (
+            confName:
               writeShellScriptBin "rebuild-${confName}.sh" (
                 let
                   package = nixpkgs.legacyPackages.${system}.nixos-rebuild;
                   nomPackage = nixpkgs.legacyPackages.${system}.nix-output-monitor;
-                in
-                ''
+                in ''
                   set -x
                   [[ $# -gt 0 ]] || set -- --help
 
                   ${getBin package}/bin/nixos-rebuild -L --show-trace --option extra-experimental-features 'nix-command flakes' --option eval-cache false --flake ${self.outPath}#${confName} $@ |& ${getBin nomPackage}/bin/nom
                 ''
               )
-            );
+          );
 
-            images = genAttrs (attrNames self.outputs.nixosConfigurations) (
-              confName:
-              let
-                nixConf = self.outputs.nixosConfigurations.${confName};
-              in
+          images = genAttrs (attrNames self.outputs.nixosConfigurations) (
+            confName: let
+              nixConf = self.outputs.nixosConfigurations.${confName};
+            in
               nixConf.config.system.build.diskoImages
-            );
+          );
 
-            compressedImages = genAttrs (attrNames self.outputs.nixosConfigurations) (
-              confName:
-              let
-                pkgs = nixpkgs.legacyPackages.${system};
-                nixConf = self.outputs.nixosConfigurations.${confName};
-                diskoImages = nixConf.config.system.build.diskoImages;
-              in
-              pkgs.runCommand "compressed-disko-${confName}" { nativeBuildInput = [ diskoImages ]; } ''
+          compressedImages = genAttrs (attrNames self.outputs.nixosConfigurations) (
+            confName: let
+              pkgs = nixpkgs.legacyPackages.${system};
+              nixConf = self.outputs.nixosConfigurations.${confName};
+              diskoImages = nixConf.config.system.build.diskoImages;
+            in
+              pkgs.runCommand "compressed-disko-${confName}" {nativeBuildInput = [diskoImages];} ''
                 pwd
 
                 tree="${pkgs.tree}/bin/tree"
@@ -371,11 +353,10 @@
 
                 find . -name '*.raw' -print -exec bash -c "$xz -T0 --stdout '{}' > '$out/{}.xz'" \;
               ''
+          );
 
-            );
-
-            ddbootstrap = genAttrs (attrNames self.outputs.nixosConfigurations) (
-              confName:
+          ddbootstrap = genAttrs (attrNames self.outputs.nixosConfigurations) (
+            confName:
               writeShellScriptBin "bootstrapImageWithDD-${confName}.sh" (
                 let
                   pvPackage = nixpkgs.legacyPackages.${system}.pv;
@@ -384,8 +365,7 @@
                   images = self.outputs.packages.${system}.images.${confName};
 
                   devices = filterAttrs (n: v: v ? device && v.device != null) disks;
-                in
-                ''
+                in ''
                   set -eu -o pipefail
                   set -x
 
@@ -403,11 +383,9 @@
                   ssh $@ xz --help
 
                   ${concatMapStringsSep "\n" (
-                    x:
-                    let
+                    x: let
                       disk = disks.${x};
-                    in
-                    ''
+                    in ''
 
                       echo "Pushing ${x} -> ''${REMOTE}:${disk.device}"
                       ${getBin pvPackage}/bin/pv ${images}/${x}.raw.xz | ssh $@ "xz -T0 -d -c - > ${disk.device}"
@@ -415,16 +393,16 @@
                   ) (attrNames devices)}
                 ''
               )
-            );
-          }
-        );
+          );
+        }
+      );
 
-      # darwinConfigurations = (nixpkgs.lib.genAttrs targets
-      #   (target: mkLinuxSystem {
-      #     inherit target;
+    # darwinConfigurations = (nixpkgs.lib.genAttrs targets
+    #   (target: mkLinuxSystem {
+    #     inherit target;
 
-      #     targetConfig = targetConfigs.${target};
-      #   })
-      # );
-    };
+    #     targetConfig = targetConfigs.${target};
+    #   })
+    # );
+  };
 }

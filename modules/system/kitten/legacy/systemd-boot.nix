@@ -3,14 +3,14 @@
   lib,
   targetConfig,
   ...
-}:
-
-let
-  bootloader = if targetConfig ? bootloader then targetConfig.bootloader else "";
-  systemdBoot = (bootloader == "systemd-boot");
-in
-{
-  config.boot.loader.systemd-boot = lib.mkIf (systemdBoot) {
+}: let
+  bootloader =
+    if targetConfig ? bootloader
+    then targetConfig.bootloader
+    else "";
+  systemdBoot = bootloader == "systemd-boot";
+in {
+  config.boot.loader.systemd-boot = lib.mkIf systemdBoot {
     netbootxyz.enable = true;
     memtest86.enable = true;
 

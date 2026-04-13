@@ -1,5 +1,8 @@
-args@{ pkgs, sources, ... }:
-{
+args @ {
+  pkgs,
+  sources,
+  ...
+}: {
   imports = [
     ../modules/system/kitten/legacy # TODO: Remove this
     ../modules/system

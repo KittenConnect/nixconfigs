@@ -1,8 +1,12 @@
 # Example to create a bios compatible gpt partition
-args@{ lib, config, ... }:
-let
+args @ {
+  lib,
+  config,
+  ...
+}: let
   inherit (builtins) baseNameOf; # unsafeGetAttrPos;
-  inherit (lib)
+  inherit
+    (lib)
     types
     optionalAttrs
     mkOption
@@ -16,8 +20,7 @@ let
 
   cfg = config.kittenModules.disko;
   profileConf = config.kittenModules.disko.${profileName};
-in
-{
+in {
   # Module Options
   options.kittenModules.disko.${profileName} = {
     bootdisk = mkOption {
@@ -44,9 +47,14 @@ in
     };
     crypted = mkEnableOption "luks disk encryption";
 
-    swapResume = mkEnableOption "Resume from swap" // {
-      default = if profileConf.swapSize > 0 then true else false;
-    };
+    swapResume =
+      mkEnableOption "Resume from swap"
+      // {
+        default =
+          if profileConf.swapSize > 0
+          then true
+          else false;
+      };
   };
 
   # Implementation
@@ -61,14 +69,14 @@ in
         type = "disk";
         content = {
           type = "gpt";
-          partitions =
-            let
-              lvmRootPV = {
-                type = "lvm_pv";
-                vg = profileConf.lvm.vg;
-              };
-            in
-            { # Common setup (/boot + EFI)
+          partitions = let
+            lvmRootPV = {
+              type = "lvm_pv";
+              vg = profileConf.lvm.vg;
+            };
+          in
+            {
+              # Common setup (/boot + EFI)
               boot = {
                 size = "1M";
                 type = "EF02"; # for grub MBR
@@ -84,19 +92,21 @@ in
                 };
               };
             }
-            // (optionalAttrs (!profileConf.crypted) { # Plain PV
+            // (optionalAttrs (!profileConf.crypted) {
+              # Plain PV
               root = {
                 size = "100%";
                 content = lvmRootPV;
               };
             })
-            // (optionalAttrs (profileConf.crypted) { # LUKS PV
+            // (optionalAttrs (profileConf.crypted) {
+              # LUKS PV
               cryptroot = {
                 size = "100%";
                 content = {
                   type = "luks";
                   name = "crypted";
-                  extraOpenArgs = [ ];
+                  extraOpenArgs = [];
                   passwordFile = "/tmp/secret.key";
                   settings = {
                     # if you want to use the key for interactive login be sure there is no trailing newline
@@ -122,7 +132,6 @@ in
         "${profileConf.lvm.vg}" = {
           type = "lvm_vg";
           lvs = {
-
             swap = lib.mkIf (profileConf.swapSize > 0) {
               size = "${toString profileConf.swapSize}M";
               content = {
@@ -137,7 +146,7 @@ in
                 type = "filesystem";
                 format = "ext4";
                 mountpoint = "/";
-                mountOptions = [ "defaults" ];
+                mountOptions = ["defaults"];
               };
             };
           };

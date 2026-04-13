@@ -1,15 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-args@{
+args @ {
   config,
   # targetConfig,
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   iface = "ens18";
   kittenIFACE = "ens19";
   diskoProfile = "simple";
@@ -17,15 +15,14 @@ let
     bootdisk = "/dev/vda";
   };
 
-  peers = (import ./peers (args // { }));
+  peers = import ./peers (args // {});
 
   wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
+    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != {}) peers)
   );
 
-  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers);
-in
-{
+  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers;
+in {
   #imports = [ ./wireguard.nix ];
   # Bootloader.
   #boot.loader.systemd-boot.enable = true;
@@ -58,7 +55,7 @@ in
 
     loopback0 = {
       enable = true;
-      ipv6 = [ "2a13:79c0:ffff:fefe::22f0" ];
+      ipv6 = ["2a13:79c0:ffff:fefe::22f0"];
     };
 
     bird = {

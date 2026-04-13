@@ -5,12 +5,10 @@
   options,
   modulesPath,
   ...
-}:
-let
+}: let
   inherit (lib.options) mkOption mkEnableOption;
 
-  mkEnabledOption =
-    desc:
+  mkEnabledOption = desc:
     lib.mkEnableOption desc
     // {
       example = false;
@@ -19,31 +17,29 @@ let
 
   cfg = config.kittenModules.nixConfig;
 
-  keepGenerations =
-    default:
-    if config.boot.loader.systemd-boot.enable then
-      config.boot.loader.systemd-boot.configurationLimit
-    else if config.boot ? lanzaboote && config.boot.lanzaboote.enable then
-      config.boot.lanzaboote.configurationLimit
-    else if config.boot.loader.grub.enable then
-      config.boot.loader.grub.configurationLimit
-    else if config.boot.loader.generic-extlinux-compatible.enable then
-      config.boot.loader.generic-extlinux-compatible.configurationLimit
-    else
-      default;
-in
-{
+  keepGenerations = default:
+    if config.boot.loader.systemd-boot.enable
+    then config.boot.loader.systemd-boot.configurationLimit
+    else if config.boot ? lanzaboote && config.boot.lanzaboote.enable
+    then config.boot.lanzaboote.configurationLimit
+    else if config.boot.loader.grub.enable
+    then config.boot.loader.grub.configurationLimit
+    else if config.boot.loader.generic-extlinux-compatible.enable
+    then config.boot.loader.generic-extlinux-compatible.configurationLimit
+    else default;
+in {
   options.kittenModules.nixConfig = {
     enable = mkEnabledOption "kitten common nix-specific configuration";
     autoGc = mkEnabledOption "kitten automatic Nix Garbage-Collect all generations absent from BootLoader";
 
     keepNGenerations = mkOption {
       type = lib.types.int;
-      default =
-        let
-          v = keepGenerations cfg.defaultKeepNGenerations;
-        in
-        if v != null then v else cfg.defaultKeepNGenerations;
+      default = let
+        v = keepGenerations cfg.defaultKeepNGenerations;
+      in
+        if v != null
+        then v
+        else cfg.defaultKeepNGenerations;
     };
 
     defaultKeepNGenerations = mkOption {
@@ -55,12 +51,10 @@ in
   # Implementation
 
   config = lib.mkIf (cfg.enable) {
-
     systemd.services.nix-gc = lib.mkIf (cfg.autoGc) (
       let
         nixProfile = "/nix/var/nix/profiles/system";
-      in
-      {
+      in {
         preStart = "${config.nix.package}/bin/nix-env --delete-generations +${builtins.toString cfg.keepNGenerations} --profile ${nixProfile}";
         postStop = "${nixProfile}/bin/switch-to-configuration boot";
       }

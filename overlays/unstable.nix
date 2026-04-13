@@ -5,10 +5,8 @@ let
 
   unstable = import sources.unstable baseConfig;
   nixpkgs = import sources.nixpkgs baseConfig;
-in
-(
-  final: prev:
-  {
+in (
+  final: prev: {
     nixfmt = unstable.nixfmt-rfc-style;
 
     # sops = unstable.sops;

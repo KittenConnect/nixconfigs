@@ -5,11 +5,10 @@
   target,
   targetConfig,
   ...
-}:
-let
-
+}: let
   # Imports Functions
-  inherit (lib.attrsets)
+  inherit
+    (lib.attrsets)
     filterAttrs
     mapAttrs
     mapAttrsToList
@@ -22,7 +21,8 @@ let
 
   inherit (lib.strings) hasPrefix optionalString concatMapStringsSep;
 
-  inherit (lib)
+  inherit
+    (lib)
     mkOption
     mkEnableOption
     mkIf
@@ -39,8 +39,8 @@ let
 
   peers = cfg.peers;
 
-  hasPort = (n: v: v.port != null);
-  hasIface = (n: v: v.onIFACE != null);
+  hasPort = n: v: v.port != null;
+  hasIface = n: v: v.onIFACE != null;
 
   peersWithPort = filterAttrs hasPort peers;
 
@@ -48,103 +48,96 @@ let
   peersWithIFACE = filterAttrs hasIface peersWithPort;
 
   portsWithoutIFACE = mapAttrsToList (n: v: v.port) peersWithoutIFACE;
-  portsWithIFACE = zipAttrs (mapAttrsToList (n: v: { ${v.onIFACE} = v.port; }) peersWithIFACE);
+  portsWithIFACE = zipAttrs (mapAttrsToList (n: v: {${v.onIFACE} = v.port;}) peersWithIFACE);
 
-  mkFWConf = ports: { allowedUDPPorts = ports; };
+  mkFWConf = ports: {allowedUDPPorts = ports;};
 
   genFWMarkStr = (
     mark:
-    {
-      "string" =
-        assert assertMsg (hasPrefix "0x" mark) "fwMark is string but does not start with 0x is it an int ?";
-        mark;
+      {
+        "string" = assert assertMsg (hasPrefix "0x" mark) "fwMark is string but does not start with 0x is it an int ?"; mark;
 
-      "int" = toString mark;
+        "int" = toString mark;
 
-      "null" = null;
-    }
-    .${builtins.typeOf mark}
-
+        "null" = null;
+      }
+    .${
+        builtins.typeOf mark
+      }
   );
 
-  mkWireguardConf =
-    name: peer:
-    let
-      fwMarkString = (
-        let
-          mark =
-            if peer.fwMark != null then
-              peer.fwMark
-            else if peer.onIFACE != null then
-              peer.port
-            else
-              null;
-        in
+  mkWireguardConf = name: peer: let
+    fwMarkString = (
+      let
+        mark =
+          if peer.fwMark != null
+          then peer.fwMark
+          else if peer.onIFACE != null
+          then peer.port
+          else null;
+      in
         genFWMarkStr mark
-      );
-    in
-    {
-      table = "off";
-      # Determines the IP/IPv6 address and subnet of the client's end of the tunnel interface
-      address = [ "${peer.address}/127" ];
-      # The port that WireGuard listens to - recommended that this be changed from default
-      listenPort = mkIf (peer.port != null) peer.port;
+    );
+  in {
+    table = "off";
+    # Determines the IP/IPv6 address and subnet of the client's end of the tunnel interface
+    address = ["${peer.address}/127"];
+    # The port that WireGuard listens to - recommended that this be changed from default
+    listenPort = mkIf (peer.port != null) peer.port;
 
-      postUp = ''
+    postUp = ''
 
-        set - x
+      set - x
 
-        ${optionalString (fwMarkString != null) "wg set ${name} fwmark ${fwMarkString}"}
-        ${optionalString (peer.onIFACE != null) ''
+      ${optionalString (fwMarkString != null) "wg set ${name} fwmark ${fwMarkString}"}
+      ${optionalString (peer.onIFACE != null) ''
 
-          echo "TABLE=${fwMarkString}"
-          for v in 4 6; do
-            echo "[#] IPv$v"
-            ip -$v route add unreachable default metric 4294967295 table ${fwMarkString} || true
-            ip -$v route add default $(ip -$v route show default dev ${peer.onIFACE} | grep -oE 'via [^ ]+') dev ${peer.onIFACE} metric 42 table ${fwMarkString} || true
-            ip -$v rule add fwmark ${fwMarkString} lookup main suppress_prefixlength 0
-            ip -$v rule add fwmark ${fwMarkString} lookup ${fwMarkString}
-          done
-        ''}
-      '';
+        echo "TABLE=${fwMarkString}"
+        for v in 4 6; do
+          echo "[#] IPv$v"
+          ip -$v route add unreachable default metric 4294967295 table ${fwMarkString} || true
+          ip -$v route add default $(ip -$v route show default dev ${peer.onIFACE} | grep -oE 'via [^ ]+') dev ${peer.onIFACE} metric 42 table ${fwMarkString} || true
+          ip -$v rule add fwmark ${fwMarkString} lookup main suppress_prefixlength 0
+          ip -$v rule add fwmark ${fwMarkString} lookup ${fwMarkString}
+        done
+      ''}
+    '';
 
-      postDown = ''
+    postDown = ''
 
-        set -x
+      set -x
 
-        ${optionalString (peer.onIFACE != null) ''
+      ${optionalString (peer.onIFACE != null) ''
 
-          echo "TABLE=${fwMarkString}"
-          for v in 4 6; do
-            echo "[#] IPv$v"
-            # ip -$v route del unreachable default metric 4294967295 table ${fwMarkString} || true
-            ip -$v route del default metric 42 table ${fwMarkString} || true
-            while ip -$v rule del fwmark ${fwMarkString} lookup main suppress_prefixlength 0; do echo -n .; sleep 0.1; done
-            while ip -$v rule del fwmark ${fwMarkString} lookup ${fwMarkString}; do echo -n .; sleep 0.1; done
-          done
-        ''}
-      '';
+        echo "TABLE=${fwMarkString}"
+        for v in 4 6; do
+          echo "[#] IPv$v"
+          # ip -$v route del unreachable default metric 4294967295 table ${fwMarkString} || true
+          ip -$v route del default metric 42 table ${fwMarkString} || true
+          while ip -$v rule del fwmark ${fwMarkString} lookup main suppress_prefixlength 0; do echo -n .; sleep 0.1; done
+          while ip -$v rule del fwmark ${fwMarkString} lookup ${fwMarkString}; do echo -n .; sleep 0.1; done
+        done
+      ''}
+    '';
 
-      # Path to the server's private key
-      privateKeyFile = config.sops.secrets.wireguard_serverkey.path;
+    # Path to the server's private key
+    privateKeyFile = config.sops.secrets.wireguard_serverkey.path;
 
-      peers = [
-        {
-          publicKey = peer.peerKey;
-          #presharedKeyFile = "/root/wireguard-keys/preshared_from_peer0_key";
-          persistentKeepalive = 10;
-          endpoint = mkIf (peer.endpoint != null) peer.endpoint;
+    peers = [
+      {
+        publicKey = peer.peerKey;
+        #presharedKeyFile = "/root/wireguard-keys/preshared_from_peer0_key";
+        persistentKeepalive = 10;
+        endpoint = mkIf (peer.endpoint != null) peer.endpoint;
 
-          allowedIPs = [
-            "0.0.0.0/0"
-            "::/0"
-          ];
-        }
-      ];
-    };
-in
-{
-
+        allowedIPs = [
+          "0.0.0.0/0"
+          "::/0"
+        ];
+      }
+    ];
+  };
+in {
   # Options
   options.kittenModules.wireguard = {
     enable = mkEnableOption "Kitten Wireguard module";
@@ -157,12 +150,15 @@ in
     };
 
     peers = mkOption {
-      default = { };
+      default = {};
       description = "WireGuard peers configuration.";
       type = types.attrsOf (
         types.submodule (
-          { name, config, ... }:
           {
+            name,
+            config,
+            ...
+          }: {
             options = {
               address = mkOption {
                 type = types.str;
@@ -205,25 +201,23 @@ in
     };
 
     #  sops --set '["wireguard_serverkey"] "'"$(wg genkey | tee >(wg pubkey > /dev/stderr))"'"' secrets/[HOSTNAME].yaml
-    sops.secrets.wireguard_serverkey = { };
-    environment.systemPackages = with pkgs; [ wireguard-tools ];
+    sops.secrets.wireguard_serverkey = {};
+    environment.systemPackages = with pkgs; [wireguard-tools];
 
-    environment.etc."iproute2/rt_tables.d/wgnix.conf" = mkIf (peers != [ ]) {
+    environment.etc."iproute2/rt_tables.d/wgnix.conf" = mkIf (peers != []) {
       text = ''
 
         ${concatMapStringsSep "\n" (
-          peerName:
-          let
+          peerName: let
             peer = peers.${peerName};
-          in
-          "${toString peer.port} ${peerName}"
+          in "${toString peer.port} ${peerName}"
         ) (attrNames (filterAttrs (n: v: v.onIFACE != null) peers))}
       '';
     };
 
     # Open FireWall Ports
     networking.firewall = mkMerge [
-      (optionalAttrs (portsWithoutIFACE != [ ]) (
+      (optionalAttrs (portsWithoutIFACE != []) (
         # let
         #   conf = mkFWConf portsWithoutIFACE;
         # in
@@ -231,23 +225,25 @@ in
         mkFWConf portsWithoutIFACE
       ))
 
-      (optionalAttrs (portsWithIFACE != [ ]) {
-        interfaces = (mapAttrs (name: value: mkFWConf value) portsWithIFACE);
+      (optionalAttrs (portsWithIFACE != []) {
+        interfaces = mapAttrs (name: value: mkFWConf value) portsWithIFACE;
       })
     ];
     kittenModules.firewall.forward = lib.mkIf (config.kittenModules.firewall.forward.enable) {
       variables = {
-        wireguardIFACEs =
-          let
-            inherit (lib) attrNames concatMapStringsSep mkIf;
-            quoteString = s: ''"${builtins.toString s}"'';
+        wireguardIFACEs = let
+          inherit (lib) attrNames concatMapStringsSep mkIf;
+          quoteString = s: ''"${builtins.toString s}"'';
 
-            wgIFs = attrNames peers;
-            wgIFstr = concatMapStringsSep ", " quoteString wgIFs;
-          in
-          ''{ ${if peers != {} then wgIFstr else "lo"} }'';
+          wgIFs = attrNames peers;
+          wgIFstr = concatMapStringsSep ", " quoteString wgIFs;
+        in ''{ ${
+            if peers != {}
+            then wgIFstr
+            else "lo"
+          } }'';
       };
-      rules = lib.mkIf (peers != { }) ''iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept'';
+      rules = lib.mkIf (peers != {}) ''iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept'';
     };
 
     # networking.wg-quick.interfaces = genAttrs (attrNames peers) mkWireguardConf;

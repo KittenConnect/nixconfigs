@@ -1,11 +1,10 @@
-args@{
+args @ {
   lib,
   pkgs,
   config,
   profile,
   ...
-}:
-let
+}: let
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.strings) optionalString splitString concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
@@ -16,15 +15,17 @@ let
   spaces = n: lib.concatMapStrings (x: " ") (lib.range 1 n);
   indented = n: s: concatStringsSep "\n${spaces n}" (splitString "\n" s);
 
-  mkEnabledOption =
-    desc:
+  mkEnabledOption = desc:
     lib.mkEnableOption desc
     // {
       example = false;
       default = true;
     };
 
-  mkRule = { rule, comment }: ''${rule} comment "${comment}"'';
+  mkRule = {
+    rule,
+    comment,
+  }: ''${rule} comment "${comment}"'';
 
   profilesPath = ./profiles;
   profiles = lib.pipe (import profilesPath args).imports [
@@ -33,8 +34,7 @@ let
   ];
 
   cfg = config.kittenModules.firewall;
-in
-{
+in {
   options.kittenModules.firewall = {
     enable = mkEnabledOption "KittenConnect common firewall module";
 
@@ -53,7 +53,7 @@ in
 
       variables = mkOption {
         type = types.attrsOf types.str;
-        default = { };
+        default = {};
       };
 
       rules = mkOption {
@@ -68,7 +68,7 @@ in
     };
 
     profile = mkOption {
-      type = types.enum ([ "" ] ++ profiles);
+      type = types.enum ([""] ++ profiles);
       default = "";
     };
   };
@@ -102,9 +102,13 @@ in
             gotoRules = "jump ${cfg.forward.chain}";
             vmapRules = ''
               ct state vmap {
-                established: accept, related: accept, 
+                established: accept, related: accept,
                 new: ${gotoRules}, untracked: ${gotoRules},
-                invalid: ${if cfg.forward.keepInvalidState then gotoRules else "drop"},
+                invalid: ${
+                if cfg.forward.keepInvalidState
+                then gotoRules
+                else "drop"
+              },
               }
             '';
 
@@ -117,14 +121,17 @@ in
               comment = "Accept all DNAT-marked packet in ConnTrack.";
               rule = "ct status dnat accept";
             });
-          in
-          ''
-            # Kitten NixOS Forward rules 
+          in ''
+            # Kitten NixOS Forward rules
             ${concatStringsSep "\n" fwVars}
 
             chain forward {
               type filter hook forward priority filter; policy drop;
-              ${if cfg.forward.stateless then gotoRules else indented 2 vmapRules}
+              ${
+              if cfg.forward.stateless
+              then gotoRules
+              else indented 2 vmapRules
+            }
             }
 
             chain ${cfg.forward.chain} {

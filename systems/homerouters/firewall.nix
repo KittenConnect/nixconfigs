@@ -1,7 +1,6 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 {
   lib,
   pkgs,
@@ -9,30 +8,32 @@
   birdConfig,
   wgPeers,
   ...
-}:
-let
-  IFACE = if targetConfig ? interface then targetConfig.interface else null;
+}: let
+  IFACE =
+    if targetConfig ? interface
+    then targetConfig.interface
+    else null;
 
   transitedNetworks =
-    if (birdConfig ? transitNetworks && birdConfig.transitNetworks != null) then
-      birdConfig.transitNetworks
-    else
-      [
-        "2a13:79c0:ff00::/44" # Transits Customer ranges: 2a13:79c0:{ff00-ff0f}::/48
-        "2a13:79c0:ffff:fefe::/64"
-        "2a13:79c0:ffff:feff:b00b::/80"
-      ];
+    if (birdConfig ? transitNetworks && birdConfig.transitNetworks != null)
+    then birdConfig.transitNetworks
+    else [
+      "2a13:79c0:ff00::/44" # Transits Customer ranges: 2a13:79c0:{ff00-ff0f}::/48
+      "2a13:79c0:ffff:fefe::/64"
+      "2a13:79c0:ffff:feff:b00b::/80"
+    ];
   # wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
 
   transitIFACEs =
-    [ ]
-    ++ lib.optionals (birdConfig.transitInterfaces != [ ]) birdConfig.transitInterfaces;
-  kittenIFACEs = [ ];
+    []
+    ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
+  kittenIFACEs = [];
   # (
   #   (attrNames wgPeers) ++ lib.optionals (birdConfig.allowedInterfaces != []) birdConfig.allowedInterfaces
   # );
 
-  inherit (lib)
+  inherit
+    (lib)
     mkAfter
     optionalString
     concatStringsSep
@@ -41,9 +42,7 @@ let
     filterAttrs
     optional
     ;
-in
-{
-
+in {
   config = {
     boot.kernel.sysctl = {
       "net.ipv4.ip_forward" = 1;
@@ -65,52 +64,53 @@ in
     networking.nftables = {
       enable = true;
 
-      tables."nixos-fw".content =
-        let
-          quoteString = x: ''"${x}"'';
+      tables."nixos-fw".content = let
+        quoteString = x: ''"${x}"'';
 
-          defines = lib.concatStringsSep "\n" ([
-            (optionalString (transitIFACEs != [ ])
-              "define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }"
-            )
-            (optionalString (
-              transitedNetworks != [ ]
-            ) "define transitNETs = { ${concatStringsSep ", " transitedNetworks} }")
-            (optionalString (wgPeers != { })
-              "define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }"
-            )
-            (optionalString (kittenIFACEs != [ ])
-              "define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }"
-            )
-          ]);
+        defines = lib.concatStringsSep "\n" [
+          (
+            optionalString (transitIFACEs != [])
+            "define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }"
+          )
+          (optionalString (
+            transitedNetworks != []
+          ) "define transitNETs = { ${concatStringsSep ", " transitedNetworks} }")
+          (
+            optionalString (wgPeers != {})
+            "define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }"
+          )
+          (
+            optionalString (kittenIFACEs != [])
+            "define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }"
+          )
+        ];
 
-          extraForwardRules = lib.concatStringsSep "\n" (
-            [
-              ''
-                ${optionalString (transitedNetworks != [ ] && transitIFACEs != [ ]) ''
-                  # iifname $wireguardIFACEs oifname $transitIFACEs counter accept
-                  ip6 saddr $transitNETs  iifname $wireguardIFACEs  oifname $transitIFACEs  counter accept
-                  ip6 daddr $transitNETs  oifname $wireguardIFACEs  iifname $transitIFACEs  counter accept
-                ''}
+        extraForwardRules = lib.concatStringsSep "\n" (
+          [
+            ''
+              ${optionalString (transitedNetworks != [] && transitIFACEs != []) ''
+                # iifname $wireguardIFACEs oifname $transitIFACEs counter accept
+                ip6 saddr $transitNETs  iifname $wireguardIFACEs  oifname $transitIFACEs  counter accept
+                ip6 daddr $transitNETs  oifname $wireguardIFACEs  iifname $transitIFACEs  counter accept
+              ''}
 
-                ${optionalString (
-                  wgPeers != { }
-                ) "iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept"}
+              ${optionalString (
+                wgPeers != {}
+              ) "iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept"}
 
-                # ip6 daddr 2a13:79c0:ff00::/48 counter accept
-                # ip6 daddr { 2a13:79c0:ffff:feff:b00b:3945:a51:b00b, 2a13:79c0:ffff:feff:b00b:3945:a51:dead } counter accept
+              # ip6 daddr 2a13:79c0:ff00::/48 counter accept
+              # ip6 daddr { 2a13:79c0:ffff:feff:b00b:3945:a51:b00b, 2a13:79c0:ffff:feff:b00b:3945:a51:dead } counter accept
 
-                # ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
+              # ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
 
-                # ip6 saddr 2a13:79c0:ffff:feff:b00b::/80 ip6 daddr 2a13:79c0:ffff:fefe::/64 counter accept
+              # ip6 saddr 2a13:79c0:ffff:feff:b00b::/80 ip6 daddr 2a13:79c0:ffff:fefe::/64 counter accept
 
-                # ip6 saddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } ip6 daddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } counter accept
-              ''
-            ]
-
-            ++ optional (birdConfig ? extraForwardRules) birdConfig.extraForwardRules
-          );
-        in
+              # ip6 saddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } ip6 daddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } counter accept
+            ''
+          ]
+          ++ optional (birdConfig ? extraForwardRules) birdConfig.extraForwardRules
+        );
+      in
         mkAfter ''
           # FireWall Test Configs
           ${defines}
@@ -140,7 +140,7 @@ in
     networking.firewall = {
       enable = true;
 
-      allowedTCPPorts = [ 22 ];
+      allowedTCPPorts = [22];
       # allowedUDPPorts = [ ... ];
 
       # checkReversePath = "loose";

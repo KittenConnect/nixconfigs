@@ -1,16 +1,14 @@
-{ ... }:
-let
+{...}: let
   kittenASN = 4242421945;
-in
-{
+in {
   # vultr6
   # AS64515
   # Peer-IP : 2001:19f0:ffff::1
 
   # protocol bgp TRANSIT_VULTR6 {
-  # 
+  #
   #     multihop 2;
-  # 
+  #
 
   #     ipv6 {
   #             export filter {
@@ -21,7 +19,7 @@ in
   #         };
   #         import none;
   #     };
-  # 
+  #
   # }
   peerAS = kittenASN;
   peerIP = "2a13:79c0:ffff:feff::113";

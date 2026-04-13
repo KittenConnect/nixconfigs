@@ -1,15 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-args@{
+args @ {
   config,
   kittenLib,
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/vda";
@@ -21,15 +19,14 @@ let
   peers = import ./peers args;
 
   wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
+    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != {}) peers)
   );
 
-  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers);
-in
-{
+  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers;
+in {
   imports = [
     ./hardware-configuration.nix
-#     ./network-configuration.nix # included here because of its simplicity
+    #     ./network-configuration.nix # included here because of its simplicity
 
     ../../../modules/system/kitten/connect/bird2/snippets/kittenCores.nix
   ];
@@ -47,13 +44,12 @@ in
 
   # Networking
 
-
   services.cloud-init = {
     enable = true;
     ext4.enable = true;
     network.enable = true;
     settings = {
-      datasource_list = [ "Vultr" ];
+      datasource_list = ["Vultr"];
       disable_root = false;
       ssh_pwauth = 0;
       updates = {
@@ -87,20 +83,22 @@ in
 
     bird = {
       enable = true;
-      
-      loopback6 = "2a13:79c0:ffff:fefe::b48d";
-      
-      transitInterfaces = [ iface ];
-      static6 = [
-        "2a13:79c0:ffff:fefe::b00b/128 unreachable" # Special Anycast "loopback" for default gateways
 
-        # "2a13:79c0:ffff::/48 unreachable" # Networking stuff
-        # "2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
-        # "2a13:79c0:ff00::/40 unreachable" # full range /40
-        "2a12:5844:1310::/44 unreachable" # New range /44
-      ] ++ lib.mapAttrsToList (n: v: ''${n} via "fe80::${v}%${iface}"'') {
-        "2001:19f0::/32" = "fc00:4ff:fe82:5c6e";
-      };
+      loopback6 = "2a13:79c0:ffff:fefe::b48d";
+
+      transitInterfaces = [iface];
+      static6 =
+        [
+          "2a13:79c0:ffff:fefe::b00b/128 unreachable" # Special Anycast "loopback" for default gateways
+
+          # "2a13:79c0:ffff::/48 unreachable" # Networking stuff
+          # "2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
+          # "2a13:79c0:ff00::/40 unreachable" # full range /40
+          "2a12:5844:1310::/44 unreachable" # New range /44
+        ]
+        ++ lib.mapAttrsToList (n: v: ''${n} via "fe80::${v}%${iface}"'') {
+          "2001:19f0::/32" = "fc00:4ff:fe82:5c6e";
+        };
 
       peers = birdPeers;
     };

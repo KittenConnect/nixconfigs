@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   bootdisk = "/dev/sda";
   bootloader = "grub";
   interface = "eno1";

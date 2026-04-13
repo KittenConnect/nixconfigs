@@ -1,11 +1,9 @@
-{ ... }:
-let
+{...}: let
   iface = "ens18";
   # kittenIFACE = "ens19";
-in
-{
+in {
   kittenModules = {
-    bird.transitInterfaces = [ iface ];
+    bird.transitInterfaces = [iface];
   };
 
   networking = {

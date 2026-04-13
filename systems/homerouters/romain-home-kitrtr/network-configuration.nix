@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -17,7 +16,6 @@
       ens18.useDHCP = true;
 
       vlan36 = {
-
         # ipv4.addresses = [
         #   {
         #     address = "185.10.17.209";

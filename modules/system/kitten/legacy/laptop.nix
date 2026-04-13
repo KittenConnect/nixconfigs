@@ -1,26 +1,23 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 {
   config,
   targetConfig,
   lib,
   pkgs,
   ...
-}:
-
-{
+}: {
   services.openssh.enable = lib.mkForce false; # Disable OpenSSH server on laptop
 
   boot.initrd.systemd.enable = true; # Cleaner plymouth integration but no YubiKey support
 
-  boot.plymouth = lib.mkIf (config.specialisation != { }) {
+  boot.plymouth = lib.mkIf (config.specialisation != {}) {
     enable = true;
     theme = lib.mkIf (config.services.xserver.desktopManager.plasma5.enable) "breeze";
   };
 
-  boot.kernelParams = lib.mkIf (config.specialisation != { }) [ "quiet" ]; # Shut The Fuck Up on boot (plymouth will be interupted with boot logs if not set)
+  boot.kernelParams = lib.mkIf (config.specialisation != {}) ["quiet"]; # Shut The Fuck Up on boot (plymouth will be interupted with boot logs if not set)
   boot.consoleLogLevel = lib.mkDefault 0;
 
   specialisation.debug.configuration = {
@@ -40,14 +37,13 @@
   services.flatpak.enable = true;
   # Deezer
 
-  environment.systemPackages =
-    with pkgs;
+  environment.systemPackages = with pkgs;
     [
       vim # Usefull to fix a broken config from TTY
 
       # libinput-gestures
     ]
-    ++ lib.optionals (config.virtualisation.libvirtd.enable) [ virt-manager ]
+    ++ lib.optionals (config.virtualisation.libvirtd.enable) [virt-manager]
     ++ [
       # Personal comfort Apps
       parsec-bin # To play GTA at work
@@ -58,7 +54,7 @@
   programs._1password.enable = true;
 
   # VirtManager + LibVirt
-  environment.sessionVariables.LIBVIRT_DEFAULT_URI = [ "qemu:///system" ];
+  environment.sessionVariables.LIBVIRT_DEFAULT_URI = ["qemu:///system"];
   virtualisation.libvirtd = {
     enable = true;
     qemu.ovmf.enable = true; # UEFI
@@ -170,6 +166,6 @@
       '';
     };
 
-    profiles = { };
+    profiles = {};
   };
 }

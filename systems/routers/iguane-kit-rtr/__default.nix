@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   ### type = "targetConfig";
 
   # mainSerial = 0;

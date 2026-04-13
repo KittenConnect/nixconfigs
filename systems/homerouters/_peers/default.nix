@@ -1,8 +1,6 @@
-{ ... }:
-let
+{...}: let
   globalPeers = import ../../_peers {};
-in
-{
+in {
   # Internal RR
   inherit (globalPeers) IG1_RR91;
 }

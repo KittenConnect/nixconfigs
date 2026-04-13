@@ -1,21 +1,18 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
 {
   name,
   nodes,
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/vda";
   };
-in
-{
+in {
   imports = [
     # Include the results of the hardware scan.
     ../default.nix
@@ -33,7 +30,6 @@ in
   # Bootloader.
   boot.loader.grub.efiSupport = false;
   boot.loader.grub.enable = true;
-
 
   kittenModules = {
     # network = {
@@ -93,8 +89,8 @@ in
   services.openssh.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ ];
-  networking.firewall.allowedUDPPorts = [ ];
+  networking.firewall.allowedTCPPorts = [];
+  networking.firewall.allowedUDPPorts = [];
   # Or disable the firewall altogether.
   networking.firewall.enable = lib.mkDefault true;
 

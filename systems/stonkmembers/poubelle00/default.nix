@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   # need rework
   bootdisk = "/dev/sda";
   interface = "ens18";

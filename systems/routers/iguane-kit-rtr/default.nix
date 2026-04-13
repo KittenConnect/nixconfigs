@@ -1,15 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-args@{
+args @ {
   config,
   lib,
   kittenLib,
   pkgs,
   ...
-}:
-let
+}: let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/vda";
@@ -18,12 +16,11 @@ let
   peers = import ./peers args;
 
   wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
+    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != {}) peers)
   );
 
-  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers);
-in
-{
+  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers;
+in {
   imports = [
     ./hardware-configuration.nix
     ./network-configuration.nix

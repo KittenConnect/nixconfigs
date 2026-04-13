@@ -1,10 +1,8 @@
-{ ... }:
-let
+{...}: let
   kittenIface = "ens18";
-in
-{
+in {
   networking = {
-    nameservers = [ "2620:fe::fe" ];
+    nameservers = ["2620:fe::fe"];
 
     interfaces = {
       # ens18.useDHCP = true;

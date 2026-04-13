@@ -1,5 +1,4 @@
-{...}:
-{
+{...}: {
   # Default nixOS modules
 
   imports = [

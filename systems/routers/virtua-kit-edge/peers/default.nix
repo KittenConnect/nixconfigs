@@ -1,9 +1,9 @@
-{ kittenLib, ... }:
+{kittenLib, ...}:
 kittenLib.peers {
   host = ./.;
   profile = ../..;
 
-  blacklist = [ "KIT-VIRTUA-EDGE.legacy" ];
+  blacklist = ["KIT-VIRTUA-EDGE.legacy"];
   manual = {
     # Transit
     TRS_virtua6_RS01 = ./TRS-virtua6-RS01.nix;

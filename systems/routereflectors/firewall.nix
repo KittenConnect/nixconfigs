@@ -3,14 +3,10 @@
   pkgs,
   config,
   ...
-}:
-let
+}: let
   cfg = config.hostprofile.rr;
-in
-{
-
+in {
   config = {
-
     # environment.systemPackages = with pkgs; [ ferm ]; # Prepare an eventual switch to FERM
 
     networking.nftables.enable = true;

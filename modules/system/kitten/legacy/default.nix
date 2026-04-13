@@ -1,17 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 {
   config,
   lib,
   pkgs,
   sources,
   ...
-}:
-
-{
-
+}: {
   imports = [
     # ./nixConfig.nix
     # ./packages.nix # Install system-wide pkgs
@@ -38,7 +34,7 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
-  boot.supportedFilesystems = [ "nfs" ];
+  boot.supportedFilesystems = ["nfs"];
   services.rpcbind.enable = true; # NFS - Client
 
   services.chrony = {

@@ -1,9 +1,9 @@
-{ kittenLib, ... }:
+{kittenLib, ...}:
 kittenLib.peers {
   host = ./.;
   profile = ../..;
 
-  blacklist = [ ];
+  blacklist = [];
   manual = {
     # Internal Tunnels
     virtuaNix_PAR = ./KIT-VIRTUA-EDGE.nix;

@@ -3,9 +3,9 @@
   pkgs,
   lib,
   ...
-}:
-let
-  inherit (lib)
+}: let
+  inherit
+    (lib)
     mapAttrs
     mkIf
     mkOption
@@ -23,8 +23,7 @@ let
     destination = "/kmscon.conf";
     text = cfg.extraConfig;
   };
-in
-{
+in {
   options = {
     services.kmscon = {
       enable = mkOption {
@@ -49,22 +48,20 @@ in
         description = "Fonts used by kmscon, in order of priority.";
         default = null;
         example = lib.literalExpression ''[ { name = "Source Code Pro"; package = pkgs.source-code-pro; } ]'';
-        type =
-          with types;
-          let
-            fontType = submodule {
-              options = {
-                name = mkOption {
-                  type = str;
-                  description = "Font name, as used by fontconfig.";
-                };
-                package = mkOption {
-                  type = package;
-                  description = "Package providing the font.";
-                };
+        type = with types; let
+          fontType = submodule {
+            options = {
+              name = mkOption {
+                type = str;
+                description = "Font name, as used by fontconfig.";
+              };
+              package = mkOption {
+                type = package;
+                description = "Package providing the font.";
               };
             };
-          in
+          };
+        in
           nullOr (nonEmptyListOf fontType);
       };
 
@@ -123,22 +120,21 @@ in
       X-RestartIfChanged=false
     '';
 
-    systemd.suppressedSystemUnits = [ "autovt@.service" ];
-    systemd.units."kmsconvt@.service".aliases = [ "autovt@.service" ];
+    systemd.suppressedSystemUnits = ["autovt@.service"];
+    systemd.units."kmsconvt@.service".aliases = ["autovt@.service"];
 
     systemd.services.systemd-vconsole-setup.enable = false;
     systemd.services.reload-systemd-vconsole-setup.enable = false;
 
-    services.kmscon.extraConfig =
-      let
-        render = optionals cfg.hwRender [
-          "drm"
-          "hwaccel"
-        ];
-        fonts =
-          optional (cfg.fonts != null)
-            "font-name=${lib.concatMapStringsSep ", " (f: f.name) cfg.fonts}";
-      in
+    services.kmscon.extraConfig = let
+      render = optionals cfg.hwRender [
+        "drm"
+        "hwaccel"
+      ];
+      fonts =
+        optional (cfg.fonts != null)
+        "font-name=${lib.concatMapStringsSep ", " (f: f.name) cfg.fonts}";
+    in
       lib.concatStringsSep "\n" (render ++ fonts);
 
     hardware.opengl.enable = mkIf cfg.hwRender true;

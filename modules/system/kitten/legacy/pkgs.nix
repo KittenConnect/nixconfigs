@@ -1,6 +1,8 @@
-{ lib, pkgs, ... }:
-
 {
+  lib,
+  pkgs,
+  ...
+}: {
   environment.systemPackages = with pkgs; [
     krewfile
     zsh

@@ -4,7 +4,7 @@
     ./kitten/connect/nixHome.nix
     ./kitten/connect/packages.nix
     ./kitten/connect/misc.nix
-    
+
     ./kitten/connect/firewall
     ./kitten/connect/disko
     ./kitten/connect/packages

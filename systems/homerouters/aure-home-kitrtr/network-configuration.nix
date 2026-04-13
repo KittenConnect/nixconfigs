@@ -1,9 +1,7 @@
-{ ... }:
-let
+{...}: let
   iface = "ens18";
   kittenIFACE = "ens19";
-in
-{
+in {
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -13,7 +11,6 @@ in
       "${iface}".useDHCP = true;
 
       "${kittenIFACE}" = {
-
         # ipv4.addresses = [
         #   {
         #     address = "185.10.17.209";

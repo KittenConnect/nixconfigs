@@ -4,8 +4,7 @@
   config,
   targetConfig,
   ...
-}:
-let
+}: let
   nerdFonts = true;
 
   palette = [
@@ -28,8 +27,7 @@ let
   ];
 
   inherit (lib) mkDefault;
-in
-{
+in {
   services.gpm.enable = mkDefault true;
 
   # systemd.units."kmsconvt@.service".ExecStart = lib.mkIf (nerdFonts) (
@@ -45,14 +43,14 @@ in
 
   # conf.options.services.openssh.settings.value.Macs
 
-  services.kmscon = lib.mkIf (nerdFonts) {
+  services.kmscon = lib.mkIf nerdFonts {
     enable = true;
     hwRender = false;
 
     fonts = [
       {
         name = "Hack Nerd Font Mono";
-        package = with pkgs; (nerdfonts.override { fonts = [ "Hack" ]; });
+        package = with pkgs; (nerdfonts.override {fonts = ["Hack"];});
       }
     ];
 

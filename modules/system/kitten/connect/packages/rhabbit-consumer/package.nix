@@ -3,8 +3,7 @@
   lib,
   fetchFromGitHub,
   ...
-}:
-let
+}: let
   src = lib.cleanSource (fetchFromGitHub {
     owner = "KittenConnect";
     repo = "rh-api";
@@ -14,15 +13,14 @@ let
     # ...
   });
 in
-buildGoModule {
-  name = "kittenMQ-consumer";
-  inherit src;
-  # vendorProxy = true;
-  # vendorHash = "";
-  vendorHash = "sha256-XE5npxjcTRDmINM2IFS4C9NWfsAYiGs+h4sDIZX8AhU=";
+  buildGoModule {
+    name = "kittenMQ-consumer";
+    inherit src;
+    # vendorProxy = true;
+    # vendorHash = "";
+    vendorHash = "sha256-XE5npxjcTRDmINM2IFS4C9NWfsAYiGs+h4sDIZX8AhU=";
 
-  postInstall = ''
-    mv $out/bin/rh-api $out/bin/kittenMQ-consumer
-  '';
-
-}
+    postInstall = ''
+      mv $out/bin/rh-api $out/bin/kittenMQ-consumer
+    '';
+  }

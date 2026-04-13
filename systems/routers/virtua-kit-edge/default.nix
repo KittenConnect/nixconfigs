@@ -1,15 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-args@{
+args @ {
   config,
   kittenLib,
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/sda";
@@ -19,12 +17,11 @@ let
   peers = import ./peers args;
 
   wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
+    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != {}) peers)
   );
 
-  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers);
-in
-{
+  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers;
+in {
   imports = [
     ./hardware-configuration.nix
     ./network-configuration.nix
@@ -58,9 +55,9 @@ in
 
     bird = {
       enable = true;
-      
+
       loopback6 = "2a13:79c0:ffff:fefe::12:10";
-      
+
       static6 = [
         # "::/0 recursive 2a13:79c0:ffff:fefe::b00b"
         # ''2a0d:e680:0::b:1/128 via "enp1s0"'' # Vultr bgp neighbor

@@ -1,5 +1,6 @@
-{...}: let inherit ((import ../../.. {}).inputs) sources; in
-{
+{...}: let
+  inherit ((import ../../.. {}).inputs) sources;
+in {
   imports = [
     "${sources.home-manager}/nixos"
   ];

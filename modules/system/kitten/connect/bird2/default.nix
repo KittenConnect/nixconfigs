@@ -1,13 +1,13 @@
-args@{
+args @ {
   lib,
   kittenLib,
   pkgs,
   config,
   name,
   ...
-}:
-let
-  inherit (lib)
+}: let
+  inherit
+    (lib)
     optional
     optionals
     optionalString
@@ -58,140 +58,141 @@ let
 
   # Options
 
-  birdPeerSubmodule =
-    { name, config, ... }:
-    {
-      options = {
-        enable = mkEnableOption "${name} peer.";
+  birdPeerSubmodule = {
+    name,
+    config,
+    ...
+  }: {
+    options = {
+      enable = mkEnableOption "${name} peer.";
 
-        peerName = mkOption {
-          type = types.str;
-          default = name;
-          description = "Override name of the BGP peer.";
+      peerName = mkOption {
+        type = types.str;
+        default = name;
+        description = "Override name of the BGP peer.";
+      };
+
+      peerIP = mkOption {
+        type = types.str;
+        description = "IP address of the BGP peer.";
+      };
+
+      peerAS = mkOption {
+        type = types.int;
+        default = 65666;
+        description = "Autonomous System number of the BGP peer.";
+      };
+
+      localIP = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Local IP address.";
+      };
+
+      localAS = mkOption {
+        type = types.int;
+        default = 65666;
+        description = "Local Autonomous System number.";
+      };
+
+      multihop = mkOption {
+        type = types.int;
+        default = 0;
+        description = "Multihop TTL value.";
+      };
+
+      template = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "bird template to use";
+      };
+
+      password = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Password for BGP session.";
+      };
+
+      passwordRef = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Reference to a password for BGP session.";
+      };
+
+      ipv4 = {
+        bgpImports = mkOption {
+          type = types.nullOr (types.oneOf [types.str (types.listOf types.str)]);
+          default = [];
+          description = "List of IPv4 import rules.";
         };
 
-        peerIP = mkOption {
-          type = types.str;
-          description = "IP address of the BGP peer.";
-        };
-
-        peerAS = mkOption {
-          type = types.int;
-          default = 65666;
-          description = "Autonomous System number of the BGP peer.";
-        };
-
-        localIP = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "Local IP address.";
-        };
-
-        localAS = mkOption {
-          type = types.int;
-          default = 65666;
-          description = "Local Autonomous System number.";
-        };
-
-        multihop = mkOption {
-          type = types.int;
-          default = 0;
-          description = "Multihop TTL value.";
-        };
-
-        template = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "bird template to use";
-        };
-
-        password = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "Password for BGP session.";
-        };
-
-        passwordRef = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "Reference to a password for BGP session.";
-        };
-
-        ipv4 = {
-
-          bgpImports = mkOption {
-            type = types.nullOr (types.oneOf [types.str (types.listOf types.str)]);
-            default = [ ];
-            description = "List of IPv4 import rules.";
-          };
-
-          bgpExports = mkOption {
-            type = types.listOf types.str;
-            default = [ ];
-            description = "List of IPv4 export rules.";
-          };
-        };
-
-        ipv6 = {
-
-          bgpImports = mkOption {
-            type = types.nullOr (
-              types.oneOf [
-                types.str
-                (types.listOf types.str)
-              ]
-            );
-            default = [ ];
-            description = "List of IPv6 import rules.";
-          };
-
-          bgpExports = mkOption {
-            type = types.nullOr (
-              types.oneOf [
-                types.str
-                # (types.functionTo {
-                #   description = "return filter name / filter list dynamically";
-                # })
-                (types.listOf types.str)
-              ]
-            );
-            # type = types.listOf types.str;
-            default = [ ];
-            description = "List of IPv6 export rules.";
-          };
-        };
-
-        bgpMED = mkOption {
-          type = types.nullOr types.int;
-          default = null;
-          description = "BGP Multi Exit Discriminator.";
-        };
-
-        # wireguard = mkOption {
-        #   type = types.attrs;
-        #   default = { };
-        #   description = "Wireguard configuration.";
-        # };
-
-        interface = mkOption {
-          type = types.nullOr types.str;
-
-          description = "Network interface.";
-          default = if config.multihop == 0 then config.peerName else null;
-          # default = if config.wireguard != { } then
-          #   (if config.wireguard ? interface then
-          #     config.wireguard.interface
-          #   else
-          #     config.peerName)
-          # else
-          #   null;
+        bgpExports = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          description = "List of IPv4 export rules.";
         };
       };
-    };
-in
-{
 
-  imports = [ ./server_config.nix ];
+      ipv6 = {
+        bgpImports = mkOption {
+          type = types.nullOr (
+            types.oneOf [
+              types.str
+              (types.listOf types.str)
+            ]
+          );
+          default = [];
+          description = "List of IPv6 import rules.";
+        };
+
+        bgpExports = mkOption {
+          type = types.nullOr (
+            types.oneOf [
+              types.str
+              # (types.functionTo {
+              #   description = "return filter name / filter list dynamically";
+              # })
+              (types.listOf types.str)
+            ]
+          );
+          # type = types.listOf types.str;
+          default = [];
+          description = "List of IPv6 export rules.";
+        };
+      };
+
+      bgpMED = mkOption {
+        type = types.nullOr types.int;
+        default = null;
+        description = "BGP Multi Exit Discriminator.";
+      };
+
+      # wireguard = mkOption {
+      #   type = types.attrs;
+      #   default = { };
+      #   description = "Wireguard configuration.";
+      # };
+
+      interface = mkOption {
+        type = types.nullOr types.str;
+
+        description = "Network interface.";
+        default =
+          if config.multihop == 0
+          then config.peerName
+          else null;
+        # default = if config.wireguard != { } then
+        #   (if config.wireguard ? interface then
+        #     config.wireguard.interface
+        #   else
+        #     config.peerName)
+        # else
+        #   null;
+      };
+    };
+  };
+in {
+  imports = [./server_config.nix];
 
   # Options
   options = {
@@ -200,7 +201,7 @@ in
       # defaultSnippet = (mkEnableOption "Kitten Bird2 default config") // { default = true; example = false; };
 
       peers = mkOption {
-        default = { };
+        default = {};
         type = with types; attrsOf (submodule birdPeerSubmodule); # types.submodule (mkNamedOptionModule birdPeerSubmodule);
         description = "Configuration for BGP peers.";
       };
@@ -225,7 +226,7 @@ in
 
       transitInterfaces = mkOption {
         type = types.listOf types.str;
-        default = [ ];
+        default = [];
         description = "Transit interface.";
       };
 
@@ -237,7 +238,7 @@ in
 
       static6 = mkOption {
         type = types.listOf types.str;
-        default = [ ];
+        default = [];
         description = "List of static IPv6 addresses.";
       };
     };
@@ -260,20 +261,21 @@ in
     ];
 
     # Secrets management
-    sops = mkIf (passwords != [ ]) {
+    sops = mkIf (passwords != []) {
       secrets = (
         listToAttrs (
-          map (n: nameValuePair "bird_secrets/${n}" { reloadUnits = [ "bird2.service" ]; }) passwords
+          map (n: nameValuePair "bird_secrets/${n}" {reloadUnits = ["bird2.service"];}) passwords
         )
       );
 
-      templates."bird_secrets.conf" = mkIf (passwords != [ ]) {
+      templates."bird_secrets.conf" = mkIf (passwords != []) {
         owner = cfg.user;
         content = (
           mkMerge (
             map (password: ''
               define secretPassword_${password} = "${config.sops.placeholder."bird_secrets/${password}"}";
-            '') passwords
+            '')
+            passwords
           )
         );
       };
@@ -282,8 +284,8 @@ in
     # Service configuration
     services.bird2 = {
       enable = cfg.enable;
-      
-      preCheckConfig = mkIf (passwords != [ ]) ''
+
+      preCheckConfig = mkIf (passwords != []) ''
         echo "Bird configuration include these resources"
         grep include bird2.conf
 
@@ -314,24 +316,26 @@ in
 
           '')
         ]
-        ++ optional (passwords != [ ]) (
+        ++ optional (passwords != []) (
           mkOrder 5 ''include "${config.sops.templates."bird_secrets.conf".path}";''
         )
-        ++ optional (cfg.peers != { }) (
+        ++ optional (cfg.peers != {}) (
           let
-            peerFunc = (import ./peer_config.nix);
+            peerFunc = import ./peer_config.nix;
 
             mkPeersFuncArgs = (
               x:
-              args
-              // {
-                inherit withType;
-              }
-              // {
-                peer = {
-                  peerName = x;
-                } // peers.${x};
-              }
+                args
+                // {
+                  inherit withType;
+                }
+                // {
+                  peer =
+                    {
+                      peerName = x;
+                    }
+                    // peers.${x};
+                }
             );
 
             mkPeerConfig = x: ''
@@ -341,16 +345,16 @@ in
 
             '';
           in
-          mkOrder 50 ''
-            # Nix-OS Generated for ${name}
+            mkOrder 50 ''
+                     # Nix-OS Generated for ${name}
 
-	    protocol static STATIC6 {
-	        ipv6;
-	        ${indentedLines 4 (concatStringsSep "\n" (map (x: "route ${x};") cfg.static6))}
-	    }
+              protocol static STATIC6 {
+                  ipv6;
+                  ${indentedLines 4 (concatStringsSep "\n" (map (x: "route ${x};") cfg.static6))}
+              }
 
-            ${lib.concatMapStringsSep "\n" mkPeerConfig (builtins.attrNames peers)}
-          ''
+                     ${lib.concatMapStringsSep "\n" mkPeerConfig (builtins.attrNames peers)}
+            ''
         )
       );
     };
@@ -358,8 +362,8 @@ in
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
       enable = mkDefault true;
 
-      ipv4 = mkIf (cfg.loopback4 != null) [ cfg.loopback4 ];
-      ipv6 = mkIf (cfg.loopback6 != null) [ cfg.loopback6 ];
+      ipv4 = mkIf (cfg.loopback4 != null) [cfg.loopback4];
+      ipv6 = mkIf (cfg.loopback6 != null) [cfg.loopback6];
     };
 
     # kittenModules.bird = {

@@ -1,28 +1,24 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
-args@{
+args @ {
   config,
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   # diskoProfile = "simple";
   # diskoConfig = {
   #   bootdisk = "/dev/vda";
   # };
-
-  peers = (import ./peers (args // { }));
+  peers = import ./peers (args // {});
 
   wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
+    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != {}) peers)
   );
 
-  birdPeers = (lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers);
-in
-{
+  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers;
+in {
   services.xserver.xkb = {
     layout = "fr";
     #variant = "";
@@ -50,18 +46,16 @@ in
   #boot.loader.grub.devices = [ "${targetConfig.bootdisk}" ]; # or "nodev" for efi only
 
   kittenModules = {
-    disko =
-      let
-        profile = "simple";
-      in
-      {
-        enable = true;
-        inherit profile;
+    disko = let
+      profile = "simple";
+    in {
+      enable = true;
+      inherit profile;
 
-        ${profile} = {
-          bootdisk = "/dev/vda";
-        };
+      ${profile} = {
+        bootdisk = "/dev/vda";
       };
+    };
 
     firewall = {
       enable = true;

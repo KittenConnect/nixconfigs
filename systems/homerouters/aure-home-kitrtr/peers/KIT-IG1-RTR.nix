@@ -1,8 +1,6 @@
-{ ... }:
-let
+{...}: let
   kittenASN = 4242421945;
-in
-{
+in {
   peerAS = kittenASN;
   peerIP = "2a13:79c0:ffff:feff::53";
   localAS = kittenASN;

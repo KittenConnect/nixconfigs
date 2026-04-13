@@ -1,16 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 {
   config,
   targetConfig,
   lib,
   pkgs,
   ...
-}:
-
-{
+}: {
   #imports = [ ./wireguard.nix ];
   # Bootloader.
   #boot.loader.systemd-boot.enable = true;
@@ -38,7 +35,7 @@
     ext4.enable = true;
     network.enable = true;
     settings = {
-      datasource_list = [ "Vultr" ];
+      datasource_list = ["Vultr"];
       disable_root = false;
       ssh_pwauth = 0;
       updates = {

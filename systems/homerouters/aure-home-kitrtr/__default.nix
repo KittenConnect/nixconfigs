@@ -1,5 +1,4 @@
-{ ... }:
-{
+{...}: {
   type = "targetConfig";
 
   bootdisk = "/dev/vda";

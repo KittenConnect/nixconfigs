@@ -1,38 +1,38 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 {
   config,
   targetConfig,
   lib,
   pkgs,
   ...
-}:
-
-let
+}: let
   cfg = config.services.ovpn;
 
   forEachCFG = (
     name: val:
-    builtins.listToAttrs (
-      map (conf: {
-        name = if name == "" then conf else lib.trivial.toFunction name conf;
+      builtins.listToAttrs (
+        map (conf: {
+          name =
+            if name == ""
+            then conf
+            else lib.trivial.toFunction name conf;
 
-        value = lib.trivial.toFunction val conf;
-      }) cfg.configs
-    )
+          value = lib.trivial.toFunction val conf;
+        })
+        cfg.configs
+      )
   );
 
   openscPKCS11 = "${pkgs.opensc}/lib/opensc-pkcs11.so";
   showPKCS11 = "${pkgs.openvpn_show_pkcs11_ids}/bin/openvpn_show_pkcs11_ids.sh";
-in
-{
+in {
   options.services.ovpn = {
     configs = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "s3nsible" ];
+      default = [];
+      example = ["s3nsible"];
       description = ''
         List of OpenVPN configurations to generate.
       '';
@@ -51,15 +51,15 @@ in
 
     autostart = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "s3nsible" ];
+      default = [];
+      example = ["s3nsible"];
       description = ''
         List of OpenVPN configurations to start on boot.
       '';
     };
   };
 
-  config = lib.mkIf (cfg.configs != [ ]) {
+  config = lib.mkIf (cfg.configs != []) {
     nixpkgs.overlays = [
       (final: prev: {
         # OpenVPN w/ OpenSC pkcs11 support
@@ -101,16 +101,14 @@ in
     services.openvpn.servers = forEachCFG "" (conf: {
       autoStart = builtins.elem conf cfg.autostart;
 
-      config =
-        let
-          iface = builtins.substring 0 15 conf;
-        in
-        ''
-          pkcs11-providers ${openscPKCS11}
+      config = let
+        iface = builtins.substring 0 15 conf;
+      in ''
+        pkcs11-providers ${openscPKCS11}
 
-          config ${cfg.basePath}/${conf}.ovpn
-          dev ${iface}
-        '';
+        config ${cfg.basePath}/${conf}.ovpn
+        dev ${iface}
+      '';
     });
   };
 }
