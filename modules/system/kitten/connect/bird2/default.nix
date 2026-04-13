@@ -192,7 +192,10 @@ args @ {
     };
   };
 in {
-  imports = [./server_config.nix];
+  imports = [
+    ./server_config.nix
+    ./secrets.nix
+  ];
 
   # Options
   options = {
@@ -285,22 +288,9 @@ in {
     services.bird2 = {
       enable = cfg.enable;
 
-      preCheckConfig = mkIf (passwords != []) ''
+      preCheckConfig = ''
         echo "Bird configuration include these resources"
         grep include bird2.conf
-
-        LINE=$(grep -n include bird2.conf | grep bird_secrets.conf | head -1 | cut -d: -f1)
-        if [ ! -z "$LINE" ]; then
-          echo "Found secrets importing, will substitute it with placeholders values"
-          sed ''${LINE}d -i bird2.conf
-          sed "$(($LINE))i"'include "_secrets_substitute.conf";' -i bird2.conf
-
-          cat > _secrets_substitute.conf <<< '
-            ${config.sops.templates."bird_secrets.conf".content}
-          '
-
-          # cat _secrets_substitute.conf bird2.conf
-        fi
       '';
 
       config = mkMerge (
@@ -316,9 +306,6 @@ in {
 
           '')
         ]
-        ++ optional (passwords != []) (
-          mkOrder 5 ''include "${config.sops.templates."bird_secrets.conf".path}";''
-        )
         ++ optional (cfg.peers != {}) (
           let
             peerFunc = import ./peer_config.nix;
