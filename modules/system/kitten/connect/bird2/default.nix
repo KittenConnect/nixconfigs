@@ -43,6 +43,16 @@ args @ {
 
   passwords = unique (mapAttrsToList (n: v: v.passwordRef) peersWithPasswordRef);
 
+  directInterfaces = let noLoopback = (builtins.elem "-lo" cfg.interfaces); in
+    if (cfg.interfaces != null)
+    then
+      lib.concatMapStringsSep ", " quotedString (
+        (optional (!(noLoopback) && (cfg.loopback4 != null || cfg.loopback6 != null)) "lo")
+        ++ cfg.interfaces
+        ++ (optional (builtins.all (lib.hasPrefix "-") cfg.interfaces) "*")
+      )
+    else quotedString "*";
+
   # Example
   # config.kittenModules.bird = {
   #   # Example values, replace with actual srvCfg structure
@@ -263,34 +273,14 @@ in {
       1790 # Internal BGP
     ];
 
-    # Secrets management
-    sops = mkIf (passwords != []) {
-      secrets = (
-        listToAttrs (
-          map (n: nameValuePair "bird_secrets/${n}" {reloadUnits = ["bird2.service"];}) passwords
-        )
-      );
-
-      templates."bird_secrets.conf" = mkIf (passwords != []) {
-        owner = cfg.user;
-        content = (
-          mkMerge (
-            map (password: ''
-              define secretPassword_${password} = "${config.sops.placeholder."bird_secrets/${password}"}";
-            '')
-            passwords
-          )
-        );
-      };
-    };
-
     # Service configuration
     services.bird2 = {
       enable = cfg.enable;
 
       preCheckConfig = ''
-        echo "Bird configuration include these resources"
-        grep include bird2.conf
+        echo "Found the following include in bird configuration" >&2
+        grep include bird2.conf >&2 || true
+        echo "EOF" >&2
       '';
 
       config = mkMerge (
@@ -304,6 +294,17 @@ in {
             # interfaces from the kernel. It is necessary in almost any configuration.
             protocol device DEV {}
 
+            # The direct protocol is not a real routing protocol. It automatically generates
+            # direct routes to all network interfaces. Can exist in as many instances as you
+            # wish if you want to populate multiple routing tables with direct routes.
+            protocol direct DIRECT {
+                ${optionalString (cfg.interfaces != []) "# "}disabled;
+                check link on;
+                ipv4;
+                ipv6;
+
+                interface ${directInterfaces};
+            }
           '')
         ]
         ++ optional (cfg.peers != {}) (
