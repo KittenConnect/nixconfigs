@@ -43,5 +43,7 @@ in {
     #dhcpcd.enable = false;
   };
 
+  kittenModules.bird.interfaces = [kittenIFACE];
+
   systemd.network.enable = true;
 }
