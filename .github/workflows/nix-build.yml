@@ -76,6 +76,7 @@ jobs:
     needs: [nix-matrix, build-nix]
     runs-on: ${{ matrix.os }}
     strategy:
+      # fail-fast: false
       matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v4
@@ -123,7 +124,14 @@ jobs:
             artifact: ${{ steps.artifact-upload-step.outputs.artifact-url }}
             toplevel: ${{ steps.nix-toplevel.outputs.toplevel }}
 
-
+  # Single deploy job since we're just deploying
+  nop-build-success:
+    name: "Nix build - All Toplevels"
+    needs: build-toplevel
+    runs-on: ubuntu-latest
+    steps:
+      - run: "true"
+      
           
   # Single deploy job since we're just deploying
   nix-pages:
