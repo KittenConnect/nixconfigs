@@ -93,5 +93,5 @@ fi
 nix copy "${NIX_COPY_OPTIONS[@]}" --from "$NIX_CACHE" "$TOPLEVEL"
 
 if "$TOPLEVEL/bin/switch-to-configuration" dry-activate; then
-  nix-env --profile "$PROFILE" --set "$TOPLEVEL" && "$TOPLEVEL/bin/switch-to-configuration" "${1:-test}"
+  nix-env --profile "$PROFILE" --set "$TOPLEVEL" && "$TOPLEVEL/bin/switch-to-configuration" "${1:-switch}"
 fi
