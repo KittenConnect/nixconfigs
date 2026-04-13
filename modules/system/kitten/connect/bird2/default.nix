@@ -15,6 +15,7 @@ args @ {
     attrNames
     filterAttrs
     concatStringsSep
+    concatMapStringsSep
     mkMerge
     mkIf
     unique
@@ -34,7 +35,9 @@ args @ {
   peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
 
 
-  directInterfaces = let noLoopback = (builtins.elem "-lo" cfg.interfaces); in
+  directInterfaces = let
+    noLoopback = builtins.elem "-lo" cfg.interfaces;
+  in
     if (cfg.interfaces != null)
     then
       lib.concatMapStringsSep ", " quotedString (
@@ -63,7 +66,7 @@ in {
   ];
 
   # Options
-  options.kittenModules.bird = import ./options.nix args // { inherit configHome; };
+  options.kittenModules.bird = import ./options.nix (args // { inherit configHome; });
 
   # Implementation
   config = mkIf cfg.enable {
@@ -81,7 +84,7 @@ in {
       1790 # Internal BGP
     ];
 
-    environment.etc = (lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" file) cfg.extraConfigs);
+    environment.etc = lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" file) cfg.extraConfigs;
 
     # Service configuration
     services.bird2 = {
@@ -91,78 +94,76 @@ in {
         configDir = pkgs.linkFarm "bird-directory" (lib.mapAttrs (n: v: v.source) cfg.extraConfigs);
         getIncludes = lib.optionalAttrs (cfg.extraConfigs != {}) "${pkgs.rsync}/bin/rsync -arvp ${configDir}/ ./";
       in ''
-        echo "Found the following include in bird configuration" >&2
-        grep include bird2.conf >&2 || true
-        echo "EOF" >&2
+        set -x
+
+        if grep -q include bird2.conf; then
+          echo "Found the following includes in bird configuration" >&2
+          grep include bird2.conf >&2
+        fi
 
         ${getIncludes}
       '';
 
-      config = mkMerge (
-        [
-          (mkOrder 0 ''
-            log syslog all;
+      config = mkMerge [
+        (mkOrder 0 ''
+          log syslog all;
 
+          # Nix-OS router config generated for ${name}
 
-            # The Device protocol is not a real routing protocol. It does not generate any
-            # routes and it only serves as a module for getting information about network
-            # interfaces from the kernel. It is necessary in almost any configuration.
-            protocol device DEV {}
+          # The Device protocol is not a real routing protocol. It does not generate any
+          # routes and it only serves as a module for getting information about network
+          # interfaces from the kernel. It is necessary in almost any configuration.
+          protocol device DEV {}
 
-            # The direct protocol is not a real routing protocol. It automatically generates
-            # direct routes to all network interfaces. Can exist in as many instances as you
-            # wish if you want to populate multiple routing tables with direct routes.
-            protocol direct DIRECT {
-                ${optionalString (cfg.interfaces != []) "# "}disabled;
-                check link on;
-                ipv4;
-                ipv6;
+          # The direct protocol is not a real routing protocol. It automatically generates
+          # direct routes to all network interfaces. Can exist in as many instances as you
+          # wish if you want to populate multiple routing tables with direct routes.
+          protocol direct DIRECT {
+              ${optionalString (cfg.interfaces != []) "# "}disabled;
+              check link on;
+              ipv4;
+              ipv6;
 
-                interface ${directInterfaces};
-            }
-          '')
+              interface ${directInterfaces};
+          }
 
-          (mkOrder 10 (concatMapStringsSep "\n" (x: ''include "${x}";'') (builtins.attrNames cfg.extraConfigs)))
-        ]
-        ++ optional (cfg.peers != {}) (
-          let
-            peerFunc = import ./peer_config.nix;
+          protocol static STATIC6 {
+              ipv6;
+              ${indentedLines 4 (concatStringsSep "\n" (map (x: "route ${x};") cfg.static6))}
+          }
+        '')
 
-            mkPeersFuncArgs = (
-              x:
-                args
-                // {
-                  inherit withType;
-                }
-                // {
-                  peer =
-                    {
-                      peerName = x;
-                    }
-                    // peers.${x};
-                }
-            );
-
-            mkPeerConfig = x: ''
-
-              # ${x}
-              ${peerFunc (mkPeersFuncArgs x)}
-
-            '';
-          in
-            mkOrder 50 ''
-                     # Nix-OS Generated for ${name}
-
-              protocol static STATIC6 {
-                  ipv6;
-                  ${indentedLines 4 (concatStringsSep "\n" (map (x: "route ${x};") cfg.static6))}
-              }
-
-                     ${lib.concatMapStringsSep "\n" mkPeerConfig (builtins.attrNames peers)}
-            ''
-        )
-      );
+        (mkOrder 10 (concatMapStringsSep "\n" (x: ''${optionalString (!(cfg.enable)) "# "}include "${x}";'') (builtins.attrNames cfg.extraConfigs)))
+      ];
     };
+
+    kittenModules.bird.extraConfigs = let
+      peerFunc = import ./peer_config.nix;
+
+      mkPeersFuncArgs = (
+        peerName: peerConfig:
+          args
+          // {
+            inherit withType;
+          }
+          // {
+            peer =
+              {
+                inherit peerName;
+              }
+              // peerConfig;
+          }
+      );
+    in
+      lib.mapAttrs' (n: v:
+        lib.nameValuePair "peers/${n}.conf" {
+          inherit (v) enable;
+          text = ''
+            # ${n}
+            ${peerFunc (mkPeersFuncArgs n v)}
+          '';
+        })
+      peers;
 
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
       enable = mkDefault true;
