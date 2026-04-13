@@ -138,10 +138,11 @@ in rec {
         '';
 
         nativeBuildInputs = with pkgs; [
-          colmena
           act
+          sops
           # nixel
-          nixfmt-rfc-style
+          alejandra
+          colmena
           npins
         ];
       };
