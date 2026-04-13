@@ -37,9 +37,9 @@ args @ {
     if (cfg.interfaces != null)
     then
       lib.concatMapStringsSep ", " quotedString (
-        (optional (!(noLoopback) && (cfg.loopback4 != null || cfg.loopback6 != null)) "lo")
+        (optional (!noLoopback && config.kittenModules.loopback0.enable) "lo")
         ++ cfg.interfaces
-        ++ (optional (builtins.all (lib.hasPrefix "-") cfg.interfaces) "*")
+        ++ (optional (builtins.all (lib.hasPrefix "-") cfg.interfaces) "*") # TODO: assert no "*"
       )
     else quotedString "*";
 
