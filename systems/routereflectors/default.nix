@@ -33,7 +33,7 @@
         {
           config = {
             peer-group = "kitten";
-            prefix = "2a13:79c0:ffff:fefe::/64";
+            prefix = "1010:cafe:ffff:fefe::/64";
           };
         }
         {

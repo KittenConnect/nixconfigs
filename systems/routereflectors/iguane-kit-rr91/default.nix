@@ -92,7 +92,7 @@ in
       loopback0 = {
         # Enabled by bird by default
         enable = true;
-        ipv6 = ["2a13:79c0:ffff:fefe::113:91"];
+        ipv6 = ["1010:cafe:ffff:fefe::113:91"];
       };
     };
 

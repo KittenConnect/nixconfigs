@@ -62,12 +62,12 @@ in {
 
     bird = {
       enable = true;
-      loopback6 = "2a13:79c0:ffff:fefe::113:25";
+      loopback6 = "1010:cafe:ffff:fefe::113:25";
 
       static6 = [
-        "::/0 recursive 2a13:79c0:ffff:fefe::b00b"
+        "::/0 recursive 1010:cafe:ffff:fefe::b00b"
 
-        "2a13:79c0:ffff:fefe::113:91/128 via 2a13:79c0:ffff:feff:b00b:3965:113:92" # Announce RouteReflector LoopBack
+        "1010:cafe:ffff:fefe::113:91/128 via 2a13:79c0:ffff:feff:b00b:3965:113:92" # Announce RouteReflector LoopBack
 
         #"2a13:79c0:ffff::/48 unreachable" # Networking stuff
         #"2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
@@ -89,7 +89,7 @@ in {
         keepInvalidState = true;
         rules = ''
           # iifname "''${kittenIFACE}" ip6 saddr 2a13:79c0:ffff:feff:b00b:caca:b173:0/112 oifname $wireguardIFACEs counter accept
-          iifname $wireguardIFACEs ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
+          iifname $wireguardIFACEs ip6 daddr 1010:cafe:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
           oifname bootstrap ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 counter accept
 
           ip6 saddr 2a01:cb08:bbb:3700::/64 oifname ens19 counter accept

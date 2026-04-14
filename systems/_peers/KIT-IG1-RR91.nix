@@ -22,7 +22,7 @@ in {
   #
   # }
   peerAS = kittenASN;
-  peerIP = "2a13:79c0:ffff:fefe::113:91";
+  peerIP = "1010:cafe:ffff:fefe::113:91";
   localAS = kittenASN;
 
   multihop = 5;
