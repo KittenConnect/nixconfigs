@@ -105,8 +105,6 @@ in {
         configDir = pkgs.linkFarm "bird-directory" (lib.mapAttrs (n: v: v.source) cfg.extraConfigs);
         getIncludes = lib.optionalAttrs (cfg.extraConfigs != {}) "${pkgs.rsync}/bin/rsync -arvp ${configDir}/ ./";
       in ''
-        set -x
-
         if grep -q include bird2.conf; then
           echo "Found the following includes in bird configuration" >&2
           grep include bird2.conf >&2
