@@ -28,7 +28,7 @@ in {
   multihop = 5;
 
   # wireguard = {
-  #   address = "2a13:79c0:ffff:feff::10c";
+  #   address = "1010:cafe:ffff:feff::10c";
   #   port = 51800;
   #   peerKey = "rMTaMWJYlgTKJoE0PnVOo9SKHTppEfYK5KtWjBI9mC8=";
   # };

@@ -101,7 +101,7 @@ in {
 
               # ip6 saddr 2a13:79c0:ffff:feff:b00b::/80 ip6 daddr 2a13:79c0:ffff:fefe::/64 counter accept
 
-              # ip6 saddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } ip6 daddr { 2a13:79c0:ffff:fefe::/64, 2a13:79c0:ffff:feff::/64 } counter accept
+              # ip6 saddr { 2a13:79c0:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } ip6 daddr { 2a13:79c0:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } counter accept
 
 
               ${optionalString (kittenIFACEs != []) ''
