@@ -17,7 +17,7 @@
     if (birdConfig ? transitNetworks && birdConfig.transitNetworks != null)
     then birdConfig.transitNetworks
     else [
-      "2a13:79c0:ff00::/44" # Transits Customer ranges: 2a13:79c0:{ff00-ff0f}::/48
+      "2a12:5844:1310::/44" # Transits Customer ranges: 2a13:79c0:{ff00-ff0f}::/48
       "2a13:79c0:ffff:fefe::/64"
       "2a13:79c0:ffff:feff:b00b::/80"
     ];
