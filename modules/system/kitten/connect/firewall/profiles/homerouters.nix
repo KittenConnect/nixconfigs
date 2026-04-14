@@ -54,7 +54,7 @@ in {
 #       [
 #         "2a12:5844:1310::/44" # Transits Customer ranges: 2a13:79c0:{ff00-ff0f}::/48
 #         "1010:cafe:ffff:fefe::/64"
-#         "2a13:79c0:ffff:feff:b00b::/80"
+#         "1010:cafe:ffff:feff:b00b::/80"
 #       ];
 #   # wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
 #   transitIFACEs =
@@ -108,9 +108,9 @@ in {
 #                   wgPeers != { }
 #                 ) "iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept"}
 #                 # ip6 daddr 2a12:5844:1310::/44 counter accept
-#                 # ip6 daddr { 2a13:79c0:ffff:feff:b00b:3945:a51:b00b, 2a13:79c0:ffff:feff:b00b:3945:a51:dead } counter accept
+#                 # ip6 daddr { 1010:cafe:ffff:feff:b00b:3945:a51:b00b, 1010:cafe:ffff:feff:b00b:3945:a51:dead } counter accept
 #                 # ip6 daddr 1010:cafe:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
-#                 # ip6 saddr 2a13:79c0:ffff:feff:b00b::/80 ip6 daddr 1010:cafe:ffff:fefe::/64 counter accept
+#                 # ip6 saddr 1010:cafe:ffff:feff:b00b::/80 ip6 daddr 1010:cafe:ffff:fefe::/64 counter accept
 #                 # ip6 saddr { 1010:cafe:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } ip6 daddr { 1010:cafe:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } counter accept
 #               ''
 #             ]

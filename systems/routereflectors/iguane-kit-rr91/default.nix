@@ -51,8 +51,8 @@ in
         #
         #          ipv6.addresses = [
         #            {
-        #              # address = "2a13:79c0:ffff:feff:b00b:caca:b173:25";
-        #              address = "2a13:79c0:ffff:feff:b00b:3965:113:${lastByte}";
+        #              # address = "1010:cafe:ffff:feff:b00b:caca:b173:25";
+        #              address = "1010:cafe:ffff:feff:b00b:3965:113:${lastByte}";
         #              prefixLength = 112;
         #            }
         #          ];
