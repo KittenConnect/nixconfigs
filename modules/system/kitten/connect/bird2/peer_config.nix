@@ -1,143 +1,111 @@
 {
   lib,
+  kittenLib,
   pkgs,
   peer,
   withType,
   ...
 }: let
   inherit (lib) optionalString;
+  inherit (kittenLib.strings) indentedLines;
   inherit (builtins) concatStringsSep toJSON;
 
   fromTemplateString = t: optionalString (t != null) "from ${toString t}";
-in
-  with peer; ''
 
-    ${optionalString (bgpMED != null) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
-    ${optionalString (template == "kittunderlay") ''
+  inherit
+    (peer)
+    peerName
+    peerIP
+    peerAS
+    localIP
+    localAS
+    bgpMED
+    ;
 
+  localLine = optionalString (localIP != null) (toString localIP) + "as ${toString localAS}";
+  interface = assert lib.asserts.assertMsg (peer.multihop == 0)
+  "kittenModules.bird.peers.${peerName}: Multihop[${toString peer.multihop}] BGP cannot be bound to interface : ${peer.interface}";
+    peer.interface;
 
-      filter filter4_IN_BGP_${toString peerName} {
-        if is_valid4_network() then {
-          if defined( bgp_med ) then
-            bgp_med = bgp_med + bgpMED_${toString peerName};
-          else {
-            bgp_med = bgpMED_${toString peerName};
-          }
-          accept;
-        } else reject;
-      }
+  password = assert lib.asserts.assertMsg (peer.passwordRef == null) "U defined a passwordRef, why do you still want to leak password ?";
+    toString (
+      lib.warn "bird2 peers password is insecure consider using passwordRef with a bird_secrets file" password
+    );
+  passwordRef =
+    if peer.passwordRef != ""
+    then toString peer.passwordRef
+    else toString peerName;
 
-      filter filter6_IN_BGP_${toString peerName} {
-        if is_valid6_network() then {
-          if defined( bgp_med ) then
-            bgp_med = bgp_med + bgpMED_${toString peerName};
-          else {
-            bgp_med = bgpMED_${toString peerName};
-          }
-          accept;
-        } else reject;
-      }
-    ''}
+  multihop = let
+    multiHopVar =
+      if peer.multihop < -1
+      then -1 * peer.multihop
+      else peer.multihop;
+  in
+    if peer.multihop == 0
+    then "direct"
+    else "multihop" + (optionalString (peer.multihop != -1) " ${toString multiHopVar}");
 
-    # L: AS${toString localAS} | R: AS${toString peerAS}
-    protocol bgp ${toString peerName} ${fromTemplateString template} {
-      local ${
-      optionalString (localIP != null) (toString localIP)
-    } as ${toString localAS}; # localIP: "${toString localIP}"
-      neighbor ${toString peerIP} as ${toString peerAS};
-      ${
-      optionalString (interface != null)
-      ''interface "${
-          assert lib.asserts.assertMsg (multihop == 0)
-          "kittenModules.bird.peers.${peerName}: Multihop[${toString multihop}] BGP cannot be bound to interface : ${interface}"; interface
-        }";''
-    }
-      ${
-      if multihop == 0
-      then "direct;"
-      else "multihop ${
-        optionalString (multihop != -1) toString (
-          if multihop < -1
-          then -1 * multihop
-          else multihop
-        )
-      };"
-    } # multihop: ${toString multihop}
-
-      ${
-      optionalString (password != null) ''
-
-        password "${
-          assert lib.asserts.assertMsg (
-            passwordRef == null
-          ) "U defined a passwordRef, why do you still want to leak password ?";
-            toString (
-              lib.warn "bird2 peers password is insecure consider using passwordRef with a bird_secrets file" password
-            )
-        }"; # Not-Secured cleartext access for @everyone''
-    }
-      ${
-      optionalString (passwordRef != null)
-      "password secretPassword_${
-        if passwordRef != ""
-        then toString passwordRef
-        else toString peerName
-      }; # Defined in secrets file"
-    }
-
-      ${
-      optionalString (ipv6 != {}) ''
-
-
-        ipv6 {
-          ${
-          optionalString (ipv6.bgpImports != "" && ipv6.bgpImports != []) (
-            let
-              myType = withType {
-                string = x: "  import ${builtins.replaceStrings ["%s"] [peerName] x};";
-                null = x: "  import none;";
-                list = x: ''
-
-
-                  # ${toJSON x}
-                      import filter {
-                        if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
-                          accept;
-                        }
-                        reject;
-                      };
-                '';
-              };
-            in
-              myType ipv6.bgpImports
-          )
-        }
-          ${
-          optionalString (ipv6.bgpExports != "" && ipv6.bgpExports != []) (
-            let
-              myType = withType {
-                string = x: "  export ${builtins.replaceStrings ["%s"] [peerName] x};";
-                null = x: "  export none;";
-                # lambda = f: myType (f peerName);
-                list = x: ''
-
-
-                  # ${toJSON x}
-                      export filter {
-                        if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
-                          accept;
-                        }
-                        reject;
-                      };
-                '';
-              };
-            in
-              myType ipv6.bgpExports
-          )
-        }
+  mkFilterSection = direction: val: let
+    myType = withType {
+      string = x: "${direction} ${builtins.replaceStrings ["%s"] [peerName] x};";
+      null = x: "${direction} none;";
+      list = x:
+        indentedLines 1 ''
+          ${direction} filter {
+            if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
+              accept;
+            }
+            reject;
           };
-      ''
+        '';
+    };
+  in
+    myType val;
+in ''
+
+  ${optionalString (bgpMED != null) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
+  ${optionalString (peer.template == "kittunderlay") ''
+
+    filter filter4_IN_BGP_${toString peerName} {
+      if is_valid4_network() then {
+        if defined( bgp_med ) then
+          bgp_med = bgp_med + bgpMED_${toString peerName};
+        else {
+          bgp_med = bgpMED_${toString peerName};
+        }
+        accept;
+      } else reject;
     }
 
+    filter filter6_IN_BGP_${toString peerName} {
+      if is_valid6_network() then {
+        if defined( bgp_med ) then
+          bgp_med = bgp_med + bgpMED_${toString peerName};
+        else {
+          bgp_med = bgpMED_${toString peerName};
+        }
+        accept;
+      } else reject;
     }
-  ''
+
+  ''}
+
+  # L: AS${toString localAS} | R: AS${toString peerAS}
+  protocol bgp ${toString peerName} ${fromTemplateString peer.template} {
+    local ${localLine}; # localIP: "${toString localIP}"
+    neighbor ${toString peerIP} as ${toString peerAS};
+    ${optionalString (peer.interface != null) ''interface "${interface}";''}
+    ${multihop}; # multihop: ${toString peer.multihop}
+    ${optionalString (peer.password != null) ''password "${password}"; # Not-Secured cleartext access for @everyone''}
+    ${optionalString (peer.passwordRef != null) "password secretPassword_${passwordRef}; # Defined in secrets file"}
+
+  ${optionalString (peer.ipv6 != {}) ''
+      ipv6 {
+    ${optionalString (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports != []) (indentedLines 2 (mkFilterSection "import" peer.ipv6.bgpImports))}
+    ${optionalString (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports != []) (indentedLines 2 (mkFilterSection "export" peer.ipv6.bgpExports))}
+      };
+  ''}
+
+  }
+''
