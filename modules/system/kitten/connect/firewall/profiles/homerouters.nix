@@ -52,7 +52,7 @@ in {
 #       birdConfig.transitNetworks
 #     else
 #       [
-#         "2a13:79c0:ff00::/44" # Transits Customer ranges: 2a13:79c0:{ff00-ff0f}::/48
+#         "2a12:5844:1310::/44" # Transits Customer ranges: 2a13:79c0:{ff00-ff0f}::/48
 #         "2a13:79c0:ffff:fefe::/64"
 #         "2a13:79c0:ffff:feff:b00b::/80"
 #       ];
@@ -107,7 +107,7 @@ in {
 #                 ${optionalString (
 #                   wgPeers != { }
 #                 ) "iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept"}
-#                 # ip6 daddr 2a13:79c0:ff00::/48 counter accept
+#                 # ip6 daddr 2a12:5844:1310::/44 counter accept
 #                 # ip6 daddr { 2a13:79c0:ffff:feff:b00b:3945:a51:b00b, 2a13:79c0:ffff:feff:b00b:3945:a51:dead } counter accept
 #                 # ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
 #                 # ip6 saddr 2a13:79c0:ffff:feff:b00b::/80 ip6 daddr 2a13:79c0:ffff:fefe::/64 counter accept
