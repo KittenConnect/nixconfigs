@@ -39,9 +39,8 @@ in {
   virtualisation.vmVariant.services.getty.autologinUser = "root";
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.systemd-boot.configurationLimit = 5;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.efiSupport = true;
+  boot.loader.grub.enable = true;
 
   # boot.loader.grub.efiInstallAsRemovable = true;
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";
