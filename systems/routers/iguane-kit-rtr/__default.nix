@@ -14,7 +14,7 @@
 
     extraForwardRules = ''
 
-      iifname $kittenIFACEs ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
+      iifname $kittenIFACEs ip6 daddr 1010:cafe:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
       oifname bootstrap ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 counter accept
 
       ip6 saddr 2a01:cb08:bbb:3700::/64 oifname ens19 counter accept

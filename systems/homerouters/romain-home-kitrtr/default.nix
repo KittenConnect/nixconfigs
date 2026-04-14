@@ -71,7 +71,7 @@ in {
 
     bird = {
       enable = true;
-      loopback6 = "2a13:79c0:ffff:fefe::2:256";
+      loopback6 = "1010:cafe:ffff:fefe::2:256";
 
       peers = birdPeers;
     };
