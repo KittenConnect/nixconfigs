@@ -3,6 +3,7 @@ args @ {
   kittenLib,
   pkgs,
   config,
+  options,
   name,
   ...
 }: let
@@ -33,6 +34,14 @@ args @ {
   # Values
   peers = cfg.peers;
   peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
+
+  sortedExtraConfigs = builtins.sort (p: q:
+    if (p.value.order or null) != null && (q.value.order or null) != null
+    then builtins.lessThan (p.value.order) (q.value.order)
+    else if (p.value.order or null) == null && (q.value.order or null) == null
+    then builtins.lessThan p.name q.name
+    else p.value.order != null)
+  (lib.attrsToList cfg.extraConfigs);
 
   directInterfaces = let
     noLoopback = builtins.elem "-lo" cfg.interfaces;
@@ -82,7 +91,11 @@ in {
       1790 # Internal BGP
     ];
 
-    environment.etc = lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" file) cfg.extraConfigs;
+    environment.etc = let
+      etcType = options.environment.etc.type.nestedTypes.elemType.getSubOptions [];
+      sane = lib.filterAttrs (n: v: builtins.hasAttr n etcType);
+    in
+      lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" (sane file)) cfg.extraConfigs;
 
     # Service configuration
     services.bird2 = {
@@ -131,7 +144,10 @@ in {
           }
         '')
 
-        (mkOrder 10 (concatMapStringsSep "\n" (x: ''${optionalString (!(cfg.enable)) "# "}include "${x}";'') (builtins.attrNames cfg.extraConfigs)))
+        (mkOrder 10 ''
+          # NixOS declared includes
+          ${concatMapStringsSep "\n" (x: ''${optionalString (!(cfg.enable)) "# "}include "${x.name}";'') sortedExtraConfigs}
+        '')
       ];
     };
 
