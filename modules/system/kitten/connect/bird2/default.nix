@@ -184,6 +184,11 @@ in {
       ipv6 = mkIf (cfg.loopback6 != null) [cfg.loopback6];
     };
 
+    boot.kernel.sysctl = {
+      "net.ipv4.ip_forward" = 1;
+      "net.ipv6.conf.all.forwarding" = 1;
+    };
+
     # kittenModules.bird = {
     #   peers = filterAttrs (n: v: v ? template && v.template == "rrserver")
     #     srvCfg.peers;
