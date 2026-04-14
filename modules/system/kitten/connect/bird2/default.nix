@@ -117,17 +117,17 @@ in {
           # direct routes to all network interfaces. Can exist in as many instances as you
           # wish if you want to populate multiple routing tables with direct routes.
           protocol direct DIRECT {
-              ${optionalString (cfg.interfaces != []) "# "}disabled;
-              check link on;
-              ipv4;
-              ipv6;
+            ${optionalString (cfg.interfaces != []) "# "}disabled;
+            check link on;
+            ipv4;
+            ipv6;
 
-              interface ${directInterfaces};
+            interface ${directInterfaces};
           }
 
           protocol static STATIC6 {
-              ipv6;
-              ${indentedLines 4 (concatStringsSep "\n" (map (x: "route ${x};") cfg.static6))}
+            ipv6;
+          ${indentedLines 1 (concatStringsSep "\n" (map (x: "route ${x};") cfg.static6))}
           }
         '')
 
