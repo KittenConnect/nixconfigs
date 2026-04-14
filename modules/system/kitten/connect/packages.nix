@@ -16,7 +16,7 @@ args @ {
     wget
     curl
     fastfetch
-    nixfmt
+    alejandra
   ];
 
   mkEnabledOption = desc:
