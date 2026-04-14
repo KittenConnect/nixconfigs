@@ -18,12 +18,12 @@
             {
               address = "2a13:79c0:ff00::";
               prefixLength = 40;
-              via = "2a13:79c0:ffff:feff:b00b:caca:b173:25";
+              via = "1010:cafe:ffff:feff:b00b:caca:b173:25";
             }
           ];
           addresses = [
             {
-              address = "2a13:79c0:ffff:feff:b00b:caca:b173:96";
+              address = "1010:cafe:ffff:feff:b00b:caca:b173:96";
               prefixLength = 112;
             }
           ];

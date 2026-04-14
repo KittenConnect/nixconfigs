@@ -67,7 +67,7 @@ in
       # };
 
       defaultGateway6 = {
-        address = "2a13:79c0:ffff:feff:b00b:3965:113:25";
+        address = "1010:cafe:ffff:feff:b00b:3965:113:25";
         metric = 42;
         interface = kittenIFACE;
       };

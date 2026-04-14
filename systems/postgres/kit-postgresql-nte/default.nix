@@ -24,7 +24,7 @@ in {
     # Disable SSH deployment. This node will be skipped in a
     # normal`colmena apply`.
     targetUser = "root";
-    targetHost = "2a13:79c0:ffff:feff:b00b:3615:1:907"; # TODO: put HostName
+    targetHost = "1010:cafe:ffff:feff:b00b:3615:1:907"; # TODO: put HostName
   };
 
   # Bootloader.
