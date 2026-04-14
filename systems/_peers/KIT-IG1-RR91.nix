@@ -12,7 +12,7 @@ in {
 
   #     ipv6 {
   #             export filter {
-  #             if ( net ~ [ 2a13:79c0:ff00::/40, 2a12:dd47:9330::/44 ] ) then {
+  #             if ( net ~ [ 2a12:5844:1310::/44, 2a12:dd47:9330::/44 ] ) then {
   #                     accept;
   #             }
   #             reject;
