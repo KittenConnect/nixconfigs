@@ -47,7 +47,7 @@
         config = {
           as = 4242421945;
           local-address-list = [
-            "2a13:79c0:ffff:fefe::113:91"
+            "1010:cafe:ffff:fefe::113:91"
             # "172.23.193.197"
           ];
           router-id = "172.23.193.197";

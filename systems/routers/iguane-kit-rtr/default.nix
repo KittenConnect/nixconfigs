@@ -57,7 +57,7 @@ in {
 
     # loopback0 = {
     #   enable = true;
-    #   ipv6 = [ "2a13:79c0:ffff:fefe::22f0" ];
+    #   ipv6 = [ "1010:cafe:ffff:fefe::22f0" ];
     # };
 
     bird = {
@@ -70,7 +70,7 @@ in {
         "1010:cafe:ffff:fefe::113:91/128 via 2a13:79c0:ffff:feff:b00b:3965:113:92" # Announce RouteReflector LoopBack
 
         #"2a13:79c0:ffff::/48 unreachable" # Networking stuff
-        #"2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
+        #"1010:cafe:ffff:fefe::/64 unreachable" # LoopBacks
         #"2a12:5844:1310::/44 unreachable" # full range /40
       ];
 

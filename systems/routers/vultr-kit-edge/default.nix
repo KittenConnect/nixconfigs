@@ -78,7 +78,7 @@ in {
 
     # loopback0 = {
     #   enable = true;
-    #   ipv6 = [ "2a13:79c0:ffff:fefe::12:10" ];
+    #   ipv6 = [ "1010:cafe:ffff:fefe::12:10" ];
     # };
 
     bird = {
@@ -92,7 +92,7 @@ in {
           "1010:cafe:ffff:fefe::b00b/128 unreachable" # Special Anycast "loopback" for default gateways
 
           # "2a13:79c0:ffff::/48 unreachable" # Networking stuff
-          # "2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
+          # "1010:cafe:ffff:fefe::/64 unreachable" # LoopBacks
           # "2a12:5844:1310::/44 unreachable" # full range /40
           "2a12:5844:1310::/44 unreachable" # New range /44
         ]

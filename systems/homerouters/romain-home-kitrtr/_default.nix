@@ -17,16 +17,16 @@
     #   # router-id = ;
 
     #   # loopback4 = "";
-    #   loopback6 = "2a13:79c0:ffff:fefe::22f0";
+    #   loopback6 = "1010:cafe:ffff:fefe::22f0";
 
     #   static6 = [
-    #     "::/0 recursive 2a13:79c0:ffff:fefe::b00b"
+    #     "::/0 recursive 1010:cafe:ffff:fefe::b00b"
 
     #     # "2a13:79c0:ffff:feff:b00b:caca:b173:0/112 unreachable" # Direct on ens19
     #     "2a13:79c0:fffe:100::/56 unreachable"
 
     #     #"2a13:79c0:ffff::/48 unreachable" # Networking stuff
-    #     #"2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
+    #     #"1010:cafe:ffff:fefe::/64 unreachable" # LoopBacks
     #     #"2a12:5844:1310::/44 unreachable" # full range /40
     #   ];
   };

@@ -28,7 +28,7 @@
       #   untracked : jump forward-allow,
       }
 
-      # oifname $kittenIFACEs ip6 saddr 2a13:79c0:ffff:fefe::113:91 tcp sport { 179, 1790 } counter accept
+      # oifname $kittenIFACEs ip6 saddr 1010:cafe:ffff:fefe::113:91 tcp sport { 179, 1790 } counter accept
     '';
   };
 }
