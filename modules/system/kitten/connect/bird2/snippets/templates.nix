@@ -1,5 +1,7 @@
 {...}: {
   kittenModules.bird.extraConfigs."common/templates.conf" = {
+    order = 10;
+
     text = ''
       template bgp rrserver {
         local port 1790;

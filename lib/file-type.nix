@@ -37,7 +37,7 @@ in {
   #   - opt            the name of the option, for self-references
   #   - basePathDesc   docbook compatible description of the base path
   #   - basePath       the file base path
-  fileType = opt: basePathDesc: basePath:
+  fileType = opt: basePath: _options:
     types.attrsOf (
       types.submodule (
         {
@@ -46,7 +46,7 @@ in {
           options,
           ...
         }: {
-          options = {
+          options = (lib.optionalAttrs (_options != null) _options) // {
             enable = lib.mkOption {
               type = lib.types.bool;
               default = true;
@@ -67,7 +67,7 @@ in {
                 removePrefix (homeDirectory + "/") absPath;
               defaultText = literalExpression "name";
               description = ''
-                Path to target file relative to ${basePathDesc}.
+                Path to target file relative to ${basePath}.
               '';
             };
 

@@ -182,7 +182,12 @@ in {
   };
 
   extraConfigs = mkOption {
-    type = fileType "kittenModules.bird.extraConfigs" configHome configHome;
+    type = fileType "kittenModules.bird.extraConfigs" configHome {
+      order = mkOption {
+        type = with types; nullOr int;
+        default = null;
+      };
+    };
     default = {};
     description = ''
       Attribute set of files to link into the bird's configuration directory.

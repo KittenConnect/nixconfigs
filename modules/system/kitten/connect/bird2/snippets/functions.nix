@@ -1,5 +1,7 @@
 {...}: {
   kittenModules.bird.extraConfigs."common/functions.conf" = {
+    order = 05;
+
     text = ''
       function is_valid4_network() {
           return net ~ [
