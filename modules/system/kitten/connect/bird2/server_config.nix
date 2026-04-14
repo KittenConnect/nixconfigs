@@ -26,7 +26,7 @@
   srvCfg = config.kittenModules.bird;
 
   rrs = attrNames (filterAttrs (n: v: v ? template && v.template == "rrserver") srvCfg.peers);
-  RRs = "proto ~ [${concatMapStringsSep ", " quotedString rrs}]";
+  RRs = "${concatMapStringsSep " || " (x: "proto = ${quotedString x}") rrs}";
 
   setLoopBackSRC = nets: loopback: ''
     if source ~ [RTS_BGP] || net ~ [ ${nets} ] then {
@@ -34,13 +34,17 @@
     }'';
 in {
   services.bird2.config = mkOrder 25 ''
+    function is_rr_proto() {
+      return ${if (rrs != []) then "${RRs}" else "false"};
+    }
+
     # The Kernel protocol is not a real routing protocol. Instead of communicating
     # with other routers in the network, it performs synchronization of BIRD
     # routing tables with the OS kernel. One instance per table.
     protocol kernel KERNEL4 {
       ipv4 {
         export filter {
-          if  ( is_valid4_network() || source ~ [RTS_STATIC] ${optionalString (rrs != []) "|| ${RRs}"}) then {
+          if  ( is_valid4_network() || is_rr_proto() || source ~ [RTS_STATIC]) then {
     ${optionalString (srvCfg.loopback4 != null && srvCfg.loopback4 != "") (indentedLines 4 (setLoopBackSRC "0.0.0.0/0" srvCfg.loopback4))}
               accept;
           } else reject;
@@ -53,7 +57,7 @@ in {
     protocol kernel KERNEL6 {
       ipv6 {
         export filter {
-          if (is_valid6_network() || source ~ [RTS_STATIC] ${optionalString (rrs != []) "|| ${RRs}"}) then {
+          if (is_valid6_network() || is_rr_proto() || source ~ [RTS_STATIC]) then {
     ${optionalString (srvCfg.loopback6 != null && srvCfg.loopback6 != "") (indentedLines 4 (setLoopBackSRC "::/0" srvCfg.loopback6))}
             accept;
           } else reject;
