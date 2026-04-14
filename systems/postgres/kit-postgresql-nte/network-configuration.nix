@@ -24,12 +24,12 @@ in {
             {
               address = "2a13:79c0:ff00::";
               prefixLength = 40;
-              via = "2a13:79c0:ffff:feff:b00b:3615:1:6969";
+              via = "1010:cafe:ffff:feff:b00b:3615:1:6969";
             }
           ];
           addresses = [
             {
-              address = "2a13:79c0:ffff:feff:b00b:3615:1:907";
+              address = "1010:cafe:ffff:feff:b00b:3615:1:907";
               prefixLength = 112;
             }
           ];
@@ -38,7 +38,7 @@ in {
     };
 
     defaultGateway6 = {
-      address = "2a13:79c0:ffff:feff:b00b:3615:1:6969";
+      address = "1010:cafe:ffff:feff:b00b:3615:1:6969";
       metric = 42;
       interface = kittenIface;
     };

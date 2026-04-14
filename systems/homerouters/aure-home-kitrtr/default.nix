@@ -86,7 +86,7 @@ in {
       forward = {
         enable = true;
         rules = ''
-          iifname "${kittenIFACE}" ip6 saddr 2a13:79c0:ffff:feff:b00b:caca:b173:0/112 oifname $wireguardIFACEs counter accept
+          iifname "${kittenIFACE}" ip6 saddr 1010:cafe:ffff:feff:b00b:caca:b173:0/112 oifname $wireguardIFACEs counter accept
 
           ct state vmap {
             established : accept,

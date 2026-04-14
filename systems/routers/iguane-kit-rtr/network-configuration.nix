@@ -15,7 +15,7 @@ in {
       content = lib.mkAfter ''
         chain postrouting {
           type nat hook postrouting priority srcnat; policy accept;
-          ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
+          ip6 daddr 1010:cafe:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
         }
       '';
     };
@@ -39,7 +39,7 @@ in {
 
         ipv6.addresses = [
           {
-            address = "2a13:79c0:ffff:feff:b00b:3965:113:25";
+            address = "1010:cafe:ffff:feff:b00b:3965:113:25";
             prefixLength = 112;
           }
         ];

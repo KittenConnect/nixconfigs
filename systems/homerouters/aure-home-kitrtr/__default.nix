@@ -17,7 +17,7 @@
     # transitIFACEs = [ "ens19" ];
 
     extraForwardRules = ''
-      iifname "ens19" ip6 saddr 2a13:79c0:ffff:feff:b00b:caca:b173:0/112 oifname "KIT_IG1_RTR" counter accept
+      iifname "ens19" ip6 saddr 1010:cafe:ffff:feff:b00b:caca:b173:0/112 oifname "KIT_IG1_RTR" counter accept
 
       ct state vmap {
         established : accept,
