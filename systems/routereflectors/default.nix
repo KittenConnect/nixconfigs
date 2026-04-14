@@ -39,7 +39,7 @@
         {
           config = {
             peer-group = "kittevpn";
-            prefix = "2a13:79c0:ffff:feff::/64";
+            prefix = "1010:cafe:ffff:feff::/64";
           };
         }
       ];
