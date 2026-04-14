@@ -13,6 +13,7 @@
     bootdisk = "/dev/vda";
   };
 
+  iface = "ens18";
   kittenIFACE = "ens19";
   lastByte = "92";
 in
@@ -27,55 +28,13 @@ in
       # Include the results of the hardware scan.
       ../default.nix
       ./hardware-configuration.nix
-      # ./network-configuration.nix # TODO: implement
+      ./network-configuration.nix # TODO: implement
     ];
     # Bootloader.
     boot.loader.grub.efiSupport = false;
     boot.loader.grub.enable = true;
 
-    # Pick only one of the below networking options.
-    networking = {
-      #nameservers = [ "1.3.3.7" ];
-
-      interfaces = lib.mkMerge [
-        #      (lib.mkIf (cfg.interface != null) { "${cfg.interface}".useDHCP = true; })
-
-        #      (lib.mkIf (kittenIFACE != null) {
-        #        "${kittenIFACE}" = {
-        #          # ipv4.addresses = [
-        #          #   {
-        #          #     address = "185.10.17.209";
-        #          #     prefixLength = 24;
-        #          #   }
-        #          # ];
-        #
-        #          ipv6.addresses = [
-        #            {
-        #              # address = "1010:cafe:ffff:feff:b00b:caca:b173:25";
-        #              address = "1010:cafe:ffff:feff:b00b:3965:113:${lastByte}";
-        #              prefixLength = 112;
-        #            }
-        #          ];
-        #        };
-        #      })
-      ];
-
-      # defaultGateway = {
-      #   address = "185.10.17.254";
-      #   metric = 42;
-      #   interface = iface;
-      # };
-
-      defaultGateway6 = {
-        address = "1010:cafe:ffff:feff:b00b:3965:113:25";
-        metric = 42;
-        interface = kittenIFACE;
-      };
-
-      useDHCP = false;
-      #dhcpcd.enable = false;
-    };
-
+    # Kitten configuration
     kittenModules = {
       # network = {
       #   enable = true;
