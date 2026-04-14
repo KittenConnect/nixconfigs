@@ -9,6 +9,8 @@
 }: {
   imports = [
     # Include the results of the hardware scan.
+
+    ./firewall.nix
   ];
 
   # Configure network proxy if necessary
