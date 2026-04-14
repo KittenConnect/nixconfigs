@@ -22,7 +22,7 @@
       function is_rr_valid6_network() {
           return net ~ [
             2a12:5844:1310::/44,
-            # 2a13:79c0:ffff:fefe::/64{128,128},
+            # 1010:cafe:ffff:fefe::/64{128,128},
             # 1010:cafe:ffff:feff::/64{112,112},
             2a13:79c0:ffff::/48{48,64},
             2a13:79c0:fffe::/48{56,56}

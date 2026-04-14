@@ -50,7 +50,7 @@ in {
 
     # loopback0 = {
     #   enable = true;
-    #   ipv6 = [ "2a13:79c0:ffff:fefe::12:10" ];
+    #   ipv6 = [ "1010:cafe:ffff:fefe::12:10" ];
     # };
 
     bird = {
@@ -59,11 +59,11 @@ in {
       loopback6 = "1010:cafe:ffff:fefe::12:10";
 
       static6 = [
-        # "::/0 recursive 2a13:79c0:ffff:fefe::b00b"
+        # "::/0 recursive 1010:cafe:ffff:fefe::b00b"
         # ''2a0d:e680:0::b:1/128 via "enp1s0"'' # Vultr bgp neighbor
         "1010:cafe:ffff:fefe::b00b/128 unreachable"
         #"2a13:79c0:ffff::/48 unreachable" # Networking stuff
-        #"2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
+        #"1010:cafe:ffff:fefe::/64 unreachable" # LoopBacks
         "2a12:5844:1310::/44 unreachable" # full range /40
       ];
 
@@ -82,7 +82,7 @@ in {
         keepInvalidState = true;
         # rules = ''
         #   # iifname "''${kittenIFACE}" ip6 saddr 2a13:79c0:ffff:feff:b00b:caca:b173:0/112 oifname $wireguardIFACEs counter accept
-        #   iifname $wireguardIFACEs ip6 daddr 2a13:79c0:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
+        #   iifname $wireguardIFACEs ip6 daddr 1010:cafe:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
         #   oifname bootstrap ip6 daddr 2a13:79c0:ffff:feff:b00b:3965:222:0/112 counter accept
 
         #   ip6 saddr 2a01:cb08:bbb:3700::/64 oifname ens19 counter accept

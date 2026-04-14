@@ -16,7 +16,7 @@
       "::/0 recursive 1010:cafe:ffff:fefe::b00b"
 
       #"2a13:79c0:ffff::/48 unreachable" # Networking stuff
-      #"2a13:79c0:ffff:fefe::/64 unreachable" # LoopBacks
+      #"1010:cafe:ffff:fefe::/64 unreachable" # LoopBacks
       #"2a12:5844:1310::/44 unreachable" # full range /40
     ];
   };
