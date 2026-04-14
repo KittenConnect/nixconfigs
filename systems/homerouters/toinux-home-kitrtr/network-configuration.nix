@@ -26,7 +26,7 @@
 
       #   # ipv6.addresses = [
       #   #   {
-      #   #     address = "2a13:79c0:ffff:feff:b00b::xxx";
+      #   #     address = "1010:cafe:ffff:feff:b00b::xxx";
       #   #     prefixLength = 112;
       #   #   }
       #   # ];
