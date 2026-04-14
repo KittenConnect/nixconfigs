@@ -66,7 +66,9 @@ in {
   };
 
   networking.useDHCP = false;
+  networking.useNetworkd = true;
   systemd.network.enable = true;
+
 
   kittenModules = {
     disko = {
