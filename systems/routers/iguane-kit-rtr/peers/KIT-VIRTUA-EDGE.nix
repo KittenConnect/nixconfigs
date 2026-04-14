@@ -2,11 +2,11 @@
   kittenASN = 4242421945;
 in {
   peerAS = kittenASN;
-  peerIP = "2a13:79c0:ffff:feff::102";
+  peerIP = "1010:cafe:ffff:feff::102";
   localAS = kittenASN;
 
   wireguard = {
-    address = "2a13:79c0:ffff:feff::103";
+    address = "1010:cafe:ffff:feff::103";
     port = 51800;
     onIFACE = "ens18";
     # endpoint = "[2a07:8dc0:19:1cf::1]:6969";

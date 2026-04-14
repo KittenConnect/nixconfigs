@@ -3,11 +3,11 @@
   toinuxASN = 4242423692;
 in {
   peerAS = toinuxASN;
-  peerIP = "2a13:79c0:ffff:feff::3013";
+  peerIP = "1010:cafe:ffff:feff::3013";
   localAS = toinuxASN;
 
   wireguard = {
-    address = "2a13:79c0:ffff:feff::3012";
+    address = "1010:cafe:ffff:feff::3012";
     port = 51851;
     onIFACE = "ens18";
 
