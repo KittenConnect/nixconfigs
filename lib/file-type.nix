@@ -146,9 +146,9 @@ in {
             target = mkDefault name;
             source = lib.mkIf (config.text != null) (
               let
-                name' = "etc-bird-" + lib.replaceStrings [ "/" ] [ "-" ] name;
+                name' = "etc-bird-" + lib.replaceStrings ["/"] ["-"] name;
               in
-              lib.mkOptionDefault (pkgs.writeText name' config.text)
+                lib.mkOptionDefault (pkgs.writeText name' config.text)
             );
           };
         }

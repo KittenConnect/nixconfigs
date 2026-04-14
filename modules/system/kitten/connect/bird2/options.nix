@@ -1,12 +1,11 @@
 {
   lib,
   kittenLib,
-
   configHome, # Bird
   ...
-}:
-let
-  inherit (lib)
+}: let
+  inherit
+    (lib)
     mkOption
     mkEnableOption
     types
@@ -29,160 +28,162 @@ let
 
   # Options
 
-  birdPeerSubmodule =
-    {
-      name,
-      config,
-      ...
-    }:
-    {
-      options = {
-        enable = mkEnableOption "${name} peer." // {
-          default = true; example = false;
+  birdPeerSubmodule = {
+    name,
+    config,
+    ...
+  }: {
+    options = {
+      enable =
+        mkEnableOption "${name} peer."
+        // {
+          default = true;
+          example = false;
         };
 
-        peerName = mkOption {
-          type = types.str;
-          default = name;
-          description = "Override name of the BGP peer.";
+      peerName = mkOption {
+        type = types.str;
+        default = name;
+        description = "Override name of the BGP peer.";
+      };
+
+      peerIP = mkOption {
+        type = types.str;
+        description = "IP address of the BGP peer.";
+      };
+
+      peerAS = mkOption {
+        type = types.int;
+        default = 65666;
+        description = "Autonomous System number of the BGP peer.";
+      };
+
+      localIP = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Local IP address.";
+      };
+
+      localAS = mkOption {
+        type = types.int;
+        default = 65666;
+        description = "Local Autonomous System number.";
+      };
+
+      multihop = mkOption {
+        type = types.int;
+        default = 0;
+        description = "Multihop TTL value.";
+      };
+
+      template = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "bird template to use";
+      };
+
+      password = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Password for BGP session.";
+      };
+
+      passwordRef = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Reference to a password for BGP session.";
+      };
+
+      ipv4 = {
+        bgpImports = mkOption {
+          type = types.nullOr (
+            types.oneOf [
+              types.str
+              (types.listOf types.str)
+            ]
+          );
+          default = [];
+          description = "List of IPv4 import rules.";
         };
 
-        peerIP = mkOption {
-          type = types.str;
-          description = "IP address of the BGP peer.";
-        };
-
-        peerAS = mkOption {
-          type = types.int;
-          default = 65666;
-          description = "Autonomous System number of the BGP peer.";
-        };
-
-        localIP = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "Local IP address.";
-        };
-
-        localAS = mkOption {
-          type = types.int;
-          default = 65666;
-          description = "Local Autonomous System number.";
-        };
-
-        multihop = mkOption {
-          type = types.int;
-          default = 0;
-          description = "Multihop TTL value.";
-        };
-
-        template = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "bird template to use";
-        };
-
-        password = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "Password for BGP session.";
-        };
-
-        passwordRef = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "Reference to a password for BGP session.";
-        };
-
-        ipv4 = {
-          bgpImports = mkOption {
-            type = types.nullOr (
-              types.oneOf [
-                types.str
-                (types.listOf types.str)
-              ]
-            );
-            default = [ ];
-            description = "List of IPv4 import rules.";
-          };
-
-          bgpExports = mkOption {
-            type = types.listOf types.str;
-            default = [ ];
-            description = "List of IPv4 export rules.";
-          };
-        };
-
-        ipv6 = {
-          bgpImports = mkOption {
-            type = types.nullOr (
-              types.oneOf [
-                types.str
-                (types.listOf types.str)
-              ]
-            );
-            default = [ ];
-            description = "List of IPv6 import rules.";
-          };
-
-          bgpExports = mkOption {
-            type = types.nullOr (
-              types.oneOf [
-                types.str
-                # (types.functionTo {
-                #   description = "return filter name / filter list dynamically";
-                # })
-                (types.listOf types.str)
-              ]
-            );
-            # type = types.listOf types.str;
-            default = [ ];
-            description = "List of IPv6 export rules.";
-          };
-        };
-
-        bgpMED = mkOption {
-          type = types.nullOr types.int;
-          default = null;
-          description = "BGP Multi Exit Discriminator.";
-        };
-
-        # wireguard = mkOption {
-        #   type = types.attrs;
-        #   default = { };
-        #   description = "Wireguard configuration.";
-        # };
-
-        interface = mkOption {
-          type = types.nullOr types.str;
-
-          description = "Network interface.";
-          default = if config.multihop == 0 then config.peerName else null;
-          # default = if config.wireguard != { } then
-          #   (if config.wireguard ? interface then
-          #     config.wireguard.interface
-          #   else
-          #     config.peerName)
-          # else
-          #   null;
+        bgpExports = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          description = "List of IPv4 export rules.";
         };
       };
-    };
 
-in
-{
+      ipv6 = {
+        bgpImports = mkOption {
+          type = types.nullOr (
+            types.oneOf [
+              types.str
+              (types.listOf types.str)
+            ]
+          );
+          default = [];
+          description = "List of IPv6 import rules.";
+        };
+
+        bgpExports = mkOption {
+          type = types.nullOr (
+            types.oneOf [
+              types.str
+              # (types.functionTo {
+              #   description = "return filter name / filter list dynamically";
+              # })
+              (types.listOf types.str)
+            ]
+          );
+          # type = types.listOf types.str;
+          default = [];
+          description = "List of IPv6 export rules.";
+        };
+      };
+
+      bgpMED = mkOption {
+        type = types.nullOr types.int;
+        default = null;
+        description = "BGP Multi Exit Discriminator.";
+      };
+
+      # wireguard = mkOption {
+      #   type = types.attrs;
+      #   default = { };
+      #   description = "Wireguard configuration.";
+      # };
+
+      interface = mkOption {
+        type = types.nullOr types.str;
+
+        description = "Network interface.";
+        default =
+          if config.multihop == 0
+          then config.peerName
+          else null;
+        # default = if config.wireguard != { } then
+        #   (if config.wireguard ? interface then
+        #     config.wireguard.interface
+        #   else
+        #     config.peerName)
+        # else
+        #   null;
+      };
+    };
+  };
+in {
   enable = mkEnableOption "Kitten Bird2 module";
   # defaultSnippet = (mkEnableOption "Kitten Bird2 default config") // { default = true; example = false; };
 
   peers = mkOption {
-    default = { };
+    default = {};
     type = with types; attrsOf (submodule birdPeerSubmodule); # types.submodule (mkNamedOptionModule birdPeerSubmodule);
     description = "Configuration for BGP peers.";
   };
 
   extraConfigs = mkOption {
     type = fileType "kittenModules.bird.extraConfigs" configHome configHome;
-    default = { };
+    default = {};
     description = ''
       Attribute set of files to link into the bird's configuration directory.
       And include in bird.conf
@@ -209,7 +210,7 @@ in
 
   transitInterfaces = mkOption {
     type = types.listOf types.str;
-    default = [ ];
+    default = [];
     description = "Transit interface.";
   };
 
@@ -221,7 +222,7 @@ in
 
   static6 = mkOption {
     type = types.listOf types.str;
-    default = [ ];
+    default = [];
     description = "List of static IPv6 addresses.";
   };
 }

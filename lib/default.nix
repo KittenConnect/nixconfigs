@@ -1,4 +1,8 @@
-args @ {pkgs, lib, ...}: {
+args @ {
+  pkgs,
+  lib,
+  ...
+}: {
   strings = import ./strings.nix args;
   peers = import ./peers.nix args;
 

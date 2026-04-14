@@ -34,7 +34,6 @@ args @ {
   peers = cfg.peers;
   peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
 
-
   directInterfaces = let
     noLoopback = builtins.elem "-lo" cfg.interfaces;
   in
@@ -46,7 +45,6 @@ args @ {
         ++ (optional (builtins.all (lib.hasPrefix "-") cfg.interfaces) "*") # TODO: assert no "*"
       )
     else quotedString "*";
-
   # Example
   # config.kittenModules.bird = {
   #   # Example values, replace with actual srvCfg structure
@@ -66,7 +64,7 @@ in {
   ];
 
   # Options
-  options.kittenModules.bird = import ./options.nix (args // { inherit configHome; });
+  options.kittenModules.bird = import ./options.nix (args // {inherit configHome;});
 
   # Implementation
   config = mkIf cfg.enable {
