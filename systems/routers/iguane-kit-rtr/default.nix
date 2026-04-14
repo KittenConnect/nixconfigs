@@ -66,7 +66,7 @@ in {
       static6 = [
         "::/0 recursive 1010:cafe:ffff:fefe::b00b"
 
-        "1010:cafe:ffff:fefe::113:91/128 via 1010:cafe:ffff:feff:b00b:3965:113:92" # Announce RouteReflector LoopBack
+        "1010:cafe:ffff:fefe::113:91/128 via 1010:cafe:ffff:feff:b00b:3965:113:91" # Announce RouteReflector LoopBack
 
         #"2a13:79c0:ffff::/48 unreachable" # Networking stuff
         #"1010:cafe:ffff:fefe::/64 unreachable" # LoopBacks

@@ -10,7 +10,7 @@ in {
     port = 51801;
     onIFACE = "ens18";
     # endpoint = "[2001:19f0:6801:365:5400:4ff:fe82:5c6e]:6969";
-    # endpoint = "140.82.55.252:6969";
+    endpoint = "140.82.55.252:6969";
     peerKey = "H8z/i9mmbIukPwLJooVP/d+T4pi9IRFC/UYA7gcEzFM=";
   };
 
