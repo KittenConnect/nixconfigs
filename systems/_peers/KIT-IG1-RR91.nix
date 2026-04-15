@@ -1,47 +1,19 @@
-{...}: let
-  kittenASN = 4242421945;
+{lib, ...}: let
+  inherit (lib.kitten.params.internal6) asn;
 in {
-  # vultr6
-  # AS64515
-  # Peer-IP : 2001:19f0:ffff::1
-
-  # protocol bgp TRANSIT_VULTR6 {
-  #
-  #     multihop 2;
-  #
-
-  #     ipv6 {
-  #             export filter {
-  #             if ( net ~ [ 2a12:5844:1310::/44, 2a12:dd47:9330::/44 ] ) then {
-  #                     accept;
-  #             }
-  #             reject;
-  #         };
-  #         import none;
-  #     };
-  #
-  # }
-  peerAS = kittenASN;
-  peerIP = "1010:cafe:ffff:fefe::113:91";
-  localAS = kittenASN;
+  peerAS = asn;
+  peerIP = lib.kitten.params.internal6.cafe.kittens.loopbacks.ig1-kit-rr;
+  localAS = asn;
 
   multihop = 5;
 
-  # wireguard = {
-  #   address = "1010:cafe:ffff:feff::10c";
-  #   port = 51800;
-  #   peerKey = "rMTaMWJYlgTKJoE0PnVOo9SKHTppEfYK5KtWjBI9mC8=";
-  # };
   template = "rrserver";
-  ipv6 = {
-    #imports = null;
-    #imports = x: "filter filter6_IN_BGP_${toString x}";
-    #exports = [ "2a12:dd47:9330::/44" ];
 
-    #exports = null;
-  };
-  ipv4 = {
-    #imports = x: "filter filter4_IN_BGP_${toString x}";
-    #exports = x: "filter6_IN_BGP_${toString x}";
-  };
+  # ipv6 = {
+  #
+  # };
+
+  # ipv4 = {
+  #
+  # };
 }
