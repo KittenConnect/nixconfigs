@@ -1,6 +1,6 @@
 {
   sources ? import ./npins,
-  pkgsConfig ? (import ./nixpkgs.config.nix),
+  pkgsConfig ? (import ./.config.nix),
   pkgsOverlays ? (import ./overlays { inherit (import nixpkgs {}) lib; }),
   nixpkgs ? sources.nixpkgs,
   pkgs ? import nixpkgs { config = pkgsConfig; overlays = pkgsOverlays; },
