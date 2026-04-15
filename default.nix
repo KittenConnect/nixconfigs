@@ -1,11 +1,12 @@
 {
   sources ? import ./npins,
-  pkgsConfig ? (import ./.config.nix),
-  pkgsOverlays ? (import ./overlays { inherit (import nixpkgs {}) lib; }),
   nixpkgs ? sources.nixpkgs,
+  pkgs' ? import sources.nixpkgs {},
+  pkgsConfig ? import ./pkgs.config.nix,
+  pkgsOverlays ? import ./overlays,
   pkgs ? import nixpkgs { config = pkgsConfig; overlays = pkgsOverlays; },
   lib ? pkgs.lib,
-  hostsDefaults ? import ./systems/_defaults.nix,
+  hostsDefaults ? import ./systems/configuration.nix,
   hosts ? (
     import ./systems {
       inherit pkgs lib;
@@ -134,7 +135,7 @@ in rec {
           # nixos-anywhere() {
           #
           # }
-          alias nixos-anywhere='nix run -f ${inputs.self}/_scripts/nixos-anywhere.nix'
+          alias nixos-anywhere='nix run -f ${inputs.sources.self}/_scripts/nixos-anywhere.nix'
         '';
 
         nativeBuildInputs = with pkgs; [

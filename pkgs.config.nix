@@ -1,7 +1,7 @@
 {
   allowUnfreePredicate =
     let
-      unfreePackages = import ./.unfree.nix;
+      unfreePackages = import ./pkgs.unfree.nix;
     in
     pkg:
     builtins.elem pkg.pname unfreePackages

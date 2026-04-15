@@ -17,13 +17,32 @@ let
 
   iface = "enp1s0";
 
-  peers = import ./peers args;
+  peers = kittenLib.peers {
+    host = ./peers;
+    profile = ../.;
 
-  wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
-  );
+    nextGen = true;
 
-  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers;
+    blacklist = [];
+    manual = {
+      # peers we dont want in the peers folder
+      TRS_VULTR6_PAR = {
+        localAS = 213197;
+        peerAS = 64515;
+        peerIP = "2001:19f0:ffff::1";
+        multihop = 2;
+
+        passwordRef = "vultr";
+
+        ipv6 = {
+          bgpImports = null;
+          bgpExports = [
+            "2a12:5844:1310::/44" # Kitten Public IPv6
+          ];
+        };
+      };
+    };
+  };
 in
 {
   imports = [
@@ -103,13 +122,13 @@ in
         "2001:19f0::/32" = "fc00:4ff:fe82:5c6e";
       };
 
-      peers = birdPeers;
+      peers = peers.bird;
     };
 
     wireguard = {
       enable = true;
       # defaultIFACE = "ens18";
-      peers = wgPeers;
+      peers = peers.wireguard;
     };
 
     firewall = {
