@@ -11,7 +11,6 @@ args @ {lib, ...}: let
 
   filterFunc = file: file != "default.nix" && hasSuffix ".nix" file && !hasPrefix "_" file;
   overlays = map (file: import (overlaysPath + "/${file}")) (filter filterFunc files);
-  # baseConfig = import ./nixpkgs.config.nix;
 in
   overlays
 # {

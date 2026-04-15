@@ -1,35 +1,32 @@
 {
   sources ? import ./npins,
-  _pkgsConfig ? (import ./nixpkgs.config.nix),
-  pkgsConfig ? {},
+  pkgsConfig ? (import ./nixpkgs.config.nix),
+  pkgsOverlays ? (import ./overlays { inherit (import nixpkgs {}) lib; }),
   nixpkgs ? sources.nixpkgs,
-  pkgs ? import nixpkgs (_pkgsConfig // pkgsConfig),
+  pkgs ? import nixpkgs { config = pkgsConfig; overlays = pkgsOverlays; },
+  lib ? pkgs.lib,
   hostsDefaults ? import ./systems/_defaults.nix,
   hosts ? (
     import ./systems {
-      inherit pkgs;
-      inherit (pkgs) lib;
+      inherit pkgs lib;
     }
   ),
   kittenLib ? (
     import ./lib {
-      inherit pkgs;
-      inherit (pkgs) lib;
+      inherit pkgs lib;
     }
   ),
   ...
 }: let
-  inherit (pkgs) lib;
-
   # Flake-Less repository entrypoint
 
-  pkgsConfig' = _pkgsConfig // pkgsConfig;
-
   inputs = {
+    inherit pkgs lib;
+
     inherit
       sources
       nixpkgs
-      pkgs
+      pkgsConfig
       kittenLib
       hosts
       hostsDefaults
@@ -58,9 +55,6 @@
       #   n: v: v.config.system.build ? diskoScriptNoDeps
       # ) (inputs.usefullFunctions.colmena.makeHive (import ../hive.nix)).nodes;
     };
-
-    pkgsConfig = pkgsConfig';
-    inherit (pkgs) lib;
   };
 in rec {
   inherit inputs;
@@ -78,13 +72,6 @@ in rec {
       // (byMachines {
         nixosSomewhere = usefullFunctions.makeDynamicScripts.nixosSomewhere;
       });
-    # {
-    #   nixos-anywhere = lib.mapAttrs (
-    #     n: v: {
-    #       # import nixos-anywhere.sh.nix w/ all sort of stuff
-    #     }
-    #   );
-    # };
 
     # {
     #   # Executed by `nix flake check`
@@ -128,7 +115,6 @@ in rec {
       default = outputs.devShells.legacy;
 
       legacy = pkgs.mkShell {
-        # nativeBuildInputs is usually what you want -- tools you need to run
         shellHook = ''
           # TODO: implement alias for nixos-anywhere
           # nixos-anywhere() {

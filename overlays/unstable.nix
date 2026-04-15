@@ -1,10 +1,12 @@
 let
-  sources = import ../npins;
+  inherit
+    ((import ../. {}).inputs)
+    sources
+    pkgs
+    pkgsConfig
+    ;
 
-  baseConfig = import ../nixpkgs.config.nix;
-
-  unstable = import sources.unstable baseConfig;
-  nixpkgs = import sources.nixpkgs baseConfig;
+  unstable = import sources.unstable { config = pkgsConfig; };
 in (
   final: prev: {
     nixfmt = unstable.nixfmt-rfc-style;

@@ -16,7 +16,7 @@
       enable = lib.mkDefault true;
     };
 
-    bird2 = {
+    bird = {
       enable = true;
     };
   };
