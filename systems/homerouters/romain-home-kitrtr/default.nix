@@ -1,13 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-args@{
+args @ {
   config,
   lib,
+  kittenLib,
   pkgs,
   ...
-}:
-let
+}: let
   # diskoProfile = "simple";
   # diskoConfig = {
   #   bootdisk = "/dev/vda";
@@ -16,13 +16,10 @@ let
     host = ./peers;
     profile = ../.;
 
-    nextGen = true;
-
     blacklist = [];
     manual = {};
   };
-in
-{
+in {
   services.xserver.xkb = {
     layout = "fr";
     #variant = "";
@@ -50,18 +47,16 @@ in
   #boot.loader.grub.devices = [ "${targetConfig.bootdisk}" ]; # or "nodev" for efi only
 
   kittenModules = {
-    disko =
-      let
-        profile = "simple";
-      in
-      {
-        enable = true;
-        inherit profile;
+    disko = let
+      profile = "simple";
+    in {
+      enable = true;
+      inherit profile;
 
-        ${profile} = {
-          bootdisk = "/dev/vda";
-        };
+      ${profile} = {
+        bootdisk = "/dev/vda";
       };
+    };
 
     firewall = {
       enable = true;

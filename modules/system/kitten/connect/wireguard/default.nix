@@ -243,7 +243,9 @@ in {
             else "lo"
           } }'';
       };
-      rules = lib.mkIf (peers != {}) ''iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept'';
+      rules = lib.mkIf (
+        peers != {}
+      ) ''iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept'';
     };
 
     # networking.wg-quick.interfaces = genAttrs (attrNames peers) mkWireguardConf;

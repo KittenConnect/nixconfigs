@@ -54,12 +54,14 @@ in
               customConfig = config:
                 config
                 // {
-                  imports = (config.imports or []) ++ [
-                    {
-                      networking.hostName = lib.mkForce name;
-                      sops.defaultSopsFile = ./.secrets/${name}.yaml;
-                    }
-                  ];
+                  imports =
+                    (config.imports or [])
+                    ++ [
+                      {
+                        networking.hostName = lib.mkForce name;
+                        sops.defaultSopsFile = ./.secrets/${name}.yaml;
+                      }
+                    ];
                 };
             in
               customConfig v

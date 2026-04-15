@@ -1,15 +1,14 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-args@{
+args @ {
   config,
   kittenLib,
   # targetConfig,
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   iface = "ens18";
   kittenIFACE = "ens19";
   diskoProfile = "simple";
@@ -21,13 +20,10 @@ let
     host = ./peers;
     profile = ../.;
 
-    nextGen = true;
-
     blacklist = [];
     manual = {};
   };
-in
-{
+in {
   # Bootloader.
   #boot.loader.systemd-boot.enable = true;
   #boot.loader.systemd-boot.configurationLimit = 5;
@@ -59,7 +55,7 @@ in
 
     loopback0 = {
       enable = true;
-      ipv6 = [ "1010:cafe:ffff:fefe::22f0" ];
+      ipv6 = ["1010:cafe:ffff:fefe::22f0"];
     };
 
     bird = {

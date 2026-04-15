@@ -150,7 +150,9 @@
                     # description = "Antoine '${userName}'";
                     shell = pkgs.zsh;
                     extraGroups =
-                      ["wheel"]
+                      [
+                        "wheel"
+                      ]
                       ++ optionals (config.services.xserver.enable) ["input"]
                       ++ optionals (config.networking.networkmanager.enable) ["networkmanager"]
                       ++ optionals (config.virtualisation.docker.enable) ["docker"]

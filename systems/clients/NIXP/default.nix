@@ -7,15 +7,13 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/vda";
     # crypted = true;
   };
-in
-{
+in {
   imports = [
     ../profile.nix
     # Include the results of the hardware scan.
@@ -155,7 +153,7 @@ in
     enable = true;
     hydraURL = "http://localhost:3000";
     notificationSender = "hydra@localhost";
-    buildMachinesFiles = [ ];
+    buildMachinesFiles = [];
     useSubstitutes = true;
   };
 
@@ -164,8 +162,8 @@ in
   virtualisation.docker.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 4444 ];
-  networking.firewall.allowedUDPPorts = [ ];
+  networking.firewall.allowedTCPPorts = [4444];
+  networking.firewall.allowedUDPPorts = [];
   # Or disable the firewall altogether.
   networking.firewall.enable = lib.mkDefault true;
 

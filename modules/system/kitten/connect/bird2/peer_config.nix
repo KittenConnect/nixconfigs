@@ -27,7 +27,9 @@
   "kittenModules.bird.peers.${peerName}: Multihop[${toString peer.multihop}] BGP cannot be bound to interface : ${peer.interface}";
     peer.interface;
 
-  password = assert lib.asserts.assertMsg (peer.passwordRef == null) "U defined a passwordRef, why do you still want to leak password ?";
+  password = assert lib.asserts.assertMsg (
+    peer.passwordRef == null
+  ) "U defined a passwordRef, why do you still want to leak password ?";
     toString (
       lib.warn "bird2 peers password is insecure consider using passwordRef with a bird_secrets file" password
     );
@@ -97,13 +99,21 @@ in ''
     neighbor ${toString peerIP} as ${toString peerAS};
     ${optionalString (peer.interface != null) ''interface "${interface}";''}
     ${multihop}; # multihop: ${toString peer.multihop}
-    ${optionalString (peer.password != null) ''password "${password}"; # Not-Secured cleartext access for @everyone''}
-    ${optionalString (peer.passwordRef != null) "password secretPassword_${passwordRef}; # Defined in secrets file"}
+    ${optionalString (
+    peer.password != null
+  ) ''password "${password}"; # Not-Secured cleartext access for @everyone''}
+    ${optionalString (
+    peer.passwordRef != null
+  ) "password secretPassword_${passwordRef}; # Defined in secrets file"}
 
   ${optionalString (peer.ipv6 != {}) ''
       ipv6 {
-    ${optionalString (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports != []) (indentedLines 2 (mkFilterSection "import" peer.ipv6.bgpImports))}
-    ${optionalString (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports != []) (indentedLines 2 (mkFilterSection "export" peer.ipv6.bgpExports))}
+    ${optionalString (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports != []) (
+      indentedLines 2 (mkFilterSection "import" peer.ipv6.bgpImports)
+    )}
+    ${optionalString (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports != []) (
+      indentedLines 2 (mkFilterSection "export" peer.ipv6.bgpExports)
+    )}
       };
   ''}
 

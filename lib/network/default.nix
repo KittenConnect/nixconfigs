@@ -1,5 +1,4 @@
-{ lib, ... }:
-let
+{lib, ...}: let
   isValidIPv4 = ip: let
     parts = lib.splitString "." ip;
     isByte = part: let
@@ -15,82 +14,81 @@ let
   in
     builtins.length parts <= 8 && lib.all isHexPart parts && ip != "";
 
-  withCIDR =
-    let
-      splitNetwork = lib.splitString "/";
-      splitPrefix = x:
-        if isValidIPv4 x then throw "Unsupported IPv4 network ${x} passed - please implement" else if isValidIPv6 x then lib.splitString ":" x else throw "Invalid IPv4/IPv6 ${x} passed";
-      fixedPrefix = lib.replaceStrings [ "::/" ] [ ":0/" ];
+  withCIDR = let
+    splitNetwork = lib.splitString "/";
+    splitPrefix = x:
+      if isValidIPv4 x
+      then throw "Unsupported IPv4 network ${x} passed - please implement"
+      else if isValidIPv6 x
+      then lib.splitString ":" x
+      else throw "Invalid IPv4/IPv6 ${x} passed";
+    fixedPrefix = lib.replaceStrings ["::/"] [":0/"];
 
-
-      getCidr =
-        self:
-        let
-          split = splitNetwork self.net;
-          len = builtins.length split;
-        in
-        lib.throwIf (len != 2) "net must be of form 0000:0000:0000::/xx" (builtins.elemAt split (len - 1));
-
-      getCleanPrefix =
-        self:
-        let
-          split = splitNetwork self.net;
-          prefix = builtins.head split;
-
-          prefixArr = splitPrefix prefix;
-          len = builtins.length prefixArr;
-
-
-          cleanSplit =
-            if len >= 8 then
-              lib.throwIf ((builtins.elemAt prefixArr 7) != "0")
-                "IPv6 prefix ${self.net} is not valid, maybe you want to try ${fixedPrefix self.net}"
-                (lib.sublist 0 (len - 1) prefixArr)
-            else if
-              lib.sublist (len - 2) 2 prefixArr == [
-                ""
-                ""
-              ]
-            then
-              lib.sublist 0 (len - 2) prefixArr
-            else
-              prefixArr;
-        in
-        lib.concatStringsSep ":" cleanSplit;
-
-      appendToPrefix = self: x: let
-        prefix = getCleanPrefix self;
-        split = splitPrefix prefix;
-        len = builtins.length split;
-        newLen = len + (builtins.length (splitPrefix x));
-
-        longX = lib.throwIf (lib.hasInfix "::" x) "Cannot add ${x} to ${prefix} - remove :: first" x;
-
-        val = if newLen == 8 then
-        "${prefix}:${x}/${builtins.toString (getCidr self)}"
-        else if newLen < 8 && newLen > 0 then
-          "${prefix}::${longX}/${builtins.toString (getCidr self)}"
-        else throw "cannot add ${x} to ${prefix} -> invalid IPv6 ${prefix}::${x}/${builtins.toString (getCidr self)}";
-      in
-        lib.throwIf (lib.hasPrefix ":" x || lib.hasSuffix ":" x) "Cannot add ${x} to ${prefix} - remove trailing/leading : first" val;
+    getCidr = self: let
+      split = splitNetwork self.net;
+      len = builtins.length split;
     in
+      lib.throwIf (len != 2) "net must be of form 0000:0000:0000::/xx" (builtins.elemAt split (len - 1));
+
+    getCleanPrefix = self: let
+      split = splitNetwork self.net;
+      prefix = builtins.head split;
+
+      prefixArr = splitPrefix prefix;
+      len = builtins.length prefixArr;
+
+      cleanSplit =
+        if len >= 8
+        then
+          lib.throwIf ((builtins.elemAt prefixArr 7) != "0")
+          "IPv6 prefix ${self.net} is not valid, maybe you want to try ${fixedPrefix self.net}"
+          (lib.sublist 0 (len - 1) prefixArr)
+        else if
+          lib.sublist (len - 2) 2 prefixArr
+          == [
+            ""
+            ""
+          ]
+        then lib.sublist 0 (len - 2) prefixArr
+        else prefixArr;
+    in
+      lib.concatStringsSep ":" cleanSplit;
+
+    appendToPrefix = self: x: let
+      prefix = getCleanPrefix self;
+      split = splitPrefix prefix;
+      len = builtins.length split;
+      newLen = len + (builtins.length (splitPrefix x));
+
+      longX = lib.throwIf (lib.hasInfix "::" x) "Cannot add ${x} to ${prefix} - remove :: first" x;
+
+      val =
+        if newLen == 8
+        then "${prefix}:${x}/${builtins.toString (getCidr self)}"
+        else if newLen < 8 && newLen > 0
+        then "${prefix}::${longX}/${builtins.toString (getCidr self)}"
+        else throw "cannot add ${x} to ${prefix} -> invalid IPv6 ${prefix}::${x}/${builtins.toString (getCidr self)}";
+    in
+      lib.throwIf (
+        lib.hasPrefix ":" x || lib.hasSuffix ":" x
+      ) "Cannot add ${x} to ${prefix} - remove trailing/leading : first"
+      val;
+  in
     args:
-    if builtins.isAttrs args then
-      {
-        __toString = getCleanPrefix;
+      if builtins.isAttrs args
+      then
+        {
+          __toString = getCleanPrefix;
 
-        len = lib.toInt (getCidr args);
-        add = x: appendToPrefix args x;
-      }
-      // args
-    else if builtins.isString args then
-      withCIDR { net = args; }
-    else
-      throw "withCIDR needs a net argument";
-in
-rec {
+          len = lib.toInt (getCidr args);
+          add = x: appendToPrefix args x;
+        }
+        // args
+      else if builtins.isString args
+      then withCIDR {net = args;}
+      else throw "withCIDR needs a net argument";
+in rec {
   inherit isValidIPv4 isValidIPv6;
-
 
   internal6 = withCIDR {
     asn = 4242421945;

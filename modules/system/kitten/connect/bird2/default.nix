@@ -35,13 +35,14 @@ args @ {
   peers = cfg.peers;
   peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
 
-  sortedExtraConfigs = builtins.sort (p: q:
-    if (p.value.order or null) != null && (q.value.order or null) != null
-    then builtins.lessThan (p.value.order) (q.value.order)
-    else if (p.value.order or null) == null && (q.value.order or null) == null
-    then builtins.lessThan p.name q.name
-    else p.value.order != null)
-  (lib.attrsToList cfg.extraConfigs);
+  sortedExtraConfigs = builtins.sort (
+    p: q:
+      if (p.value.order or null) != null && (q.value.order or null) != null
+      then builtins.lessThan (p.value.order) (q.value.order)
+      else if (p.value.order or null) == null && (q.value.order or null) == null
+      then builtins.lessThan p.name q.name
+      else p.value.order != null
+  ) (lib.attrsToList cfg.extraConfigs);
 
   directInterfaces = let
     noLoopback = builtins.elem "-lo" cfg.interfaces;
@@ -103,7 +104,9 @@ in {
 
       preCheckConfig = let
         configDir = pkgs.linkFarm "bird-directory" (lib.mapAttrs (n: v: v.source) cfg.extraConfigs);
-        getIncludes = lib.optionalAttrs (cfg.extraConfigs != {}) "${pkgs.rsync}/bin/rsync -arvp ${configDir}/ ./";
+        getIncludes = lib.optionalAttrs (
+          cfg.extraConfigs != {}
+        ) "${pkgs.rsync}/bin/rsync -arvp ${configDir}/ ./";
       in ''
         if grep -q include bird2.conf; then
           echo "Found the following includes in bird configuration" >&2
@@ -144,7 +147,10 @@ in {
 
         (mkOrder 10 ''
           # NixOS declared includes
-          ${concatMapStringsSep "\n" (x: ''${optionalString (!(cfg.enable)) "# "}include "${x.name}";'') sortedExtraConfigs}
+          ${concatMapStringsSep "\n" (
+              x: ''${optionalString (!(cfg.enable)) "# "}include "${x.name}";''
+            )
+            sortedExtraConfigs}
         '')
       ];
     };
@@ -167,14 +173,16 @@ in {
           }
       );
     in
-      lib.mapAttrs' (n: v:
-        lib.nameValuePair "peers/${n}.conf" {
-          inherit (v) enable;
-          text = ''
-            # ${n}
-            ${peerFunc (mkPeersFuncArgs n v)}
-          '';
-        })
+      lib.mapAttrs' (
+        n: v:
+          lib.nameValuePair "peers/${n}.conf" {
+            inherit (v) enable;
+            text = ''
+              # ${n}
+              ${peerFunc (mkPeersFuncArgs n v)}
+            '';
+          }
+      )
       peers;
 
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {

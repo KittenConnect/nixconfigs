@@ -1,9 +1,8 @@
 {
-  allowUnfreePredicate =
-    let
-      unfreePackages = import ./pkgs.unfree.nix;
-    in
+  allowUnfreePredicate = let
+    unfreePackages = import ./pkgs.unfree.nix;
+  in
     pkg:
-    builtins.elem pkg.pname unfreePackages
-    || (pkg ? name && builtins.elem (builtins.parseDrvName pkg.name).name unfreePackages);
+      builtins.elem pkg.pname unfreePackages
+      || (pkg ? name && builtins.elem (builtins.parseDrvName pkg.name).name unfreePackages);
 }
