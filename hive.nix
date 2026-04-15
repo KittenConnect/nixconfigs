@@ -57,7 +57,7 @@ in
                   imports = (config.imports or []) ++ [
                     {
                       networking.hostName = lib.mkForce name;
-                      sops.defaultSopsFile = ./secrets/${name}.yaml;
+                      sops.defaultSopsFile = ./.secrets/${name}.yaml;
                     }
                   ];
                 };
