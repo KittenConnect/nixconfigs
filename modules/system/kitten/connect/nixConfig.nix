@@ -52,7 +52,7 @@ in {
   # Implementation
 
   config = lib.mkIf (cfg.enable) {
-    environment.etc.nixos.source = lif.mkIf (self != null) self;
+    environment.etc.nixos.source = lib.mkIf (self != null) self;
 
     systemd.services.nix-gc = lib.mkIf (cfg.autoGc) (
       let
