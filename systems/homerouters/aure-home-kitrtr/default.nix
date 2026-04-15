@@ -37,7 +37,6 @@ in {
 
   imports = [
     # Include the results of the hardware scan.
-    ../default.nix
     ./hardware-configuration.nix
     ./network-configuration.nix
     # ./packages.nix
