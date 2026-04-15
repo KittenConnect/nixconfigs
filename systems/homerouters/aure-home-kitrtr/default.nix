@@ -3,6 +3,7 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 args@{
   config,
+  kittenLib,
   # targetConfig,
   lib,
   pkgs,
@@ -16,13 +17,15 @@ let
     bootdisk = "/dev/vda";
   };
 
-  peers = import ./peers (args // { });
+  peers = kittenLib.peers {
+    host = ./peers;
+    profile = ../.;
 
-  wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
-  );
+    nextGen = true;
 
-  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers;
+    blacklist = [];
+    manual = {};
+  };
 in
 {
   # Bootloader.
@@ -74,13 +77,13 @@ in
         #"2a12:5844:1310::/44 unreachable" # full range /40
       ];
 
-      peers = birdPeers;
+      peers = peers.bird;
     };
 
     wireguard = {
       enable = true;
 
-      peers = wgPeers;
+      peers = peers.wireguard;
     };
 
     firewall = {

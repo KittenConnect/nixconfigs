@@ -13,13 +13,15 @@ let
     bootdisk = "/dev/vda";
   };
 
-  peers = import ./peers (args // { });
+  peers = kittenLib.peers {
+    host = ./peers;
+    profile = ../.;
 
-  wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
-  );
+    nextGen = true;
 
-  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers;
+    blacklist = [];
+    manual = {};
+  };
 in
 {
   imports = [
@@ -56,13 +58,13 @@ in
       enable = true;
       loopback6 = "1010:cafe:ffff:fefe::69:25";
 
-      peers = birdPeers;
+      peers = peers.bird;
     };
 
     wireguard = {
       enable = true;
 
-      peers = wgPeers;
+      peers = peers.wireguard;
     };
 
     # loopback0 = { # Enabled by bird by default

@@ -14,13 +14,22 @@ let
     bootdisk = "/dev/vda";
   };
 
-  peers = import ./peers args;
+  peers = kittenLib.peers {
+    host = ./.;
+    profile = ../..;
 
-  wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
-  );
+    blacklist = [];
+    manual = {
+      # Internal Tunnels
+      virtuaNix_PAR = ./KIT-VIRTUA-EDGE.nix;
+      vultrNix_PAR = ./KIT-VULTR-EDGE.nix;
+      # LGC_virtua_PAR = ./KIT-VIRTUA-EDGE.legacy.nix;
 
-  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers;
+      aureG8 = ./KIT-aurelien-RBR.nix;
+      toinuxMEL1 = ./KIT-toinux-MEL1.nix;
+      roumaiNixPAR = ./KIT-roumain-PAR.nix;
+    };
+  }
 in
 {
   imports = [
@@ -76,13 +85,13 @@ in
         #"2a12:5844:1310::/44 unreachable" # full range /40
       ];
 
-      peers = birdPeers;
+      peers = peers.bird;
     };
 
     wireguard = {
       enable = true;
       # defaultIFACE = "ens18";
-      peers = wgPeers;
+      peers = peers.wireguard;
     };
 
     firewall = {

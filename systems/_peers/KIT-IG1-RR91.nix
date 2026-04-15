@@ -1,8 +1,8 @@
-{lib, ...}: let
-  inherit (lib.kitten.params.internal6) asn;
+{kittenLib, ...}: let
+  inherit (kittenLib.params.internal6) asn;
 in {
   peerAS = asn;
-  peerIP = lib.kitten.params.internal6.cafe.kittens.loopbacks.ig1-kit-rr;
+  peerIP = kittenLib.params.internal6.cafe.kittens.loopbacks.ig1-kit-rr;
   localAS = asn;
 
   multihop = 5;
