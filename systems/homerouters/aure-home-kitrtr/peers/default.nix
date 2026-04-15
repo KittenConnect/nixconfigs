@@ -14,5 +14,4 @@ in
     # # LGC_virtua_PAR = import ./KIT-VIRTUA-EDGE.legacy.nix { };
 
     # toinuxMEL1 = import ./KIT-toinux-MEL1.nix { };
-    # roumainNTE = import ./KIT-roumain-NTE.nix { };
   }

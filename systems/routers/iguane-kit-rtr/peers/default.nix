@@ -12,7 +12,6 @@ kittenLib.peers {
 
     aureG8 = ./KIT-aurelien-RBR.nix;
     toinuxMEL1 = ./KIT-toinux-MEL1.nix;
-    roumainNTE = ./KIT-roumain-NTE.nix;
-    roumaiNixNTE = ./KIT-roumainNix-NTE.nix;
+    roumaiNixPAR = ./KIT-roumain-PAR.nix;
   };
 }
