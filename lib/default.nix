@@ -4,7 +4,7 @@ args @ {
   ...
 }: {
   strings = import ./strings.nix args;
-  params = import ./params args;
+  network = import ./network args;
   peers = import ./peers.nix args;
 
   types = {
