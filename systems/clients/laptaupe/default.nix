@@ -76,7 +76,6 @@ in
   i18n.defaultLocale = "en_US.UTF-8";
 
   # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
