@@ -3,6 +3,14 @@ let
   inherit (builtins) readDir filter attrNames map;
   # inherit (lib.strings) hasPrefix hasSuffix;
 
+  inherit ((import ../. {}).inputs)
+    sources
+    pkgs
+    pkgsConfig
+    kittenLib
+  ;
+  unstable = import sources.unstable { config = pkgsConfig; };
+
   # ugly implementations to avoid using pkgs/lib
   hasPrefix = q: s: let
     split = builtins.split q s;
@@ -24,7 +32,22 @@ let
   filterFunc = file: file != "default.nix" && hasSuffix ".nix" file && !hasPrefix "_" file;
   overlays = map (file: import (overlaysPath + "/${file}")) (filter filterFunc files);
 in
-  overlays
+  overlays ++ [
+    (
+      final: prev: {
+        nixfmt = unstable.nixfmt-rfc-style;
+
+        # sops = unstable.sops;
+        # lix = unstable.lix;
+        lib = (prev.lib or {}) // {
+          kitten = kittenLib;
+        };
+
+        inherit unstable;
+        # inherit (unstable) lix sops;
+      }
+    )
+  ]
 # {
 #   inherit overlaysPath overlays baseConfig sources;
 # }
