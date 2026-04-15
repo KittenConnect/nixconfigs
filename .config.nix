@@ -1,10 +1,7 @@
 {
-  # allowUnfree = true;
   allowUnfreePredicate =
     let
-      unfreePackages = [
-        "vscode"
-      ];
+      unfreePackages = import ./.unfree.nix;
     in
     pkg:
     builtins.elem pkg.pname unfreePackages
