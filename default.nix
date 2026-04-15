@@ -16,6 +16,7 @@
       inherit pkgs lib;
     }
   ),
+  self ? lib.cleanSource ./.,
   ...
 }: let
   # Flake-Less repository entrypoint
@@ -23,16 +24,29 @@
   inputs = {
     inherit pkgs lib;
 
+    sources = let selfSource = builtins.fetchGit ./.; in sources // {
+      self = rec {
+        branch = "HEAD";
+        hash = selfSource.narHash;
+        inherit (selfSource) outPath;
+        repository = {
+          type = "GitHub";
+            owner = "kittenconnect";
+            repo = "nixconfigs";
+        };
+        revision = selfSource.dirtyRev or selfSource.rev;
+        type = "Git";
+        url = "https://github.com/${repository.owner}/${repository.repo}/archive/${revision}.tar.gz";
+      };
+    };
+
     inherit
-      sources
       nixpkgs
       pkgsConfig
       kittenLib
       hosts
       hostsDefaults
       ;
-
-    self = lib.cleanSource ./.;
 
     hive = inputs.usefullFunctions.colmena.makeHive (import ./hive.nix);
 
