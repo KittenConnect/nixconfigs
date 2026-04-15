@@ -1,6 +1,4 @@
-{...}: let
-  inherit ((import ../../.. {}).inputs) sources;
-in {
+{sources ? ((import ../../.. {}).inputs).sources, ...}: {
   imports = [
     "${sources.sops-nix}/modules/sops"
   ];
