@@ -1,11 +1,12 @@
 {
   lib,
+  kittenLib,
   config,
   pkgs,
   ...
 }: let
   inherit (lib) mkOption types;
-  inherit (lib.kitten) isValidIPv4 isValidIPv6;
+  inherit (kittenLib.network) isValidIPv4 isValidIPv6;
 
   cfg = config.kittenModules.loopback0;
 
