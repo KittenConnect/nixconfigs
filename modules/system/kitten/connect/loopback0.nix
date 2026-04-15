@@ -4,28 +4,15 @@
   pkgs,
   ...
 }: let
-  inherit (lib) mkOption stringLength types;
+  inherit (lib) mkOption types;
+  inherit (lib.kitten) isValidIPv4 isValidIPv6;
 
   cfg = config.kittenModules.loopback0;
 
   canonicalizeIPs = ips: lib.unique ips;
 
   hasIPv4 = cfg.ipv4 != [];
-  isValidIPv4 = ip: let
-    parts = lib.splitString "." ip;
-    isByte = part: let
-      n = builtins.parseInt part;
-    in
-      n >= 0 && n <= 255;
-  in
-    builtins.length parts == 4 && lib.all isByte parts;
-
   hasIPv6 = cfg.ipv6 != [];
-  isValidIPv6 = ip: let
-    parts = lib.splitString ":" ip;
-    isHexPart = part: stringLength part <= 4 && (part == "" || (builtins.match "[0-9a-fA-F]+" part != null));
-  in
-    builtins.length parts <= 8 && lib.all isHexPart parts && ip != "";
 
   validateIPv4s = ips:
     if lib.all isValidIPv4 ips
