@@ -6,14 +6,17 @@
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/nvme0n1";
     crypted = true;
   };
-in {
+in
+{
   imports = [
+    ../profile.nix
     ../../../modules/system/kitten/legacy/laptop.nix
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
@@ -55,17 +58,16 @@ in {
 
   networking = {
     # networkmanager.enable = true;
-    networkmanager =
-      {
-        enable = true;
-      }
-      // lib.mkIf (config.networking.networkmanager.enable) {
-        extraConfig = lib.concatStringsSep "\n" [
-          "[device]"
-          "match-device=driver:iwlwifi"
-          "wifi.scan-rand-mac-address=no"
-        ];
-      };
+    networkmanager = {
+      enable = true;
+    }
+    // lib.mkIf (config.networking.networkmanager.enable) {
+      extraConfig = lib.concatStringsSep "\n" [
+        "[device]"
+        "match-device=driver:iwlwifi"
+        "wifi.scan-rand-mac-address=no"
+      ];
+    };
   };
 
   # Set your time zone.

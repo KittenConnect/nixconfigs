@@ -15,6 +15,10 @@
     loopback0 = {
       enable = lib.mkDefault true;
     };
+
+    bird2 = {
+      enable = true;
+    };
   };
 
   # Configure network proxy if necessary
@@ -28,12 +32,6 @@
   networking.useNetworkd = true;
   systemd.network.enable = true;
   systemd.network.wait-online.enable = false;
-
-  # List services that you want to enable:
-  services.bird2 = {
-    enable = true;
-    autoReload = true;
-  };
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.

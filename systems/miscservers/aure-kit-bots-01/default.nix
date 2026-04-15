@@ -7,13 +7,16 @@
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/vda";
   };
-in {
+in
+{
   imports = [
+    ../profile.nix
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     # ./network-configuration.nix # TODO: implement
@@ -88,8 +91,8 @@ in {
   services.openssh.enable = true;
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [];
-  networking.firewall.allowedUDPPorts = [];
+  networking.firewall.allowedTCPPorts = [ ];
+  networking.firewall.allowedUDPPorts = [ ];
   # Or disable the firewall altogether.
   networking.firewall.enable = lib.mkDefault true;
 
