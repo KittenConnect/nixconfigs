@@ -4,7 +4,7 @@
   config,
   options,
   modulesPath,
-  self ? null,
+  sources,
   ...
 }: let
   inherit (lib.options) mkOption mkEnableOption;
@@ -52,7 +52,7 @@ in {
   # Implementation
 
   config = lib.mkIf (cfg.enable) {
-    environment.etc.nixos.source = lib.mkIf (self != null) self;
+    environment.etc.nixos.source = lib.mkIf (sources ? self) sources.self.outPath;
 
     systemd.services.nix-gc = lib.mkIf (cfg.autoGc) (
       let
