@@ -15,13 +15,22 @@ let
     swapSize = 1024;
   };
 
-  peers = import ./peers args;
+  peers = kittenLib.peers {
+    host = ./.;
+    profile = ../..;
 
-  wgPeers = (
-    lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != { }) peers)
-  );
+    blacklist = ["KIT-VIRTUA-EDGE.legacy"];
+    manual = {
+      # Transit
+      TRS_virtua6_RS01 = ./TRS-virtua6-RS01.nix;
+      TRS_virtua6_RS02 = ./TRS-virtua6-RS02.nix;
 
-  birdPeers = lib.mapAttrs (n: v: builtins.removeAttrs v [ "wireguard" ]) peers;
+      # Internal Tunnels
+      KIT_IG1_RTR = ./KIT-IG1-RTR.nix;
+      vultrNix_PAR = ./KIT-vultr-edge.nix;
+      # LGC_virtua_PAR = ./KIT-VIRTUA-EDGE.legacy.nix;
+    };
+  }
 in
 {
   imports = [
@@ -70,13 +79,13 @@ in
         "2a12:5844:1310::/44 unreachable" # full range /40
       ];
 
-      peers = birdPeers;
+      peers = peers.bird;
     };
 
     wireguard = {
       enable = true;
       # defaultIFACE = "ens18";
-      peers = wgPeers;
+      peers = peers.wireguard;
     };
 
     firewall = {
