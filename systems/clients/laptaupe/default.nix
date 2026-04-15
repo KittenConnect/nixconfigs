@@ -15,7 +15,6 @@
 in {
   imports = [
     ../../../modules/system/kitten/legacy/laptop.nix
-    ../default.nix
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     # ./network-configuration.nix

@@ -3,3 +3,4 @@ result-*
 repl-result-*
 .gcroots
 *.qcow2
+*.kate-swp
