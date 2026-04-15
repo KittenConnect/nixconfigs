@@ -3,13 +3,7 @@
     "stonkmembers"
   ];
 
-  filterFunc = (
-    n: v:
-      v
-      == "directory"
-      && !lib.hasPrefix "_" n
-      && !builtins.elem n blacklist
-  );
+  filterFunc = n: v: v == "directory" && !lib.hasPrefix "_" n && !builtins.elem n blacklist;
 
   folders = builtins.attrNames (lib.filterAttrs filterFunc (builtins.readDir ./.));
 in

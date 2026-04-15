@@ -46,101 +46,103 @@ in {
           options,
           ...
         }: {
-          options = (lib.optionalAttrs (_options != null) _options) // {
-            enable = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = ''
-                Whether this /etc file should be generated.  This
-                option allows specific /etc files to be disabled.
-              '';
+          options =
+            (lib.optionalAttrs (_options != null) _options)
+            // {
+              enable = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = ''
+                  Whether this /etc file should be generated.  This
+                  option allows specific /etc files to be disabled.
+                '';
+              };
+
+              target = mkOption {
+                type = types.str;
+                apply = p: let
+                  absPath =
+                    if hasPrefix "/" p
+                    then p
+                    else "${basePath}/${p}";
+                in
+                  removePrefix (homeDirectory + "/") absPath;
+                defaultText = literalExpression "name";
+                description = ''
+                  Path to target file relative to ${basePath}.
+                '';
+              };
+
+              text = lib.mkOption {
+                default = null;
+                type = lib.types.nullOr lib.types.lines;
+                description = "Text of the file.";
+              };
+
+              source = lib.mkOption {
+                type = lib.types.path;
+                description = "Path of the source file.";
+              };
+
+              mode = lib.mkOption {
+                type = lib.types.str;
+                default = "symlink";
+                example = "0600";
+                description = ''
+                  If set to something else than `symlink`,
+                  the file is copied instead of symlinked, with the given
+                  file mode.
+                '';
+              };
+
+              uid = lib.mkOption {
+                default = 0;
+                type = lib.types.int;
+                description = ''
+                  UID of created file. Only takes effect when the file is
+                  copied (that is, the mode is not 'symlink').
+                '';
+              };
+
+              gid = lib.mkOption {
+                default = 0;
+                type = lib.types.int;
+                description = ''
+                  GID of created file. Only takes effect when the file is
+                  copied (that is, the mode is not 'symlink').
+                '';
+              };
+
+              user = lib.mkOption {
+                default = "+${toString config.uid}";
+                type = lib.types.str;
+                description = ''
+                  User name of file owner.
+
+                  Only takes effect when the file is copied (that is, the
+                  mode is not `symlink`).
+
+                  When `services.userborn.enable`, this option has no effect.
+                  You have to assign a `uid` instead. Otherwise this option
+                  takes precedence over `uid`.
+                '';
+              };
+
+              group = lib.mkOption {
+                default = "+${toString config.gid}";
+                type = lib.types.str;
+                description = ''
+                  Group name of file owner.
+
+                  Only takes effect when the file is copied (that is, the
+                  mode is not `symlink`).
+
+                  When `services.userborn.enable`, this option has no effect.
+                  You have to assign a `gid` instead. Otherwise this option
+                  takes precedence over `gid`.
+                '';
+              };
             };
-
-            target = mkOption {
-              type = types.str;
-              apply = p: let
-                absPath =
-                  if hasPrefix "/" p
-                  then p
-                  else "${basePath}/${p}";
-              in
-                removePrefix (homeDirectory + "/") absPath;
-              defaultText = literalExpression "name";
-              description = ''
-                Path to target file relative to ${basePath}.
-              '';
-            };
-
-            text = lib.mkOption {
-              default = null;
-              type = lib.types.nullOr lib.types.lines;
-              description = "Text of the file.";
-            };
-
-            source = lib.mkOption {
-              type = lib.types.path;
-              description = "Path of the source file.";
-            };
-
-            mode = lib.mkOption {
-              type = lib.types.str;
-              default = "symlink";
-              example = "0600";
-              description = ''
-                If set to something else than `symlink`,
-                the file is copied instead of symlinked, with the given
-                file mode.
-              '';
-            };
-
-            uid = lib.mkOption {
-              default = 0;
-              type = lib.types.int;
-              description = ''
-                UID of created file. Only takes effect when the file is
-                copied (that is, the mode is not 'symlink').
-              '';
-            };
-
-            gid = lib.mkOption {
-              default = 0;
-              type = lib.types.int;
-              description = ''
-                GID of created file. Only takes effect when the file is
-                copied (that is, the mode is not 'symlink').
-              '';
-            };
-
-            user = lib.mkOption {
-              default = "+${toString config.uid}";
-              type = lib.types.str;
-              description = ''
-                User name of file owner.
-
-                Only takes effect when the file is copied (that is, the
-                mode is not `symlink`).
-
-                When `services.userborn.enable`, this option has no effect.
-                You have to assign a `uid` instead. Otherwise this option
-                takes precedence over `uid`.
-              '';
-            };
-
-            group = lib.mkOption {
-              default = "+${toString config.gid}";
-              type = lib.types.str;
-              description = ''
-                Group name of file owner.
-
-                Only takes effect when the file is copied (that is, the
-                mode is not `symlink`).
-
-                When `services.userborn.enable`, this option has no effect.
-                You have to assign a `gid` instead. Otherwise this option
-                takes precedence over `gid`.
-              '';
-            };
-          };
 
           config = {
             target = mkDefault name;

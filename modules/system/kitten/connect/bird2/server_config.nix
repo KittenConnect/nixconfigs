@@ -35,7 +35,11 @@
 in {
   services.bird2.config = mkOrder 25 ''
     function is_rr_proto() {
-      return ${if (rrs != []) then "${RRs}" else "false"};
+      return ${
+      if (rrs != [])
+      then "${RRs}"
+      else "false"
+    };
     }
 
     # The Kernel protocol is not a real routing protocol. Instead of communicating
@@ -45,7 +49,9 @@ in {
       ipv4 {
         export filter {
           if  ( is_valid4_network() || is_rr_proto() || source ~ [RTS_STATIC]) then {
-    ${optionalString (srvCfg.loopback4 != null && srvCfg.loopback4 != "") (indentedLines 4 (setLoopBackSRC "0.0.0.0/0" srvCfg.loopback4))}
+    ${optionalString (srvCfg.loopback4 != null && srvCfg.loopback4 != "") (
+      indentedLines 4 (setLoopBackSRC "0.0.0.0/0" srvCfg.loopback4)
+    )}
               accept;
           } else reject;
         };
@@ -58,7 +64,9 @@ in {
       ipv6 {
         export filter {
           if (is_valid6_network() || is_rr_proto() || source ~ [RTS_STATIC]) then {
-    ${optionalString (srvCfg.loopback6 != null && srvCfg.loopback6 != "") (indentedLines 4 (setLoopBackSRC "::/0" srvCfg.loopback6))}
+    ${optionalString (srvCfg.loopback6 != null && srvCfg.loopback6 != "") (
+      indentedLines 4 (setLoopBackSRC "::/0" srvCfg.loopback6)
+    )}
             accept;
           } else reject;
         };

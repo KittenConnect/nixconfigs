@@ -25,8 +25,7 @@
   # wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
 
   transitIFACEs =
-    []
-    ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
+    [] ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
   kittenIFACEs = [];
   # (
   #   (attrNames wgPeers) ++ lib.optionals (birdConfig.allowedInterfaces != []) birdConfig.allowedInterfaces

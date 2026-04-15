@@ -1,37 +1,35 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-args@{
+args @ {
   config,
   lib,
   kittenLib,
   pkgs,
   ...
-}:
-let
+}: let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/vda";
   };
 
   peers = kittenLib.peers {
-    host = ./.;
-    profile = ../..;
+    host = ./peers;
+    profile = ../.;
 
     blacklist = [];
     manual = {
       # Internal Tunnels
-      virtuaNix_PAR = ./KIT-VIRTUA-EDGE.nix;
-      vultrNix_PAR = ./KIT-VULTR-EDGE.nix;
+      virtuaNix_PAR = "KIT-VIRTUA-EDGE.nix";
+      vultrNix_PAR = "KIT-VULTR-EDGE.nix";
       # LGC_virtua_PAR = ./KIT-VIRTUA-EDGE.legacy.nix;
 
-      aureG8 = ./KIT-aurelien-RBR.nix;
-      toinuxMEL1 = ./KIT-toinux-MEL1.nix;
-      roumaiNixPAR = ./KIT-roumain-PAR.nix;
+      aureG8 = "KIT-aurelien-RBR.nix";
+      toinuxMEL1 = "KIT-toinux-MEL1.nix";
+      roumaiNixPAR = "KIT-roumain-PAR.nix";
     };
-  }
-in
-{
+  };
+in {
   imports = [
     ../profile.nix
     ./hardware-configuration.nix

@@ -8,7 +8,5 @@ args @ {lib, ...}: let
 
   filterFunc = file: file != "default.nix" && hasSuffix ".nix" file && !hasPrefix "_" file;
 in {
-  imports = map (file: ./. + "/${file}") (
-    filter filterFunc files
-  );
+  imports = map (file: ./. + "/${file}") (filter filterFunc files);
 }

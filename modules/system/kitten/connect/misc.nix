@@ -36,7 +36,9 @@
       lib.mapAttrsToList (n: v: "npins-sources-${n}-${sourceRevision v}") sources
     );
 
-    formatted = builtins.concatStringsSep "\n" ((sortedUnique npinSources) ++ [] ++ (sortedUnique packages));
+    formatted = builtins.concatStringsSep "\n" (
+      (sortedUnique npinSources) ++ [] ++ (sortedUnique packages)
+    );
   in
     formatted;
 }

@@ -1,14 +1,13 @@
 # Edit this configuration file to define what should be installed on
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-args@{
+args @ {
   config,
   kittenLib,
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   diskoProfile = "simple";
   diskoConfig = {
     bootdisk = "/dev/sda";
@@ -16,23 +15,22 @@ let
   };
 
   peers = kittenLib.peers {
-    host = ./.;
-    profile = ../..;
+    host = ./peers;
+    profile = ../.;
 
     blacklist = ["KIT-VIRTUA-EDGE.legacy"];
     manual = {
       # Transit
-      TRS_virtua6_RS01 = ./TRS-virtua6-RS01.nix;
-      TRS_virtua6_RS02 = ./TRS-virtua6-RS02.nix;
+      TRS_virtua6_RS01 = "TRS-virtua6-RS01.nix";
+      TRS_virtua6_RS02 = "TRS-virtua6-RS02.nix";
 
       # Internal Tunnels
-      KIT_IG1_RTR = ./KIT-IG1-RTR.nix;
-      vultrNix_PAR = ./KIT-vultr-edge.nix;
+      KIT_IG1_RTR = "KIT-IG1-RTR.nix";
+      vultrNix_PAR = "KIT-vultr-edge.nix";
       # LGC_virtua_PAR = ./KIT-VIRTUA-EDGE.legacy.nix;
     };
-  }
-in
-{
+  };
+in {
   imports = [
     ../profile.nix
     ./hardware-configuration.nix

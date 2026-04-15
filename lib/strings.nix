@@ -25,7 +25,8 @@ in rec {
     indentSize = 2; # Space number
     prefix = builtins.concatStringsSep "" (builtins.genList (x: " ") (level * indentSize));
   in
-    (lib.concatMapStringsSep "\n" (line: "${prefix}${line}") (asLinesArray lines)) + (lib.optionalString (lib.hasSuffix "\n" lines) "\n");
+    (lib.concatMapStringsSep "\n" (line: "${prefix}${line}") (asLinesArray lines))
+    + (lib.optionalString (lib.hasSuffix "\n" lines) "\n");
 
   quotedString = x: ''"${x}"'';
 }

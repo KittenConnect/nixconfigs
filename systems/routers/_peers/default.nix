@@ -1,4 +1,4 @@
-args@{...}: let
+args @ {...}: let
   globalPeers = import ../../_peers args;
 in {
   # Internal RR

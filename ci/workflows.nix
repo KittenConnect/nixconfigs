@@ -23,7 +23,10 @@ let
     # nullOr
     null; # [ "" ];
 
-  withoutJobs = ["laptaupe" "NIXP"]; # nullOr
+  withoutJobs = [
+    "laptaupe"
+    "NIXP"
+  ]; # nullOr
 
   onlyWanted = jobs: let
     withoutUnwanted = filterAttrs (n: v: !builtins.elem n withoutJobs);

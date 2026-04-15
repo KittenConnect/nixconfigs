@@ -4,7 +4,11 @@
   pkgs' ? import sources.nixpkgs {},
   pkgsConfig ? import ./pkgs.config.nix,
   pkgsOverlays ? import ./overlays,
-  pkgs ? import nixpkgs { config = pkgsConfig; overlays = pkgsOverlays; },
+  pkgs ?
+    import nixpkgs {
+      config = pkgsConfig;
+      overlays = pkgsOverlays;
+    },
   lib ? pkgs.lib,
   hostsDefaults ? import ./systems/configuration.nix,
   hosts ? (
@@ -21,25 +25,28 @@
   ...
 }: let
   # Flake-Less repository entrypoint
-
   inputs = {
     inherit pkgs lib;
 
-    sources = let selfSource = builtins.fetchGit ./.; in sources // {
-      self = rec {
-        branch = "HEAD";
-        hash = selfSource.narHash;
-        inherit (selfSource) outPath;
-        repository = {
-          type = "GitHub";
+    sources = let
+      selfSource = builtins.fetchGit ./.;
+    in
+      sources
+      // {
+        self = rec {
+          branch = "HEAD";
+          hash = selfSource.narHash;
+          inherit (selfSource) outPath;
+          repository = {
+            type = "GitHub";
             owner = "kittenconnect";
             repo = "nixconfigs";
+          };
+          revision = selfSource.dirtyRev or selfSource.rev;
+          type = "Git";
+          url = "https://github.com/${repository.owner}/${repository.repo}/archive/${revision}.tar.gz";
         };
-        revision = selfSource.dirtyRev or selfSource.rev;
-        type = "Git";
-        url = "https://github.com/${repository.owner}/${repository.repo}/archive/${revision}.tar.gz";
       };
-    };
 
     inherit
       nixpkgs
