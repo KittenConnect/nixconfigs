@@ -4,7 +4,7 @@ keys:
   - &host_prodesk age1syx48exjgrns9500apf3v4a84gj62fdpy0sqvseax438d9k0y3tqrtfn3t
 
   - &router_vultr_edge age1w2cfzf8wm02umpj74tcseqmslhj2cfl9qtkdkcnj5cyvspyhvfxq5lh2gd
-  - &router_virtua_edge age1kh8evunyhzlwwh04smtx85tmaaq73867j4lhxcuuxe7ce543nuus3kcvq6
+  - &router_virtua_edge age1a2dpax5xwt4855jfpsxh83l6y9uf2804uszhxydqhxwr9hk4a96s42k4e0 
 
   - &router_iguane age19qe5ea965hnjv5e9dty2ws5dr375tsh0x4ct0zg6syg82cmlp9wq0l6sgp
 

@@ -60,7 +60,7 @@
 
     usefullFunctions = {
       makeDynamicScripts = {
-        nixosSomewhere = import ./scripts/nixos-anywhere.sh.nix {inherit pkgs lib;};
+        nixosSomewhere = import ./scripts/nixos-anywhere.sh.nix {inherit pkgs lib; inherit (import sources.nixpkgs25 {}) nixos-anywhere; };
       };
 
       colmena = {
