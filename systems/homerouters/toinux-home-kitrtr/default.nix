@@ -50,7 +50,7 @@ in {
 
     bird = {
       enable = true;
-      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.add "69:25";
+      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks "69:25";
 
       static6 = [
         "::/0 recursive ${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}"

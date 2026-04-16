@@ -70,7 +70,7 @@ in
     };
 
     mkWireguardPeer = _peer: (_peer.wireguard or {}) // lib.optionalAttrs (hasWireguard _peer && builtins.isInt _peer.wireguard.address) {
-      address = kittenLib.network.internal6.cafe.kittens.underlay.add (lib.toHexString _peer.wireguard.address);
+      address = kittenLib.network.internal6.cafe.kittens.underlay (lib.toHexString _peer.wireguard.address);
     };
   in rec {
     global = peers;

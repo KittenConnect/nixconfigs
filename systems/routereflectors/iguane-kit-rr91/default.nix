@@ -53,7 +53,7 @@ in
         # Enabled by bird by default
         enable = true;
         ipv6 = [
-          (kittenLib.network.internal6.cafe.kittens.loopbacks.add "113:91")
+          (kittenLib.network.internal6.cafe.kittens.loopbacks "113:91")
         ];
       };
     };

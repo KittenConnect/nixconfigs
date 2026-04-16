@@ -6,11 +6,11 @@
   kittenASN = 4242421945;
 in {
   peerAS = kittenASN;
-  peerIP = kittenLib.network.internal6.cafe.kittens.underlay.add "114";
+  peerIP = kittenLib.network.internal6.cafe.kittens.underlay "114";
   localAS = kittenASN;
 
   wireguard = {
-    address = kittenLib.network.internal6.cafe.kittens.underlay.add "115";
+    address = kittenLib.network.internal6.cafe.kittens.underlay "115";
     # port = 51842;
     endpoint = "78.40.121.76:51821";
     peerKey = "gDriA5mhKKh44OHEIxmmevphoVRLK45TRJmFS1DV1i4=";
