@@ -30,7 +30,8 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v30
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
@@ -48,7 +49,8 @@ jobs:
       artifact: ${{steps.upload.outputs.artifact_id}}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v30
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
@@ -80,7 +82,8 @@ jobs:
       matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v30
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
         # with:
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
@@ -147,7 +150,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v30
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Setup Pages
         uses: actions/configure-pages@v5
         
