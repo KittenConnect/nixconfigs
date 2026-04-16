@@ -1,5 +1,5 @@
 {...}: {
-  localAS = 207175;
+  localAS = 213197;
   peerAS = 35661;
   peerIP = "2a0d:e680:0::b:2";
   multihop = 5;
@@ -9,8 +9,7 @@
   ipv6 = {
     bgpImports = null;
     bgpExports = [
-      "2a12:5844:1310::/44" # Prod /40
-      "2a12:dd47:9330::/44"
+      "2a12:5844:1310::/44" # Kitten Public IPv6
     ];
     #exports = null;
   };
