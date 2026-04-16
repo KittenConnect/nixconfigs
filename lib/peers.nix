@@ -1,4 +1,4 @@
-args @ {lib, ...}: let
+args @ {lib, kittenLib, ...}: let
   sanitize = s: builtins.replaceStrings ["-" "."] ["_" "__"] (lib.removeSuffix ".nix" s);
 in
   {
@@ -52,11 +52,11 @@ in
 
     hasWireguard = _peer: _peer ? wireguard && _peer.wireguard != {};
     hasPeerIP = _peer: _peer ? peerIP && _peer.peerIP != null && _peer.peerIP != "";
-    mkBirdPeer = _peer: (builtins.removeAttrs _peer ["wireguard"]) // lib.optionalAttrs (hasWireguard _peer && !(hasPeerIP _peer)) {
+    mkBirdPeer = _wg: _peer: (builtins.removeAttrs _peer ["wireguard"]) // lib.optionalAttrs (hasWireguard _peer && !(hasPeerIP _peer)) {
       peerIP = let
         modulo = a: b: a - (a / b) * b;
         
-        wgIP = _peer.wireguard.address;
+        wgIP = _wg.address;
         lastByte = let
           split = lib.splitString ":" wgIP; 
           len = builtins.length split; 
@@ -68,12 +68,16 @@ in
         wgPrefix = lib.removeSuffix ":${lastByte}" wgIP;
       in "${wgPrefix}:${lib.toHexString peerByte}";
     };
-  in {
+
+    mkWireguardPeer = _peer: (_peer.wireguard or {}) // lib.optionalAttrs (hasWireguard _peer && builtins.isInt _peer.wireguard.address) {
+      address = kittenLib.network.internal6.cafe.kittens.underlay.add (lib.toHexString _peer.wireguard.address);
+    };
+  in rec {
     global = peers;
 
     wireguard = (
-      lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: hasWireguard) peers)
+      lib.mapAttrs (_: mkWireguardPeer) (lib.filterAttrs (n: hasWireguard) peers)
     );
 
-    bird = lib.mapAttrs (n: mkBirdPeer) peers;
+    bird = lib.mapAttrs (n: mkBirdPeer (wireguard.${n} or {})) peers;
   }
