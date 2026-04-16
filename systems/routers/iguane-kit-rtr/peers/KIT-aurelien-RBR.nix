@@ -1,4 +1,4 @@
-{...}: let
+{kittenLib, ...}: let
   kittenASN = 4242421945;
 in {
   peerAS = kittenASN;

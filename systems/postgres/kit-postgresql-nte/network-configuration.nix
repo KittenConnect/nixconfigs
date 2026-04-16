@@ -1,4 +1,4 @@
-{...}: let
+{kittenLib, ...}: let
   kittenIface = "ens18";
 in {
   networking = {

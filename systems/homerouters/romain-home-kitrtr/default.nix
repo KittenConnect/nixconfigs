@@ -72,7 +72,7 @@ in {
 
     bird = {
       enable = true;
-      loopback6 = "1010:cafe:ffff:fefe::2:256";
+      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.add "2:256";
 
       peers = peers.bird;
     };

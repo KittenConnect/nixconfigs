@@ -44,19 +44,16 @@ in {
       forward = {
         enable = true;
         # stateless = true;
-        rules = ''
-          # iifname $wireguardIFACEs oifname "vlan36" ip6 daddr 1010:cafe:ffff:feff:b00b:3615:1:0/112 counter accept
-          # oifname $wireguardIFACEs iifname "vlan36" ip6 saddr 1010:cafe:ffff:feff:b00b:3615:1:0/112 counter accept
-        '';
+        # rules = '' ... '';
       };
     };
 
     bird = {
       enable = true;
-      loopback6 = "1010:cafe:ffff:fefe::69:25";
+      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.add "69:25";
 
       static6 = [
-        "::/0 recursive 1010:cafe:ffff:fefe::b00b"
+        "::/0 recursive ${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}"
       ];
 
       peers = peers.bird;

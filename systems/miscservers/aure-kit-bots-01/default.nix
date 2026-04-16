@@ -5,6 +5,7 @@
   name,
   nodes,
   lib,
+  kittenLib,
   pkgs,
   ...
 }: let
@@ -43,18 +44,6 @@ in {
       profile = diskoProfile;
       ${diskoProfile} = diskoConfig;
     };
-
-    # firewall = {
-    #   enable = true;
-    #   forward = {
-    #     enable = true;
-    #     # stateless = true;
-    #     rules = ''
-    #       iifname $wireguardIFACEs oifname "vlan36" ip6 daddr 1010:cafe:ffff:feff:b00b:3615:1:0/112 counter accept
-    #       oifname $wireguardIFACEs iifname "vlan36" ip6 saddr 1010:cafe:ffff:feff:b00b:3615:1:0/112 counter accept
-    #     '';
-    #   };
-    # };
   };
   systemd.network.enable = true;
 

@@ -3,6 +3,7 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 {
   lib,
+  kittenLib,
   pkgs,
   targetConfig,
   birdConfig,
@@ -18,8 +19,8 @@
     then birdConfig.transitNetworks
     else [
       "2a12:5844:1310::/44" # Transits Customer ranges: 2a12:5844:131{0-f}::/48
-      "1010:cafe:ffff:fefe::/64"
-      "1010:cafe:ffff:feff:b00b::/80"
+      kittenLib.network.internal6.cafe.kittens.loopbacks.net
+      kittenLib.network.internal6.cafe.kittens.underlay.routed.net
     ];
 
   wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != {}) birdConfig.peers;

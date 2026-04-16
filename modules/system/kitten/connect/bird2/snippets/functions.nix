@@ -1,4 +1,4 @@
-{...}: {
+{kittenLib, ...}: {
   kittenModules.bird.extraConfigs."common/functions.conf" = {
     order = 05;
 
@@ -12,20 +12,18 @@
 
       function is_valid6_network() {
           return net ~ [
-            2a12:5844:1310::/44,
-            1010:cafe:ffff::/48{48,64},
-            1010:cafe:ffff:fefe::/64{128,128},
-            1010:cafe:ffff:feff::/64{112,112}
+            ${kittenLib.network.internal6.cafe.kittens.net}{48,64},
+            ${kittenLib.network.internal6.cafe.kittens.loopbacks.net}{128,128},
+            ${kittenLib.network.internal6.cafe.kittens.underlay.net}{112,112},
+            2a12:5844:1310::/44
           ];
       }
 
       function is_rr_valid6_network() {
           return net ~ [
-            2a12:5844:1310::/44,
-            # 1010:cafe:ffff:fefe::/64{128,128},
-            # 1010:cafe:ffff:feff::/64{112,112},
-            1010:cafe:ffff::/48{48,64},
-            1010:cafe:fffe::/48{56,56}
+            ${kittenLib.network.internal6.cafe.kittens.net}{48,64},
+            ${kittenLib.network.internal6.cafe.customers.net}{56,56},
+            2a12:5844:1310::/44
           ];
       }
     '';

@@ -3,6 +3,7 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 {
   lib,
+  kittenLib,
   pkgs,
   targetConfig,
   birdConfig,
@@ -19,8 +20,8 @@
     then birdConfig.transitNetworks
     else [
       "2a12:5844:1310::/44" # Transits Customer ranges: 2a12:5844:131{0-f}::/48
-      "1010:cafe:ffff:fefe::/64"
-      "1010:cafe:ffff:feff:b00b::/80"
+      kittenLib.network.internal6.cafe.kittens.loopbacks.net
+      kittenLib.network.internal6.cafe.kittens.underlay.routed.net
     ];
   # wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != { }) birdConfig.peers;
 
@@ -96,15 +97,6 @@ in {
               ${optionalString (
                 wgPeers != {}
               ) "iifname $wireguardIFACEs oifname $wireguardIFACEs counter accept"}
-
-              # ip6 daddr 2a12:5844:1310::/44 counter accept
-              # ip6 daddr { 1010:cafe:ffff:feff:b00b:3945:a51:b00b, 1010:cafe:ffff:feff:b00b:3945:a51:dead } counter accept
-
-              # ip6 daddr 1010:cafe:ffff:fefe::113:91 tcp dport { 179, 1790 } counter accept
-
-              # ip6 saddr 1010:cafe:ffff:feff:b00b::/80 ip6 daddr 1010:cafe:ffff:fefe::/64 counter accept
-
-              # ip6 saddr { 1010:cafe:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } ip6 daddr { 1010:cafe:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } counter accept
             ''
           ]
           ++ optional (birdConfig ? extraForwardRules) birdConfig.extraForwardRules

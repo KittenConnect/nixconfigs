@@ -4,6 +4,7 @@
 {
   config,
   lib,
+  kittenLib,
   pkgs,
   ...
 }: {
@@ -35,13 +36,13 @@
         {
           config = {
             peer-group = "kitten";
-            prefix = "1010:cafe:ffff:fefe::/64";
+            prefix = kittenLib.network.internal6.cafe.kittens.loopbacks.net;
           };
         }
         {
           config = {
             peer-group = "kittevpn";
-            prefix = "1010:cafe:ffff:feff::/64";
+            prefix = kittenLib.network.internal6.cafe.kittens.loopbacks.net;
           };
         }
       ];
@@ -49,7 +50,7 @@
         config = {
           as = 4242421945;
           local-address-list = [
-            "1010:cafe:ffff:fefe::113:91"
+            kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr
             # "172.23.193.197"
           ];
           router-id = "172.23.193.197";

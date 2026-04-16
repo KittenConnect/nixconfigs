@@ -1,4 +1,4 @@
-{lib, ...}: let
+args @ {lib, ...}: let
   isValidIPv4 = ip: let
     parts = lib.splitString "." ip;
     isByte = part: let
@@ -64,9 +64,9 @@
 
       val =
         if newLen == 8
-        then "${prefix}:${x}/${builtins.toString (getCidr self)}"
+        then "${prefix}:${x}"
         else if newLen < 8 && newLen > 0
-        then "${prefix}::${longX}/${builtins.toString (getCidr self)}"
+        then "${prefix}::${longX}"
         else throw "cannot add ${x} to ${prefix} -> invalid IPv6 ${prefix}::${x}/${builtins.toString (getCidr self)}";
     in
       lib.throwIf (
@@ -81,47 +81,36 @@
           __toString = getCleanPrefix;
 
           len = lib.toInt (getCidr args);
+          addWithCIDR = x: "${appendToPrefix args x}/${getCidr args}";
+          addIntWithCIDR = i: "${appendToPrefix args (lib.toHexString i)}/${getCidr args}";
           add = x: appendToPrefix args x;
+          addInt = i: appendToPrefix args (lib.toHexString i);
         }
         // args
       else if builtins.isString args
       then withCIDR {net = args;}
       else throw "withCIDR needs a net argument";
-in rec {
+
+  params = import ./params.nix (args // {inherit withCIDR;});
+in {
   inherit isValidIPv4 isValidIPv6;
+  inherit (params) internal6;
 
-  internal6 = withCIDR {
-    asn = 4242421945;
-    net = "1010::/16";
+  pretty = let
+    forbiddenEntries = [
+      "__toString"
 
-    cafe = withCIDR {
-      net = "${internal6}:cafe::/32";
+      "add"
+      "addInt"
 
-      customers = "${internal6.cafe}:fffe";
-      kittens = withCIDR {
-        net = "${internal6.cafe}:ffff::/48";
-
-        loopbacks = withCIDR {
-          net = "${internal6.cafe.kittens}:fefe::/64";
-
-          internet = "${internal6.cafe.kittens.loopbacks}::b00b";
-
-          vultr = "${internal6.cafe.kittens.loopbacks}::b48d";
-
-          ig1-kit-rtr = "${internal6.cafe.kittens.loopbacks}::113:25";
-          ig1-kit-rr = "${internal6.cafe.kittens.loopbacks}::113:91";
-        };
-
-        underlay = withCIDR {
-          net = "${internal6.cafe.kittens}:feff::/64";
-
-          routed = withCIDR {
-            net = "${internal6.cafe.kittens.underlay}:b00b::/80";
-
-            iguane = withCIDR "1010:cafe:ffff:feff:b00b:3965:113:0/112";
-          };
-        };
-      };
-    };
-  };
+      "addWithCIDR"
+      "addIntWithCIDR"
+    ];
+  in
+    lib.filterAttrsRecursive (
+      path: _:
+        !(builtins.isString path && builtins.elem path forbiddenEntries)
+        && !(builtins.isList path && builtins.elem (builtins.elemAt path ((builtins.length path) - 1)) forbiddenEntries)
+    )
+    params;
 }

@@ -5,6 +5,7 @@
   config,
   targetConfig,
   lib,
+  kittenLib,
   pkgs,
   ...
 }: {

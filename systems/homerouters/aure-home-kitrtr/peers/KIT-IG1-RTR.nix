@@ -1,12 +1,12 @@
-{...}: let
+{kittenLib, ...}: let
   kittenASN = 4242421945;
 in {
   peerAS = kittenASN;
-  peerIP = "1010:cafe:ffff:feff::53";
+  peerIP = kittenLib.network.internal6.cafe.kittens.underlay.add "53";
   localAS = kittenASN;
 
   wireguard = {
-    address = "1010:cafe:ffff:feff::52";
+    address = kittenLib.network.internal6.cafe.kittens.underlay.add "52";
     # port = 51842;
     endpoint = "78.40.121.76:51842";
     peerKey = "gDriA5mhKKh44OHEIxmmevphoVRLK45TRJmFS1DV1i4=";
