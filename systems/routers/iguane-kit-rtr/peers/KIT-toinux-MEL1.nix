@@ -3,11 +3,11 @@
   toinuxASN = 4242423692;
 in {
   peerAS = toinuxASN;
-  peerIP = "1010:cafe:ffff:feff::3013";
+  peerIP = kittenLib.network.internal6.cafe.kittens.underlay.add "3013";
   localAS = toinuxASN;
 
   wireguard = {
-    address = "1010:cafe:ffff:feff::3012";
+    address = kittenLib.network.internal6.cafe.kittens.underlay.add "3012";
     port = 51851;
     onIFACE = "ens18";
 
