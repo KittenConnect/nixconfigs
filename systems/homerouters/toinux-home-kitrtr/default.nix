@@ -55,6 +55,10 @@ in {
       enable = true;
       loopback6 = "1010:cafe:ffff:fefe::69:25";
 
+      static6 = [
+        "::/0 recursive 1010:cafe:ffff:fefe::b00b"
+      ];
+
       peers = peers.bird;
     };
 
