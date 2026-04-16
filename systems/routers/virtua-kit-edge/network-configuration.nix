@@ -12,14 +12,14 @@ in {
       "${iface}" = {
         ipv4.addresses = [
           {
-            address = "185.10.17.209";
+            address = "185.10.17.235";
             prefixLength = 24;
           }
         ];
 
         ipv6.addresses = [
           {
-            address = "2a07:8dc0:19:1cf::1";
+            address = "2a07:8dc0:19:1f6::1";
             prefixLength = 128;
           }
         ];

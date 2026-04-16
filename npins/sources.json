@@ -79,6 +79,12 @@
       "url": "https://releases.nixos.org/nixos/24.05/nixos-24.05.5480.6e6b3dd395c3/nixexprs.tar.xz",
       "hash": "077ws6fnkjkz49r015l34ix7lxkpak389mh1j9z810n7c59rgdq3"
     },
+    "nixpkgs25": {
+      "type": "Channel",
+      "name": "nixos-25.11",
+      "url": "https://releases.nixos.org/nixos/25.11/nixos-25.11.9214.7e495b747b51/nixexprs.tar.xz",
+      "hash": "0nizr6vhckmpcbwb43vidxvgydg61rzkmnxnihr3080gw77gr84n"
+    },
     "sops-nix": {
       "type": "Git",
       "repository": {
