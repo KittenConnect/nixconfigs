@@ -3,7 +3,7 @@
   toinuxASN = 4242423692;
 in {
   peerAS = toinuxASN;
-  # peerIP = kittenLib.network.internal6.cafe.kittens.underlay.add "3013";
+  # peerIP = kittenLib.network.internal6.cafe.kittens.underlay "3013";
   localAS = toinuxASN;
 
   wireguard = {

@@ -79,12 +79,18 @@ args @ {lib, ...}: let
       then
         {
           __toString = getCleanPrefix;
+          __functor = self: x:
+            if builtins.isString x
+            then
+              if lib.hasSuffix "/" x
+              then "${appendToPrefix self (lib.removeSuffix "/" x)}/${getCidr self}"
+              else appendToPrefix self x
+            else if builtins.isInt x then
+              if x == 0 then getCleanPrefix self else if x < 0 then 
+              lib.toLower "${appendToPrefix args (lib.toHexString (-1 * x))}/${getCidr args}" else appendToPrefix args (lib.toLower (lib.toHexString x))
+              else "";
 
           len = lib.toInt (getCidr args);
-          addWithCIDR = x: "${appendToPrefix args x}/${getCidr args}";
-          addIntWithCIDR = i: "${appendToPrefix args (lib.toHexString i)}/${getCidr args}";
-          add = x: appendToPrefix args x;
-          addInt = i: appendToPrefix args (lib.toHexString i);
         }
         // args
       else if builtins.isString args
@@ -96,21 +102,11 @@ in {
   inherit isValidIPv4 isValidIPv6;
   inherit (params) internal6;
 
-  pretty = let
-    forbiddenEntries = [
-      "__toString"
-
-      "add"
-      "addInt"
-
-      "addWithCIDR"
-      "addIntWithCIDR"
-    ];
-  in
+  pretty =
     lib.filterAttrsRecursive (
       path: _:
-        !(builtins.isString path && builtins.elem path forbiddenEntries)
-        && !(builtins.isList path && builtins.elem (builtins.elemAt path ((builtins.length path) - 1)) forbiddenEntries)
+        !(builtins.isString path && lib.hasPrefix "__" path)
+        && !(builtins.isList path && lib.hasPrefix "__" (builtins.elemAt path ((builtins.length path) - 1)))
     )
     params;
 }
