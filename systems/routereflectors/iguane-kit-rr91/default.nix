@@ -4,6 +4,7 @@
 {
   config,
   lib,
+  kittenLib,
   pkgs,
   ...
 }: let
@@ -51,7 +52,9 @@ in
       loopback0 = {
         # Enabled by bird by default
         enable = true;
-        ipv6 = ["1010:cafe:ffff:fefe::113:91"];
+        ipv6 = [
+          (kittenLib.network.internal6.cafe.kittens.loopbacks.add "113:91")
+        ];
       };
     };
 

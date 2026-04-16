@@ -1,5 +1,6 @@
 args @ {
   lib,
+  kittenLib,
   config,
   wgpeers,
   ...
@@ -8,7 +9,7 @@ args @ {
   inherit (lib.strings) removeSuffix;
   # inherit (lib.attrsets) filterAttrs attrNames;
 
-  fileName = baseNameOf (__curPos).file; # (__curPos) or (unsafeGetAttrPos "args" { inherit args; })
+  fileName = baseNameOf __curPos.file; # (__curPos) or (unsafeGetAttrPos "args" { inherit args; })
   profileName = lib.strings.removeSuffix ".nix" fileName;
 
   cfg = config.kittenModules.firewall;

@@ -1,4 +1,4 @@
-{...}: let
+{kittenLib, ...}: let
   kittenASN = 4242421945;
   toinuxASN = 4242423692;
 in {

@@ -5,6 +5,7 @@
   name,
   nodes,
   lib,
+  kittenLib,
   pkgs,
   ...
 }: let

@@ -1,6 +1,8 @@
-{...}: let
+{kittenLib, ...}: let
   iface = "ens18";
   kittenIFACE = "ens19";
+
+  myRange = kittenLib.network.internal6.cafe.kittens.underlay.routed.iguane;
 in {
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -20,7 +22,7 @@ in {
 
         ipv6.addresses = [
           {
-            address = "1010:cafe:ffff:feff:b00b:3965:113:91";
+            address = "${myRange}:91";
             prefixLength = 112;
           }
         ];
@@ -28,7 +30,7 @@ in {
     };
 
     defaultGateway6 = {
-      address = "1010:cafe:ffff:feff:b00b:3965:113:25";
+      address = "${myRange}:25";
       metric = 42;
       interface = kittenIFACE;
     };

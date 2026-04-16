@@ -1,4 +1,4 @@
-{...}: let
+{kittenLib, ...}: let
   iface = "ens18";
   kittenIFACE = "ens19";
 in {
@@ -20,7 +20,7 @@ in {
 
         ipv6.addresses = [
           {
-            address = "1010:cafe:ffff:feff:b00b:caca:b173:25";
+            address = "${kittenLib.network.internal6.cafe.kittens.underlay.routed.aure}:25";
             prefixLength = 112;
           }
         ];
