@@ -49,12 +49,31 @@ in
             lib.nameValuePair name value
         )
         peerFiles);
+
+    hasWireguard = _peer: _peer ? wireguard && _peer.wireguard != {};
+    hasPeerIP = _peer: _peer ? peerIP && _peer.peerIP != null && _peer.peerIP != "";
+    mkBirdPeer = _peer: (builtins.removeAttrs _peer ["wireguard"]) // lib.optionalAttrs (hasWireguard _peer && !(hasPeerIP _peer)) {
+      peerIP = let
+        modulo = a: b: a - (a / b) * b;
+        
+        wgIP = _peer.wireguard.address;
+        lastByte = let
+          split = lib.splitString ":" wgIP; 
+          len = builtins.length split; 
+        in builtins.elemAt split (len - 1);
+        lastByteInt = (builtins.fromTOML "hex = 0x${lastByte}").hex;
+        isFirst = (modulo lastByteInt 2) == 0;
+        peerByte = if isFirst then lastByteInt + 1 else lastByteInt - 1;
+
+        wgPrefix = lib.removeSuffix ":${lastByte}" wgIP;
+      in "${wgPrefix}:${lib.toHexString peerByte}";
+    };
   in {
     global = peers;
 
     wireguard = (
-      lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: v: v ? wireguard && v.wireguard != {}) peers)
+      lib.mapAttrs (n: v: v.wireguard) (lib.filterAttrs (n: hasWireguard) peers)
     );
 
-    bird = lib.mapAttrs (n: v: builtins.removeAttrs v ["wireguard"]) peers;
+    bird = lib.mapAttrs (n: mkBirdPeer) peers;
   }
