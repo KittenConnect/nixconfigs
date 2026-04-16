@@ -97,8 +97,8 @@
           echo "[#] IPv$v"
           ip -$v route add unreachable default metric 4294967295 table ${fwMarkString} || true
           ip -$v route add default $(ip -$v route show default dev ${peer.onIFACE} | grep -oE 'via [^ ]+') dev ${peer.onIFACE} metric 42 table ${fwMarkString} || true
-          ip -$v rule add fwmark ${fwMarkString} lookup main suppress_prefixlength 0
           ip -$v rule add fwmark ${fwMarkString} lookup ${fwMarkString}
+          ip -$v rule add fwmark ${fwMarkString} lookup main suppress_prefixlength 0
         done
       ''}
     '';
