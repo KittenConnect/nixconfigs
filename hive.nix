@@ -49,22 +49,17 @@ in
               pkgs,
               ...
             }: let
-              v = value (args // {inherit profile;});
+              config = value (args // {inherit profile;});
 
-              customConfig = config:
-                config
-                // {
-                  imports =
-                    (config.imports or [])
-                    ++ [
-                      {
-                        networking.hostName = lib.mkForce name;
-                        sops.defaultSopsFile = ./.secrets/${name}.yaml;
-                      }
-                    ];
-                };
+              customModule = {
+                networking.hostName = lib.mkForce name;
+                sops.defaultSopsFile = ./.secrets/${name}.yaml;
+              };
             in
-              customConfig v
+              config
+              // {
+                imports = (config.imports or []) ++ [customModule];
+              }
           )
         )
         configs)
