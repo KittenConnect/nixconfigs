@@ -13,6 +13,8 @@ args@{
 
   inherit (kittenLib.types) fileType;
 
+  serviceName = if lib.versionOlder lib.version "25.05" then "bird2" else "bird";
+
   # Example
   # config.kittenModules.bird = {
   #   # Example values, replace with actual srvCfg structure
@@ -177,7 +179,7 @@ in {
 
   serviceName = mkOption {
     type = types.str;
-    default = if lib.versionOlder lib.version "25.05" then "bird2" else "bird";
+    default = serviceName;
     description = "Name of the services.<name> options to fill - defaults to correct name based on NixOS version";
   };
 
@@ -228,7 +230,7 @@ in {
 
   user = mkOption {
     type = types.str;
-    default = "bird2";
+    default = serviceName;
     description = "User to run process / own configurations";
   };
 

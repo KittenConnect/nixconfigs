@@ -15,6 +15,7 @@ let
       let
         nodeNixpkgs = {
           goog-kit-rtr = pkgsInstances.nixos2511;
+          virtua-kit-edge = pkgsInstances.nixos2511;
         };
       in
       {
