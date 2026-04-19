@@ -14,6 +14,7 @@
 
   inherit
     (peer)
+    enable
     peerName
     peerIP
     peerAS
@@ -95,6 +96,8 @@ in ''
 
   # L: AS${toString localAS} | R: AS${toString peerAS}
   protocol bgp ${toString peerName} ${fromTemplateString peer.template} {
+    ${optionalString (enable) "# "}disabled;
+
     local ${localLine}; # localIP: "${toString localIP}"
     neighbor ${toString peerIP} as ${toString peerAS};
     ${optionalString (peer.interface != null) ''interface "${interface}";''}
