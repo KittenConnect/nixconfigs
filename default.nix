@@ -3,7 +3,7 @@ let withSources = instanceSources: (final: prev: { kittenSources = builtins.remo
   sources ? import ./npins,
   nixpkgs ? pkgsSources.nixpkgs,
   pkgsSources ? import (./npins + "/${pkgsInstance}"),
-  pkgsInstance ? "nixos2405",
+  pkgsInstance ? "nixos2511",
   pkgs' ? import nixpkgs { },
   pkgsConfig ? import ./pkgs.config.nix,
   pkgsOverlays ? import ./overlays,
