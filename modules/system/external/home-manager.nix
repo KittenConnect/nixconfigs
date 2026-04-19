@@ -1,6 +1,6 @@
-{sources ? ((import ../../.. {}).inputs).sources, ...}: {
+{pkgsSources ? ((import ../../.. {}).inputs).pkgsInstances.nixos, ...}: {
   imports = [
-    "${sources.home-manager}/nixos"
+    "${pkgsSources.home-manager}/nixos"
   ];
 
   config = {
