@@ -33,7 +33,7 @@ in {
     sops = mkIf (passwords != []) {
       secrets = (
         listToAttrs (
-          map (n: nameValuePair "bird_secrets/${n}" {reloadUnits = ["bird2.service"];}) passwords
+          map (n: nameValuePair "bird_secrets/${n}" {reloadUnits = ["${cfg.serviceName}.service"];}) passwords
         )
       );
 
@@ -58,11 +58,11 @@ in {
         (
             set -x
 
-            LINE=$(grep -n include bird2.conf | grep bird_secrets.conf | head -1 | cut -d: -f1)
+            LINE=$(grep -n include ${cfg.serviceName}.conf | grep bird_secrets.conf | head -1 | cut -d: -f1)
             if [ ! -z "$LINE" ]; then
                 echo "Found secrets importing, will substitute it with placeholders values"
-                sed ''${LINE}d -i bird2.conf
-                sed "$(($LINE))i"'include "_secrets_substitute.conf";' -i bird2.conf
+                sed ''${LINE}d -i ${cfg.serviceName}.conf
+                sed "$(($LINE))i"'include "_secrets_substitute.conf";' -i ${cfg.serviceName}.conf
 
                 cat > _secrets_substitute.conf <<< '
                     ${config.sops.templates."bird_secrets.conf".content}
