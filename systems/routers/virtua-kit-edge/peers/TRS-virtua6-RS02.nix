@@ -1,4 +1,6 @@
 {...}: {
+  enable = false;
+
   localAS = 213197;
   peerAS = 35661;
   peerIP = "2a0d:e680:0::b:2";
