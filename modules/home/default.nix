@@ -6,4 +6,9 @@ in {
 
     ./kitten/connect/kube.nix
   ];
+
+  disabledModules = [ 
+    "${sources.homefiles}/home/zsh.nix"
+    "${sources.homefiles}/home/ssh.nix"
+  ];
 }

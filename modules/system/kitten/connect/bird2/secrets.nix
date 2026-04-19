@@ -51,7 +51,7 @@ in {
     };
 
     # Service configuration
-    services.bird2 = {
+    services.${cfg.serviceName} = {
       enable = cfg.enable;
 
       preCheckConfig = mkIf (passwords != []) ''

@@ -22,7 +22,7 @@
 
   inherit (birdFuncs) quotedString;
 
-  birdCfg = config.services.bird2;
+  birdCfg = config.services.${srvCfg.serviceName};
   srvCfg = config.kittenModules.bird;
 
   rrs = attrNames (filterAttrs (n: v: v ? template && v.template == "rrserver") srvCfg.peers);
@@ -33,7 +33,7 @@
       krt_prefsrc=${loopback};
     }'';
 in {
-  services.bird2.config = mkOrder 25 ''
+  services.${srvCfg.serviceName}.config = mkOrder 25 ''
     function is_rr_proto() {
       return ${
       if (rrs != [])

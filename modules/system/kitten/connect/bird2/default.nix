@@ -99,8 +99,10 @@ in {
       lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" (sane file)) cfg.extraConfigs;
 
     # Service configuration
-    services.bird2 = {
+    services.${cfg.serviceName} = {
       enable = cfg.enable;
+
+      package = lib.mkIf (cfg.serviceName != "bird2") pkgs.bird2;
 
       preCheckConfig = let
         configDir = pkgs.linkFarm "bird-directory" (lib.mapAttrs (n: v: v.source) cfg.extraConfigs);
