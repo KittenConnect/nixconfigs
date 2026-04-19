@@ -6,7 +6,7 @@ args @ {
   options,
   ...
 }: let
-  nixOSutils = import "${sources.nixpkgs}/nixos/lib/utils.nix" {inherit (args) lib config pkgs;};
+  nixOSutils = import "${pkgs.path}/nixos/lib/utils.nix" {inherit (args) lib config pkgs;};
 
   inherit (lib.options) mkEnableOption;
   inherit (nixOSutils) removePackagesByName;
