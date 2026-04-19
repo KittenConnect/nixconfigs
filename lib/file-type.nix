@@ -4,6 +4,7 @@
   lib,
   pkgs,
   homeDirectory ? "/etc",
+  ...
 }: let
   inherit
     (lib)
@@ -150,7 +151,11 @@ in {
               let
                 name' = "etc-bird-" + lib.replaceStrings ["/"] ["-"] name;
               in
-                lib.mkOptionDefault (pkgs.writeText name' config.text)
+                if lib.versionOlder lib.version "25.05" then
+                  lib.mkOptionDefault (pkgs.writeText name' config.text)
+                else
+                  lib.mkDerivedConfig options.text (pkgs.writeText name')
+#                   lib.mkForce options.text (pkgs.writeText name')
             );
           };
         }

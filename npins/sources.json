@@ -8,9 +8,9 @@
         "repo": "colmena"
       },
       "branch": "main",
-      "revision": "0fca61acc23bd95dc377758eb76885a8bce99f6a",
-      "url": "https://github.com/zhaofengli/colmena/archive/0fca61acc23bd95dc377758eb76885a8bce99f6a.tar.gz",
-      "hash": "11241lxwqhh2ys9lh4xg0873d57mwlxcgh22p5da3f3l15qi3v7x"
+      "revision": "349b035a5027f23d88eeb3bc41085d7ee29f18ed",
+      "url": "https://github.com/zhaofengli/colmena/archive/349b035a5027f23d88eeb3bc41085d7ee29f18ed.tar.gz",
+      "hash": "1x7wpj8cy6h7x0qygqa0i6qapw2flffcmq2m2li4ll7p4ggb4ms1"
     },
     "disko": {
       "type": "GitRelease",
@@ -34,10 +34,10 @@
         "owner": "nix-community",
         "repo": "home-manager"
       },
-      "branch": "release-24.05",
-      "revision": "2f23fa308a7c067e52dfcc30a0758f47043ec176",
-      "url": "https://github.com/nix-community/home-manager/archive/2f23fa308a7c067e52dfcc30a0758f47043ec176.tar.gz",
-      "hash": "00wp0s9b5nm5rsbwpc1wzfrkyxxmqjwsc1kcibjdbfkh69arcpsn"
+      "branch": "release-25.11",
+      "revision": "0d02ec1d0a05f88ef9e74b516842900c41f0f2fe",
+      "url": "https://github.com/nix-community/home-manager/archive/0d02ec1d0a05f88ef9e74b516842900c41f0f2fe.tar.gz",
+      "hash": "16mcnqpcgl3s2frq9if6vb8rpnfkmfxkz5kkkjwlf769wsqqg3i9"
     },
     "homefiles": {
       "type": "Git",
@@ -47,9 +47,9 @@
         "server": "https://gitlab.com/"
       },
       "branch": "main",
-      "revision": "3dba72a2a993876e3efe321a492deb3669a1f7fa",
-      "url": "https://gitlab.com/api/v4/projects/toinux%2Fhomefiles/repository/archive.tar.gz?sha=3dba72a2a993876e3efe321a492deb3669a1f7fa",
-      "hash": "1bpb4rk4cf4ig8qpr7cybfy2kwmim0wvpw22k3p93p2d988ddh8n"
+      "revision": "d8c364e91558708141cf316f1a5461907a52ddda",
+      "url": "https://gitlab.com/api/v4/projects/toinux%2Fhomefiles/repository/archive.tar.gz?sha=d8c364e91558708141cf316f1a5461907a52ddda",
+      "hash": "1hj93y2iikpng0xsyfmiswfl4f5r21zzcgxsh3w9dd4gk5y78fka"
     },
     "lix": {
       "type": "Git",

@@ -1,4 +1,4 @@
-{
+args@{
   lib,
   kittenLib,
   configHome, # Bird
@@ -175,6 +175,13 @@ in {
   enable = mkEnableOption "Kitten Bird2 module";
   # defaultSnippet = (mkEnableOption "Kitten Bird2 default config") // { default = true; example = false; };
 
+  serviceName = mkOption {
+    type = types.str;
+    default = if lib.versionOlder lib.version "25.05" then "bird2" else "bird";
+    description = "Name of the services.<name> options to fill - defaults to correct name based on NixOS version";
+  };
+
+
   peers = mkOption {
     default = {};
     type = with types; attrsOf (submodule birdPeerSubmodule); # types.submodule (mkNamedOptionModule birdPeerSubmodule);
@@ -182,7 +189,7 @@ in {
   };
 
   extraConfigs = mkOption {
-    type = fileType "kittenModules.bird.extraConfigs" configHome {
+    type = (import ../../../../../lib/file-type.nix args).fileType "kittenModules.bird.extraConfigs" configHome {
       order = mkOption {
         type = with types; nullOr int;
         default = null;

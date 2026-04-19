@@ -19,9 +19,9 @@ let
       nixpkgs = pkgs;
 
       # You can also override Nixpkgs by node!
-      # nodeNixpkgs = {
-      #   node-b = ./another-nixos-checkout;
-      # };
+      nodeNixpkgs = {
+        goog-kit-rtr = import sources.nixpkgs25 { config = pkgsConfig; };
+      };
 
       # If your Colmena host has nix configured to allow for remote builds
       # (for nix-daemon, your user being included in trusted-users)

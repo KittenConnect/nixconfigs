@@ -25,10 +25,4 @@
   networking.useNetworkd = true;
   systemd.network.enable = true;
   systemd.network.wait-online.enable = false;
-
-  # List services that you want to enable:
-  services.bird2 = {
-    enable = true;
-    autoReload = true;
-  };
 }
