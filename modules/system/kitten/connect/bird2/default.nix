@@ -185,7 +185,7 @@ in
       lib.mapAttrs' (
         n: v:
         lib.nameValuePair "peers/${n}.conf" {
-          inherit (v) enable;
+          # inherit (v) enable;
           text = ''
             # ${n}
             ${peerFunc (mkPeersFuncArgs n v)}
