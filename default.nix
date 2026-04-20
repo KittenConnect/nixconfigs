@@ -1,130 +1,127 @@
-let withSources = instanceSources: (final: prev: { kittenSources = builtins.removeAttrs instanceSources [ "nixpkgs" ]; }); in
-{
-  sources ? import ./npins,
-  nixpkgs ? pkgsSources.nixpkgs,
-  pkgsSources ? import (./npins + "/${pkgsInstance}"),
-  pkgsInstance ? "nixos2511",
-  pkgs' ? import nixpkgs { },
-  pkgsConfig ? import ./pkgs.config.nix,
-  pkgsOverlays ? import ./overlays,
-  pkgs ? import nixpkgs {
-    config = pkgsConfig;
-    overlays = pkgsOverlays ++ [(withSources pkgsSources)];
-  },
-  lib ? pkgs.lib,
-  hostsDefaults ? import ./systems/configuration.nix,
-  hosts ? (
-    import ./systems {
-      inherit pkgs lib;
-    }
-  ),
-  kittenLib ? (
-    import ./lib {
-      inherit pkgs lib;
-    }
-  ),
-  self ? lib.cleanSource ./.,
-  ...
-}:
 let
-  # Flake-Less repository entrypoint
-  inputs = {
-    inherit pkgs lib;
+  withSources = instanceSources: (final: prev: {kittenSources = builtins.removeAttrs instanceSources ["nixpkgs"];});
+in
+  {
+    sources ? import ./npins,
+    nixpkgs ? pkgsSources.nixpkgs,
+    pkgsSources ? import (./npins + "/${pkgsInstance}"),
+    pkgsInstance ? "nixos2511",
+    pkgs' ? import nixpkgs {},
+    pkgsConfig ? import ./pkgs.config.nix,
+    pkgsOverlays ? import ./overlays,
+    pkgs ?
+      import nixpkgs {
+        config = pkgsConfig;
+        overlays = pkgsOverlays ++ [(withSources pkgsSources)];
+      },
+    lib ? pkgs.lib,
+    hostsDefaults ? import ./systems/configuration.nix,
+    hosts ? (
+      import ./systems {
+        inherit pkgs lib;
+      }
+    ),
+    kittenLib ? (
+      import ./lib {
+        inherit pkgs lib;
+      }
+    ),
+    self ? lib.cleanSource ./.,
+    ...
+  }: let
+    # Flake-Less repository entrypoint
+    inputs = {
+      inherit pkgs lib;
 
-    sources =
-      let
+      sources = let
         selfSource = builtins.fetchGit ./.;
       in
-      sources
-      // {
-        self = rec {
-          branch = "HEAD";
-          hash = selfSource.narHash;
-          inherit (selfSource) outPath;
-          repository = {
-            type = "GitHub";
-            owner = "kittenconnect";
-            repo = "nixconfigs";
+        sources
+        // {
+          self = rec {
+            branch = "HEAD";
+            hash = selfSource.narHash;
+            inherit (selfSource) outPath;
+            repository = {
+              type = "GitHub";
+              owner = "kittenconnect";
+              repo = "nixconfigs";
+            };
+            revision = selfSource.dirtyRev or selfSource.rev;
+            type = "Git";
+            url = "https://github.com/${repository.owner}/${repository.repo}/archive/${revision}.tar.gz";
           };
-          revision = selfSource.dirtyRev or selfSource.rev;
-          type = "Git";
-          url = "https://github.com/${repository.owner}/${repository.repo}/archive/${revision}.tar.gz";
         };
-      };
 
-    pkgsInstances =
-      let
-        mkInstance =
-          n:
-          let
-            instanceSources = import (./npins + "/${n}");
-          in
-          (import instanceSources.nixpkgs {
-            config = pkgsConfig;
-            overlays = pkgsOverlays ++ [(withSources instanceSources)];
-          }); # // {kittenSources = builtins.removeAttrs instanceSources ["nixpkgs"];};
+      pkgsInstances = let
+        mkInstance = n: let
+          instanceSources = import (./npins + "/${n}");
+        in (import instanceSources.nixpkgs {
+          config = pkgsConfig;
+          overlays = pkgsOverlays ++ [(withSources instanceSources)];
+        }); # // {kittenSources = builtins.removeAttrs instanceSources ["nixpkgs"];};
       in
-      lib.mapAttrs' (n: v: lib.nameValuePair (lib.replaceStrings [ "." ] [ "" ] n) (mkInstance n)) (
-        lib.filterAttrs (n: v: v == "directory" && builtins.pathExists (./npins + "/${n}/default.nix")) (
-          builtins.readDir ./npins
+        lib.mapAttrs' (n: v: lib.nameValuePair (lib.replaceStrings ["."] [""] n) (mkInstance n)) (
+          lib.filterAttrs (n: v: v == "directory" && builtins.pathExists (./npins + "/${n}/default.nix")) (
+            builtins.readDir ./npins
+          )
         )
-      ) // { nixos = inputs.pkgsInstances.${pkgsInstance}; };
+        // {nixos = inputs.pkgsInstances.${pkgsInstance};};
 
-    inherit
-      nixpkgs
-      pkgsConfig
-      kittenLib
-      hosts
-      hostsDefaults
-      ;
+      inherit
+        nixpkgs
+        pkgsConfig
+        kittenLib
+        hosts
+        hostsDefaults
+        ;
 
-    hive = inputs.usefullFunctions.colmena.makeHive (import ./hive.nix);
+      hive = inputs.usefullFunctions.colmena.makeHive (import ./hive.nix);
 
-    usefullFunctions = {
-      makeDynamicScripts = {
-        nixosSomewhere = import ./scripts/nixos-anywhere.sh.nix {
-          inherit pkgs lib; inherit (pkgs) nixos-anywhere;
-        };
-        nixosBurnImage = import ./scripts/nixos-burnimage.sh.nix {
-          inherit pkgs lib; inherit (pkgs) pv;
-        };
-      };
-
-      colmena = {
-        makeHive =
-          rawHive:
-          (import "${sources.colmena}/src/nix/hive/eval.nix") {
-            inherit rawHive;
-
-            colmenaOptions = import "${sources.colmena}/src/nix/hive/options.nix";
-            colmenaModules = import "${sources.colmena}/src/nix/hive/modules.nix";
+      usefullFunctions = {
+        makeDynamicScripts = {
+          nixosSomewhere = import ./scripts/nixos-anywhere.sh.nix {
+            inherit pkgs lib;
+            inherit (pkgs) nixos-anywhere;
           };
+          nixosBurnImage = import ./scripts/nixos-burnimage.sh.nix {
+            inherit pkgs lib;
+            inherit (pkgs) pv;
+          };
+        };
+
+        colmena = {
+          makeHive = rawHive:
+            (import "${sources.colmena}/src/nix/hive/eval.nix") {
+              inherit rawHive;
+
+              colmenaOptions = import "${sources.colmena}/src/nix/hive/options.nix";
+              colmenaModules = import "${sources.colmena}/src/nix/hive/modules.nix";
+            };
+        };
+
+        # filterThings = lib.filterAttrs (
+        #   n: v: v.config.system.build ? diskoScriptNoDeps
+        # ) (inputs.usefullFunctions.colmena.makeHive (import ../hive.nix)).nodes;
       };
-
-      # filterThings = lib.filterAttrs (
-      #   n: v: v.config.system.build ? diskoScriptNoDeps
-      # ) (inputs.usefullFunctions.colmena.makeHive (import ../hive.nix)).nodes;
     };
-  };
-in
-rec {
-  inherit inputs;
+  in rec {
+    inherit inputs;
 
-  outputs =
-    let
+    outputs = let
       inherit (inputs) usefullFunctions;
 
       byMachines = lib.mapAttrs (_: f: lib.mapAttrs f inputs.hive.nodes);
-    in
-    {
+    in {
       nixosConfigurations = inputs.hive.nodes;
-      packages = {
-        inherit (pkgs) nixos-anywhere;
-      }
-      // (byMachines {
-        nixosSomewhere = usefullFunctions.makeDynamicScripts.nixosSomewhere;
-        nixosBurnImage = usefullFunctions.makeDynamicScripts.nixosBurnImage;
-      });
+      packages =
+        {
+          inherit (pkgs) nixos-anywhere;
+        }
+        // (byMachines {
+          nixosSomewhere = usefullFunctions.makeDynamicScripts.nixosSomewhere;
+          nixosBurnImage = usefullFunctions.makeDynamicScripts.nixosBurnImage;
+        });
 
       # {
       #   # Executed by `nix flake check`
@@ -191,4 +188,4 @@ rec {
       #   # Used by `nix develop`
       #   devShells."<system>".default = derivation;
     };
-}
+  }

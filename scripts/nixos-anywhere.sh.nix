@@ -33,7 +33,7 @@ pkgs.writeShellApplication {
     nix --version
 
     ${lib.toShellVar "diskoMount" systemConfig.config.system.build.mountScript}
-    ${lib.toShellVar "diskoFormat" systemConfig.config.system.build.diskoScript} 
+    ${lib.toShellVar "diskoFormat" systemConfig.config.system.build.diskoScript}
     echo "will install ${systemName} -> ${destination}"
     diskoScript=$diskoMount
     if [[ "''${NIX_FORMAT:-}" == YeS ]]; then

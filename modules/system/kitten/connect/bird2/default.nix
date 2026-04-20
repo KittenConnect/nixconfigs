@@ -1,4 +1,4 @@
-args@{
+args @ {
   lib,
   kittenLib,
   pkgs,
@@ -6,9 +6,9 @@ args@{
   options,
   name,
   ...
-}:
-let
-  inherit (lib)
+}: let
+  inherit
+    (lib)
     optional
     optionalString
     mkOrder
@@ -35,26 +35,24 @@ let
 
   sortedExtraConfigs = builtins.sort (
     p: q:
-    if (p.value.order or null) != null && (q.value.order or null) != null then
-      builtins.lessThan (p.value.order) (q.value.order)
-    else if (p.value.order or null) == null && (q.value.order or null) == null then
-      builtins.lessThan p.name q.name
-    else
-      p.value.order != null
+      if (p.value.order or null) != null && (q.value.order or null) != null
+      then builtins.lessThan (p.value.order) (q.value.order)
+      else if (p.value.order or null) == null && (q.value.order or null) == null
+      then builtins.lessThan p.name q.name
+      else p.value.order != null
   ) (lib.attrsToList cfg.extraConfigs);
 
-  directInterfaces =
-    let
-      noLoopback = builtins.elem "-lo" cfg.interfaces;
-    in
-    if (cfg.interfaces != null) then
+  directInterfaces = let
+    noLoopback = builtins.elem "-lo" cfg.interfaces;
+  in
+    if (cfg.interfaces != null)
+    then
       lib.concatMapStringsSep ", " quotedString (
         (optional (!noLoopback && config.kittenModules.loopback0.enable) "lo")
         ++ cfg.interfaces
         ++ (optional (builtins.all (lib.hasPrefix "-") cfg.interfaces) "*") # TODO: assert no "*"
       )
-    else
-      quotedString "*";
+    else quotedString "*";
   # Example
   # config.kittenModules.bird = {
   #   # Example values, replace with actual srvCfg structure
@@ -67,15 +65,14 @@ let
   #   transitInterface = "eth0";
   #   static6 = [ "2001:db8::2" ];
   # };
-in
-{
+in {
   imports = [
     ./server_config.nix
     ./secrets.nix
   ];
 
   # Options
-  options.kittenModules.bird = import ./options.nix (args // { inherit configHome; });
+  options.kittenModules.bird = import ./options.nix (args // {inherit configHome;});
 
   # Implementation
   config = mkIf cfg.enable {
@@ -93,11 +90,10 @@ in
       1790 # Internal BGP
     ];
 
-    environment.etc =
-      let
-        etcType = options.environment.etc.type.nestedTypes.elemType.getSubOptions [ ];
-        sane = lib.filterAttrs (n: v: builtins.hasAttr n etcType);
-      in
+    environment.etc = let
+      etcType = options.environment.etc.type.nestedTypes.elemType.getSubOptions [];
+      sane = lib.filterAttrs (n: v: builtins.hasAttr n etcType);
+    in
       lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" (sane file)) cfg.extraConfigs;
 
     # Service configuration
@@ -108,21 +104,19 @@ in
       // {
         enable = cfg.enable;
 
-        preCheckConfig =
-          let
-            configDir = pkgs.linkFarm "bird-directory" (lib.mapAttrs (n: v: v.source) cfg.extraConfigs);
-            getIncludes = lib.optionalAttrs (
-              cfg.extraConfigs != { }
-            ) "${pkgs.rsync}/bin/rsync -arvp ${configDir}/ ./";
-          in
-          ''
-            if grep -q include ${cfg.serviceName}.conf; then
-              echo "Found the following includes in bird configuration" >&2
-              grep include ${cfg.serviceName}.conf >&2
-            fi
+        preCheckConfig = let
+          configDir = pkgs.linkFarm "bird-directory" (lib.mapAttrs (n: v: v.source) cfg.extraConfigs);
+          getIncludes = lib.optionalAttrs (
+            cfg.extraConfigs != {}
+          ) "${pkgs.rsync}/bin/rsync -arvp ${configDir}/ ./";
+        in ''
+          if grep -q include ${cfg.serviceName}.conf; then
+            echo "Found the following includes in bird configuration" >&2
+            grep include ${cfg.serviceName}.conf >&2
+          fi
 
-            ${getIncludes}
-          '';
+          ${getIncludes}
+        '';
 
         config = mkMerge [
           (mkOrder 0 ''
@@ -139,7 +133,7 @@ in
             # direct routes to all network interfaces. Can exist in as many instances as you
             # wish if you want to populate multiple routing tables with direct routes.
             protocol direct DIRECT {
-              ${optionalString (cfg.interfaces != [ ]) "# "}disabled;
+              ${optionalString (cfg.interfaces != []) "# "}disabled;
               check link on;
               ipv4;
               ipv6;
@@ -156,43 +150,45 @@ in
           (mkOrder 10 ''
             # NixOS declared includes
             ${concatMapStringsSep "\n" (
-              x: ''${optionalString (!(cfg.enable)) "# "}include "${x.name}";''
-            ) sortedExtraConfigs}
+                x: ''${optionalString (!(cfg.enable)) "# "}include "${x.name}";''
+              )
+              sortedExtraConfigs}
           '')
         ];
       };
 
-    kittenModules.bird.extraConfigs =
-      let
-        peerFunc = import ./peer_config.nix;
+    kittenModules.bird.extraConfigs = let
+      peerFunc = import ./peer_config.nix;
 
-        mkPeersFuncArgs = (
-          peerName: peerConfig:
+      mkPeersFuncArgs = (
+        peerName: peerConfig:
           args
           // {
-            peer = {
-              inherit peerName;
-            }
-            // peerConfig;
+            peer =
+              {
+                inherit peerName;
+              }
+              // peerConfig;
           }
-        );
-      in
+      );
+    in
       lib.mapAttrs' (
         n: v:
-        lib.nameValuePair "peers/${n}.conf" {
-          # inherit (v) enable;
-          text = ''
-            # ${n}
-            ${peerFunc (mkPeersFuncArgs n v)}
-          '';
-        }
-      ) peers;
+          lib.nameValuePair "peers/${n}.conf" {
+            # inherit (v) enable;
+            text = ''
+              # ${n}
+              ${peerFunc (mkPeersFuncArgs n v)}
+            '';
+          }
+      )
+      peers;
 
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
       enable = mkDefault true;
 
-      ipv4 = mkIf (cfg.loopback4 != null) [ cfg.loopback4 ];
-      ipv6 = mkIf (cfg.loopback6 != null) [ cfg.loopback6 ];
+      ipv4 = mkIf (cfg.loopback4 != null) [cfg.loopback4];
+      ipv6 = mkIf (cfg.loopback6 != null) [cfg.loopback6];
     };
 
     boot.kernel.sysctl = {

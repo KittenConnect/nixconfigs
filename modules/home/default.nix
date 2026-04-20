@@ -3,7 +3,7 @@
     ./kitten/connect
   ];
 
-  # disabledModules = [ 
+  # disabledModules = [
   #   "${sources.homefiles}/home/zsh.nix"
   #   "${sources.homefiles}/home/ssh.nix"
   # ];

@@ -1,16 +1,14 @@
-args@{
+args @ {
   lib,
   pkgs,
   sources,
   config,
   options,
   ...
-}:
-let
+}: let
   inherit (lib.options) mkEnableOption;
 
-  mkEnabledOption =
-    desc:
+  mkEnabledOption = desc:
     lib.mkEnableOption desc
     // {
       example = false;
@@ -18,8 +16,7 @@ let
     };
 
   cfg = config.kittenHome.zsh;
-in
-{
+in {
   options.kittenHome.zsh = {
     enable = mkEnabledOption "common kitten packages installation";
   };
@@ -42,7 +39,7 @@ in
     programs.atuin = {
       enable = true;
       enableZshIntegration = true;
-      flags = [ "--disable-up-arrow" ];
+      flags = ["--disable-up-arrow"];
     };
 
     programs.zsh = {
@@ -53,7 +50,7 @@ in
 
       autocd = true;
 
-      initContent = lib.mkMerge ([
+      initContent = lib.mkMerge [
         "unsetopt complete_aliases"
 
         ''export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin:$HOME/.krew/bin"''
@@ -86,7 +83,7 @@ in
           # pveversion for nix
           function nixversion(){ printf "# System Packages\n"; cat /etc/current-system-packages ; printf "\n\n# Home Packages\n"; cat "$HOME/current-home-packages"; echo; }
         ''
-      ]);
+      ];
 
       syntaxHighlighting.enable = true;
       autosuggestion.enable = true;
@@ -140,7 +137,10 @@ in
             repo = "jq-zsh-plugin";
             rev = "48befbcd91229e48171d4aac5215da205c1f497e";
 
-            sha256 = if true then "q/xQZ850kifmd8rCMW+aAEhuA43vB9ZAW22sss9e4SE=" else lib.fakeSha256;
+            sha256 =
+              if true
+              then "q/xQZ850kifmd8rCMW+aAEhuA43vB9ZAW22sss9e4SE="
+              else lib.fakeSha256;
           };
         }
         {
@@ -150,7 +150,10 @@ in
             owner = "Aloxaf";
             repo = "fzf-tab";
             rev = "v1.1.2";
-            sha256 = if true then "0ymp9ky0jlkx9b63jajvpac5g3ll8snkf8q081g0yw42b9hwpiid" else lib.fakeSha256;
+            sha256 =
+              if true
+              then "0ymp9ky0jlkx9b63jajvpac5g3ll8snkf8q081g0yw42b9hwpiid"
+              else lib.fakeSha256;
           };
         }
         {
@@ -160,7 +163,10 @@ in
             owner = "chisui";
             repo = "zsh-nix-shell";
             rev = "v0.8.0";
-            sha256 = if true then "1lzrn0n4fxfcgg65v0qhnj7wnybybqzs4adz7xsrkgmcsr0ii8b7" else lib.fakeSha256;
+            sha256 =
+              if true
+              then "1lzrn0n4fxfcgg65v0qhnj7wnybybqzs4adz7xsrkgmcsr0ii8b7"
+              else lib.fakeSha256;
           };
         }
         {
