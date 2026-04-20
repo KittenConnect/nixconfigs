@@ -77,11 +77,7 @@ let
         allowed = lib.optional (
           config.ranges != [ ]
         ) "net ~ [ ${lib.concatStringsSep ", " config.ranges} ]";
-      }
-      // (lib.optionalAttrs (peer.template == "kittunderlay") {
-        ipv4.bgpImports = lib.mkDefault { allowed = ["is_valid4_network()"]; };
-        ipv6.bgpImports = lib.mkDefault { allowed = ["is_valid6_network()"]; };
-      });
+      };
     };
 
   birdPeerSubmodule =
@@ -228,6 +224,13 @@ let
           #   null;
         };
       };
+
+      config = lib.mkMerge [
+        (lib.mkIf (config.template == "kittunderlay" && config.bgpMED != null) {
+          ipv4.bgpImports = lib.mkDefault { allowed = ["is_valid4_network()"]; };
+          ipv6.bgpImports = lib.mkDefault { allowed = ["is_valid6_network()"]; };
+        })
+      ];
     };
 in
 {
