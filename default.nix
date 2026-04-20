@@ -85,6 +85,9 @@ let
         nixosSomewhere = import ./scripts/nixos-anywhere.sh.nix {
           inherit pkgs lib; inherit (pkgs) nixos-anywhere;
         };
+        nixosBurnImage = import ./scripts/nixos-burnimage.sh.nix {
+          inherit pkgs lib;
+        };
       };
 
       colmena = {
@@ -120,6 +123,7 @@ rec {
       }
       // (byMachines {
         nixosSomewhere = usefullFunctions.makeDynamicScripts.nixosSomewhere;
+        nixosBurnImage = usefullFunctions.makeDynamicScripts.nixosBurnImage;
       });
 
       # {
