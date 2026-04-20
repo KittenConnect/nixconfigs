@@ -5,15 +5,15 @@
   peer,
   withType,
   ...
-}: let
+}:
+let
   inherit (lib) optionalString;
   inherit (kittenLib.strings) indentedLines;
   inherit (builtins) concatStringsSep toJSON;
 
   fromTemplateString = t: optionalString (t != null) "from ${toString t}";
 
-  inherit
-    (peer)
+  inherit (peer)
     enable
     peerName
     peerIP
@@ -24,48 +24,63 @@
     ;
 
   localLine = optionalString (localIP != null) (toString localIP) + "as ${toString localAS}";
-  interface = assert lib.asserts.assertMsg (peer.multihop == 0)
-  "kittenModules.bird.peers.${peerName}: Multihop[${toString peer.multihop}] BGP cannot be bound to interface : ${peer.interface}";
+  interface =
+    assert lib.asserts.assertMsg (peer.multihop == 0)
+      "kittenModules.bird.peers.${peerName}: Multihop[${toString peer.multihop}] BGP cannot be bound to interface : ${peer.interface}";
     peer.interface;
 
-  password = assert lib.asserts.assertMsg (
-    peer.passwordRef == null
-  ) "U defined a passwordRef, why do you still want to leak password ?";
+  password =
+    assert lib.asserts.assertMsg (
+      peer.passwordRef == null
+    ) "U defined a passwordRef, why do you still want to leak password ?";
     toString (
       lib.warn "bird2 peers password is insecure consider using passwordRef with a bird_secrets file" password
     );
-  passwordRef =
-    if peer.passwordRef != ""
-    then toString peer.passwordRef
-    else toString peerName;
+  passwordRef = if peer.passwordRef != "" then toString peer.passwordRef else toString peerName;
 
-  multihop = let
-    multiHopVar =
-      if peer.multihop < -1
-      then -1 * peer.multihop
-      else peer.multihop;
-  in
-    if peer.multihop == 0
-    then "direct"
-    else "multihop" + (optionalString (peer.multihop != -1) " ${toString multiHopVar}");
+  multihop =
+    let
+      multiHopVar = if peer.multihop < -1 then -1 * peer.multihop else peer.multihop;
+    in
+    if peer.multihop == 0 then
+      "direct"
+    else
+      "multihop" + (optionalString (peer.multihop != -1) " ${toString multiHopVar}");
 
-  mkFilterSection = direction: val: let
-    myType = withType {
-      string = x: "${direction} ${builtins.replaceStrings ["%s"] [peerName] x};";
-      null = x: "${direction} none;";
-      list = x:
-        indentedLines 1 ''
-          ${direction} filter {
-            if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
-              accept;
-            }
-            reject;
-          };
-        '';
-    };
-  in
+  mkFilterSection =
+    direction: val:
+    let
+      myType = withType {
+        string =
+          x:
+          let
+            lines = lib.splitString "\n" x;
+            len = builtins.length lines;
+
+            expanded = builtins.replaceStrings [ "%{name}" ] [ peerName ] x;
+          in
+          if len == 1 then
+            "${direction} ${expanded};"
+          else
+            ''
+              ${direction} ${expanded}
+            '';
+        null = x: "${direction} none;";
+        list =
+          x:
+          indentedLines 1 ''
+            ${direction} filter {
+              if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
+                accept;
+              }
+              reject;
+            };
+          '';
+      };
+    in
     myType val;
-in ''
+in
+''
 
   ${optionalString (bgpMED != null) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
   ${optionalString (peer.template == "kittunderlay") ''
@@ -103,18 +118,18 @@ in ''
     ${optionalString (peer.interface != null) ''interface "${interface}";''}
     ${multihop}; # multihop: ${toString peer.multihop}
     ${optionalString (
-    peer.password != null
-  ) ''password "${password}"; # Not-Secured cleartext access for @everyone''}
+      peer.password != null
+    ) ''password "${password}"; # Not-Secured cleartext access for @everyone''}
     ${optionalString (
-    peer.passwordRef != null
-  ) "password secretPassword_${passwordRef}; # Defined in secrets file"}
+      peer.passwordRef != null
+    ) "password secretPassword_${passwordRef}; # Defined in secrets file"}
 
-  ${optionalString (peer.ipv6 != {}) ''
+  ${optionalString (peer.ipv6 != { }) ''
       ipv6 {
-    ${optionalString (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports != []) (
+    ${optionalString (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports != [ ]) (
       indentedLines 2 (mkFilterSection "import" peer.ipv6.bgpImports)
     )}
-    ${optionalString (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports != []) (
+    ${optionalString (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports != [ ]) (
       indentedLines 2 (mkFilterSection "export" peer.ipv6.bgpExports)
     )}
       };
