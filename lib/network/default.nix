@@ -85,10 +85,14 @@ args @ {lib, ...}: let
               if lib.hasSuffix "/" x
               then "${appendToPrefix self (lib.removeSuffix "/" x)}/${getCidr self}"
               else appendToPrefix self x
-            else if builtins.isInt x then
-              if x == 0 then getCleanPrefix self else if x < 0 then 
-              lib.toLower "${appendToPrefix args (lib.toHexString (-1 * x))}/${getCidr args}" else appendToPrefix args (lib.toLower (lib.toHexString x))
-              else "";
+            else if builtins.isInt x
+            then
+              if x == 0
+              then getCleanPrefix self
+              else if x < 0
+              then lib.toLower "${appendToPrefix args (lib.toHexString (-1 * x))}/${getCidr args}"
+              else appendToPrefix args (lib.toLower (lib.toHexString x))
+            else "";
 
           len = lib.toInt (getCidr args);
         }

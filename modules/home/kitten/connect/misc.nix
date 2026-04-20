@@ -22,15 +22,16 @@ in {
     #   fi
     # '';
 
-
     # Versions Dump
-    home.file."current-home-packages".text =
-      let
-        getName = (p: if p ? name then "${p.name}" else "${p}");
-        packages = builtins.map getName config.home.packages;
-        sortedUnique = builtins.sort builtins.lessThan (lib.unique packages);
-        formatted = builtins.concatStringsSep "\n" sortedUnique;
-      in
+    home.file."current-home-packages".text = let
+      getName = p:
+        if p ? name
+        then "${p.name}"
+        else "${p}";
+      packages = builtins.map getName config.home.packages;
+      sortedUnique = builtins.sort builtins.lessThan (lib.unique packages);
+      formatted = builtins.concatStringsSep "\n" sortedUnique;
+    in
       formatted;
   };
 }

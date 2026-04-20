@@ -1,4 +1,8 @@
-args @ {lib, kittenLib, ...}: let
+args @ {
+  lib,
+  kittenLib,
+  ...
+}: let
   sanitize = s: builtins.replaceStrings ["-" "."] ["_" "__"] (lib.removeSuffix ".nix" s);
 in
   {
@@ -52,26 +56,34 @@ in
 
     hasWireguard = _peer: _peer ? wireguard && _peer.wireguard != {};
     hasPeerIP = _peer: _peer ? peerIP && _peer.peerIP != null && _peer.peerIP != "";
-    mkBirdPeer = _wg: _peer: (builtins.removeAttrs _peer ["wireguard"]) // lib.optionalAttrs (hasWireguard _peer && !(hasPeerIP _peer)) {
-      peerIP = let
-        modulo = a: b: a - (a / b) * b;
-        
-        wgIP = _wg.address;
-        lastByte = let
-          split = lib.splitString ":" wgIP; 
-          len = builtins.length split; 
-        in builtins.elemAt split (len - 1);
-        lastByteInt = (builtins.fromTOML "hex = 0x${lastByte}").hex;
-        isFirst = (modulo lastByteInt 2) == 0;
-        peerByte = if isFirst then lastByteInt + 1 else lastByteInt - 1;
+    mkBirdPeer = _wg: _peer:
+      (builtins.removeAttrs _peer ["wireguard"])
+      // lib.optionalAttrs (hasWireguard _peer && !(hasPeerIP _peer)) {
+        peerIP = let
+          modulo = a: b: a - (a / b) * b;
 
-        wgPrefix = lib.removeSuffix ":${lastByte}" wgIP;
-      in "${wgPrefix}:${lib.toHexString peerByte}";
-    };
+          wgIP = _wg.address;
+          lastByte = let
+            split = lib.splitString ":" wgIP;
+            len = builtins.length split;
+          in
+            builtins.elemAt split (len - 1);
+          lastByteInt = (builtins.fromTOML "hex = 0x${lastByte}").hex;
+          isFirst = (modulo lastByteInt 2) == 0;
+          peerByte =
+            if isFirst
+            then lastByteInt + 1
+            else lastByteInt - 1;
 
-    mkWireguardPeer = _peer: (_peer.wireguard or {}) // lib.optionalAttrs (hasWireguard _peer && builtins.isInt _peer.wireguard.address) {
-      address = kittenLib.network.internal6.cafe.kittens.underlay (lib.toHexString _peer.wireguard.address);
-    };
+          wgPrefix = lib.removeSuffix ":${lastByte}" wgIP;
+        in "${wgPrefix}:${lib.toHexString peerByte}";
+      };
+
+    mkWireguardPeer = _peer:
+      (_peer.wireguard or {})
+      // lib.optionalAttrs (hasWireguard _peer && builtins.isInt _peer.wireguard.address) {
+        address = kittenLib.network.internal6.cafe.kittens.underlay (lib.toHexString _peer.wireguard.address);
+      };
   in rec {
     global = peers;
 
