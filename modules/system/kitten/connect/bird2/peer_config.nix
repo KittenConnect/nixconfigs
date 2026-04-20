@@ -77,7 +77,7 @@ let
             bgpMED ? bgpMED,
             direction ? direction,
           }: let
-          _bgpMED = if builtins.isString bgpMED then bgpMED else if builtins.isInt bgpMED then "bgpMED_${toString name};" else builtins.toString bgpMED;
+          _bgpMED = if builtins.isString bgpMED then bgpMED else if builtins.isInt bgpMED then "bgpMED_${toString name}" else builtins.toString bgpMED;
           in
           indentedLines 1 ''
             ${direction} filter {

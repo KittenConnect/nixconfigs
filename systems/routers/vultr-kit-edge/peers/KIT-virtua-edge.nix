@@ -16,13 +16,11 @@ in {
   bgpMED = 100;
   ipv6 = {
     #imports = null;
-    bgpImports = "filter filter6_IN_BGP_%{name}";
     #exports = [ "2a12:dd47:9330::/44" ];
 
     #exports = null;
   };
   ipv4 = {
-    bgpImports = "filter filter4_IN_BGP_%{name}";
     #exports = x: "filter6_IN_BGP_${toString x}";
   };
 }
