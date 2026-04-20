@@ -66,11 +66,41 @@ let
               ${direction} ${expanded}
             '';
         null = x: "${direction} none;";
-        list =
-          x:
+        list = x: myType { ranges = x; };
+        set =
+          {
+            name,
+            ranges ? [ ],
+            allowed ? [],
+            prepend ? 0,
+            prependASN ? null,
+            bgpMED ? bgpMED,
+            direction ? direction,
+          }: let
+          _bgpMED = if builtins.isString bgpMED then bgpMED else if builtins.isInt bgpMED then "bgpMED_${toString name};" else builtins.toString bgpMED;
+          in
           indentedLines 1 ''
             ${direction} filter {
-              if ( net ~ [ ${concatStringsSep ", " x} ] ) then {
+              if ( ${concatStringsSep " || " allowed} ) then {
+            ${optionalString (prepend > 0) (
+              indentedLines 2 ''
+                if bgp_path ~ [= ${builtins.toString prependASN} =] then {
+                  # Reduce priority artificially by prepending [x${builtins.toString prepend}]
+                  ${concatStringsSep " " (
+                    builtins.genList (x: "bgp_path.prepend(${builtins.toString prependASN});") prepend
+                  )}
+                }
+              ''
+            )}
+            ${optionalString (bgpMED != null && bgpMED > (-1)) (
+              indentedLines 2 ''
+                if defined( bgp_med ) then
+                  bgp_med = bgp_med + ${_bgpMED};
+                else {
+                  bgp_med = ${_bgpMED};
+                }
+              ''
+            )}
                 accept;
               }
               reject;
@@ -82,32 +112,7 @@ let
 in
 ''
 
-  ${optionalString (bgpMED != null) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
-  ${optionalString (peer.template == "kittunderlay") ''
-
-    filter filter4_IN_BGP_${toString peerName} {
-      if is_valid4_network() then {
-        if defined( bgp_med ) then
-          bgp_med = bgp_med + bgpMED_${toString peerName};
-        else {
-          bgp_med = bgpMED_${toString peerName};
-        }
-        accept;
-      } else reject;
-    }
-
-    filter filter6_IN_BGP_${toString peerName} {
-      if is_valid6_network() then {
-        if defined( bgp_med ) then
-          bgp_med = bgp_med + bgpMED_${toString peerName};
-        else {
-          bgp_med = bgpMED_${toString peerName};
-        }
-        accept;
-      } else reject;
-    }
-
-  ''}
+  ${optionalString (bgpMED != null && builtins.isInt bgpMED) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
 
   # L: AS${toString localAS} | R: AS${toString peerAS}
   protocol bgp ${toString peerName} ${fromTemplateString peer.template} {

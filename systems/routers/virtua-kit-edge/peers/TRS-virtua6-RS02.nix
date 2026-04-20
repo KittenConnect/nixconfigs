@@ -11,18 +11,11 @@ rec {
 
   ipv6 = {
     bgpImports = null;
-    bgpExports = ''
-      filter {
-        # Kitten Public IPv6
-        if ( net ~ [ 2a12:5844:1310::/44 ] ) then {
-          if bgp_path ~ [= ${builtins.toString localAS} =] then {
-            bgp_path.prepend(${builtins.toString localAS}); # Reduce priority artificially by prepending
-          }
-          accept;
-        }
-        reject;
-      };
-    '';
+    bgpExports = {
+      ranges = ["2a12:5844:1310::/44"];
+      prepend = 2;
+      prependASN = localAS;
+    };
     #exports = null;
   };
 }
