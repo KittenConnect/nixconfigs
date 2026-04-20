@@ -36,7 +36,7 @@ in {
 
   config = lib.mkIf (cfg.enable) {
     system.build = {
-      diskoImagesCompressed = pkgs.runCommand "compressed-disko-${confName}" {
+      diskoImagesCompressed = pkgs.runCommand "compressed-${config.system.build.diskoImages.name}" {
             # TODO: see if need prefer local + structuredAttrs + unsafe discard
           } ''
             pwd
@@ -50,7 +50,7 @@ in {
             echo CAUTION: May take some times
 
             find . -name '*.raw' -print -exec bash -c "$xz -T0 --stdout '{}' > '$out/{}.xz'" \;
-          ''
+          '';
     };
   };
 }
