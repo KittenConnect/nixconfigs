@@ -7,9 +7,9 @@
   ...
 }: let
   kubeCfg = osConfig.services.k3s;
-  cfg = config.kittenModules.kube;
+  cfg = config.kittenHome.kube;
 in {
-  options.kittenModules.kube = {
+  options.kittenHome.kube = {
     enable =
       lib.mkEnableOption "KittenK3s common configuration"
       // {

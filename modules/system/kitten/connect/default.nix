@@ -14,5 +14,5 @@
     ./bird2
   ];
 
-  options.kitten.profiles.common = lib.mkEnableOption "Kitten common basic configurations";
+  options.kittenModules.common = lib.mkEnableOption "Kitten common basic configurations";
 }
