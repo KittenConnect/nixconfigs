@@ -133,10 +133,10 @@ in
 
   ${optionalString (peer.ipv6 != { }) ''
       ipv6 {
-    ${optionalString (peer.ipv6.bgpImports != null && peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports.allowed != [ ]) (
+    ${optionalString (peer.ipv6.bgpImports == null || (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports.allowed != [ ])) (
       indentedLines 2 (mkFilterSection "import" peer.ipv6.bgpImports)
     )}
-    ${optionalString (peer.ipv6.bgpExports != null && peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports.allowed != [ ]) (
+    ${optionalString (peer.ipv6.bgpExports == null || (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports.allowed != [ ])) (
       indentedLines 2 (mkFilterSection "export" peer.ipv6.bgpExports)
     )}
       };
