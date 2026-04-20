@@ -3,12 +3,12 @@
   kittenLib,
   pkgs,
   peer,
-  withType,
   ...
 }:
 let
   inherit (lib) optionalString;
   inherit (kittenLib.strings) indentedLines;
+  inherit (kittenLib) withType;
   inherit (builtins) concatStringsSep toJSON;
 
   fromTemplateString = t: optionalString (t != null) "from ${toString t}";
@@ -23,7 +23,8 @@ let
     bgpMED
     ;
 
-  localLine = optionalString (localIP != null) (toString localIP) + "as ${toString localAS}";
+  _localIP = optionalString (localIP != null) (toString localIP);
+
   interface =
     assert lib.asserts.assertMsg (peer.multihop == 0)
       "kittenModules.bird.peers.${peerName}: Multihop[${toString peer.multihop}] BGP cannot be bound to interface : ${peer.interface}";
@@ -119,7 +120,7 @@ in
   protocol bgp ${toString peerName} ${fromTemplateString peer.template} {
     ${optionalString (enable) "# "}disabled;
 
-    local ${localLine}; # localIP: "${toString localIP}"
+    local ${_localIP} as ${toString localAS}; # localIP: "${toString localIP}"
     neighbor ${toString peerIP} as ${toString peerAS};
     ${optionalString (peer.interface != null) ''interface "${interface}";''}
     ${multihop}; # multihop: ${toString peer.multihop}

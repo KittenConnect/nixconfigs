@@ -152,7 +152,7 @@ let
             type =
               with types;
               nullOr (either str (submodule (birdFilterSubmodule config "import")));
-            default = [ ];
+            default = { ranges = [ ]; };
             description = "List of IPv4 import rules.";
           };
 
@@ -160,7 +160,7 @@ let
             type =
               with types;
               nullOr (either str (submodule (birdFilterSubmodule config "export")));
-            default = [ ];
+            default = { ranges = [ ]; };
             description = "List of IPv4 export rules.";
           };
         };
@@ -170,7 +170,7 @@ let
             type =
               with types;
               nullOr (either str (submodule (birdFilterSubmodule config "import")));
-            default = [ ];
+            default = { ranges = [ ]; };
             description = "List of IPv6 import rules.";
           };
 
@@ -178,7 +178,7 @@ let
             type =
               with types;
               nullOr (either str (submodule (birdFilterSubmodule config "export")));
-            default = [ ];
+            default = { ranges = [ ]; };
             description = "List of IPv6 export rules.";
           };
         };
