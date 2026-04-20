@@ -33,8 +33,9 @@ in
     inputs = {
       inherit pkgs lib;
 
-      sources = let
-        selfSource = builtins.fetchGit ./.;
+    sources =
+      let
+        selfSource = builtins.fetchGit { url = ./.; shallow = true; };
       in
         sources
         // {
