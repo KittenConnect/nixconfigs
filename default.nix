@@ -86,7 +86,7 @@ let
           inherit pkgs lib; inherit (pkgs) nixos-anywhere;
         };
         nixosBurnImage = import ./scripts/nixos-burnimage.sh.nix {
-          inherit pkgs lib;
+          inherit pkgs lib; inherit (pkgs) pv;
         };
       };
 

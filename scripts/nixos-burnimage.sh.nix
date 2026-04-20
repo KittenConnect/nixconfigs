@@ -1,12 +1,12 @@
 {
   pkgs,
   lib,
-  nixos-anywhere,
+  pv,
 }: systemName: systemConfig:
 pkgs.writeShellApplication {
   name = "nixos-burn";
 
-  runtimeInputs = [systemConfig.config.nix.package nixos-anywhere];
+  runtimeInputs = [systemConfig.config.nix.package pv];
 
   text = let
     inherit (lib) optionalString;
@@ -29,7 +29,7 @@ pkgs.writeShellApplication {
     destination = optionalString hasHost "${userStr}${hostname}${portStr}";
 
     disks = systemConfig.config.disko.devices.disk;
-    devices = devices = filterAttrs (n: v: v ? device && v.device != null) disks;
+    devices = lib.filterAttrs (n: v: v ? device && v.device != null) disks;
   in ''
     command -v ssh
     command -v nix
@@ -42,27 +42,27 @@ pkgs.writeShellApplication {
       else "--help"
     }
     REMOTE=$1
-    echo "Bootstraping ${confName} via ssh on $REMOTE [ssh $@] ?"
+    echo "Bootstraping ${systemName} via ssh on $REMOTE [ssh $*] ?"
     echo "CAUTION: Dangerous action -> will erase disks on remote"
     echo "Press [ENTER] to continue"
-    read
+    read -r
 
-    ssh $@ lsblk
+    ssh "$@" lsblk
     echo "CAUTION: Here are the disks found on the remote, is it correct ?"
     echo "Press [ENTER] again to continue"
-    read
+    read -r
 
-    ssh $@ xz --help
+    ssh "$@" -- xz --help
 
-    ${concatMapStringsSep "\n" (
+    ${lib.concatMapStringsSep "\n" (
       x: let
         disk = disks.${x};
       in ''
 
         echo "Pushing ${x} -> ''${REMOTE}:${disk.device}"
-        ${getBin pvPackage}/bin/pv ${images}/${x}.raw.xz | ssh $@ "xz -T0 -d -c - > ${disk.device}"
+        pv ${systemConfig.config.system.build.diskoImagesCompressed}/${x}.raw.xz | ssh "$@" -- bash -c 'xz -T0 -d -c - > ${disk.device}'
       ''
-    ) (attrNames devices)}
+    ) (builtins.attrNames devices)}
 
     echo "DONE" >&2
   '';
