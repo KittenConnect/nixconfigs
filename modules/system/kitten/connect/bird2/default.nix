@@ -25,8 +25,6 @@ let
 
   inherit (kittenLib.strings) indentedLines quotedString;
 
-  withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
-
   # Main config is here
   cfg = config.kittenModules.bird;
   configHome = "bird";
@@ -171,9 +169,6 @@ in
         mkPeersFuncArgs = (
           peerName: peerConfig:
           args
-          // {
-            inherit withType;
-          }
           // {
             peer = {
               inherit peerName;

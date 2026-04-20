@@ -8,6 +8,8 @@ args @ {
     network = import ./network args;
     peers = import ./peers.nix (args // {inherit kittenLib;});
 
+    withType = types: x: lib.toFunction types.${builtins.typeOf x} x;
+
     #attrsets = import ./attrsets.nix args;
     #options = import ./options.nix args;
   };
