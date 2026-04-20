@@ -50,6 +50,8 @@ let
   mkFilterSection =
     direction: val:
     let
+      direction' = direction;
+
       myType = withType {
         string =
           x:
@@ -66,18 +68,17 @@ let
               ${direction} ${expanded}
             '';
         null = x: "${direction} none;";
-        list = x: myType { ranges = x; };
         set =
           {
-            name,
+            peerName,
+            direction ? direction',
             ranges ? [ ],
             allowed ? [],
             prepend ? 0,
             prependASN ? null,
-            bgpMED ? bgpMED,
-            direction ? direction,
+            bgpMED ? null,
           }: let
-          _bgpMED = if builtins.isString bgpMED then bgpMED else if builtins.isInt bgpMED then "bgpMED_${toString name}" else builtins.toString bgpMED;
+          _bgpMED = if builtins.isString bgpMED then bgpMED else if builtins.isInt bgpMED then "bgpMED_${toString peerName}" else builtins.toString bgpMED;
           in
           indentedLines 1 ''
             ${direction} filter {
@@ -131,10 +132,10 @@ in
 
   ${optionalString (peer.ipv6 != { }) ''
       ipv6 {
-    ${optionalString (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports != [ ]) (
+    ${optionalString (peer.ipv6.bgpImports != null && peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports.allowed != [ ]) (
       indentedLines 2 (mkFilterSection "import" peer.ipv6.bgpImports)
     )}
-    ${optionalString (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports != [ ]) (
+    ${optionalString (peer.ipv6.bgpExports != null && peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports.allowed != [ ]) (
       indentedLines 2 (mkFilterSection "export" peer.ipv6.bgpExports)
     )}
       };
