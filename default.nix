@@ -83,8 +83,7 @@ let
     usefullFunctions = {
       makeDynamicScripts = {
         nixosSomewhere = import ./scripts/nixos-anywhere.sh.nix {
-          inherit pkgs lib;
-          inherit (import sources.nixpkgs25 { }) nixos-anywhere;
+          inherit pkgs lib; inherit (pkgs) nixos-anywhere;
         };
       };
 
