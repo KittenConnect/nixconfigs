@@ -31,9 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v25
-        with: 
-          install_url: https://install.lix.systems/lix
-          install_options: install --no-confirm
+        # with: 
+        #   install_url: https://install.lix.systems/lix
+        #   install_options: install --no-confirm
       - id: set-matrix
         name: Generate Nix Matrix
         run: |
@@ -48,9 +48,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v25
-        with: 
-          install_url: https://install.lix.systems/lix
-          install_options: install --no-confirm
+        # with: 
+        #   install_url: https://install.lix.systems/lix
+        #   install_options: install --no-confirm
       - uses: cachix/cachix-action@v14
         with:
           name: kittenconfigs
@@ -85,9 +85,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v25
-        with: 
-          install_url: https://install.lix.systems/lix
-          install_options: install --no-confirm
+        # with: 
+        #   install_url: https://install.lix.systems/lix
+        #   install_options: install --no-confirm
       - uses: cachix/cachix-action@v14
         with:
           name: kittenconfigs
@@ -160,9 +160,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v25
-        with: 
-          install_url: https://install.lix.systems/lix
-          install_options: install --no-confirm
+        # with: 
+        #   install_url: https://install.lix.systems/lix
+        #   install_options: install --no-confirm
       - uses: cachix/cachix-action@v14
         with:
           name: kittenconfigs
