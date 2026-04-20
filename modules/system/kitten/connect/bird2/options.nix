@@ -39,7 +39,7 @@ let
     }:
     {
       options = {
-        name = mkOption {
+        peerName = mkOption {
           type = types.str;
           default = peerConfig.peerName;
           readOnly = true;
@@ -73,6 +73,7 @@ let
           readOnly = true;
         };
       };
+
       config = {
         allowed = lib.optional (
           config.ranges != [ ]
@@ -150,11 +151,7 @@ let
           bgpImports = mkOption {
             type =
               with types;
-              nullOr (oneOf [
-                str
-                (submodule (birdFilterSubmodule config "import"))
-                (listOf str)
-              ]);
+              nullOr (either str (submodule (birdFilterSubmodule config "import")));
             default = [ ];
             description = "List of IPv4 import rules.";
           };
@@ -162,11 +159,7 @@ let
           bgpExports = mkOption {
             type =
               with types;
-              nullOr (oneOf [
-                str
-                (submodule (birdFilterSubmodule config "export"))
-                (listOf str)
-              ]);
+              nullOr (either str (submodule (birdFilterSubmodule config "export")));
             default = [ ];
             description = "List of IPv4 export rules.";
           };
@@ -176,11 +169,7 @@ let
           bgpImports = mkOption {
             type =
               with types;
-              nullOr (oneOf [
-                str
-                (submodule (birdFilterSubmodule config "import"))
-                (listOf str)
-              ]);
+              nullOr (either str (submodule (birdFilterSubmodule config "import")));
             default = [ ];
             description = "List of IPv6 import rules.";
           };
@@ -188,11 +177,7 @@ let
           bgpExports = mkOption {
             type =
               with types;
-              nullOr (oneOf [
-                str
-                (submodule (birdFilterSubmodule config "export"))
-                (listOf str)
-              ]);
+              nullOr (either str (submodule (birdFilterSubmodule config "export")));
             default = [ ];
             description = "List of IPv6 export rules.";
           };
