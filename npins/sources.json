@@ -24,10 +24,10 @@
       "version_upper_bound": null,
       "release_prefix": null,
       "submodules": false,
-      "version": "v1.8.0",
-      "revision": "624fd86460e482017ed9c3c3c55a3758c06a4e7f",
-      "url": "https://api.github.com/repos/nix-community/disko/tarball/v1.8.0",
-      "hash": "06ifryv6rw25cz8zda4isczajdgrvcl3aqr145p8njxx5jya2d77"
+      "version": "v1.13.0",
+      "revision": "56ef5e72fec74b993ad0973b2dfa4eadeb48ba41",
+      "url": "https://api.github.com/repos/nix-community/disko/tarball/v1.13.0",
+      "hash": "03jz60kw0khm1lp72q65z8gq69bfrqqbj08kw0hbiav1qh3g7p08"
     },
     "lix": {
       "type": "Git",
