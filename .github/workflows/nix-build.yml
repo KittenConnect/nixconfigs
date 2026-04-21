@@ -30,7 +30,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: cachix/install-nix-action@v31.10.4
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
@@ -47,11 +47,11 @@ jobs:
       artifact: ${{steps.upload.outputs.artifact_id}}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: cachix/install-nix-action@v31.10.4
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
-      - uses: cachix/cachix-action@v14
+      - uses: cachix/cachix-action@v17
         with:
           name: kittenconfigs
           # If you chose API tokens for write access OR if you have a private cache
@@ -84,11 +84,11 @@ jobs:
       matrix: ${{fromJSON(needs.nix-matrix.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: cachix/install-nix-action@v31.10.4
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
-      - uses: cachix/cachix-action@v14
+      - uses: cachix/cachix-action@v17
         with:
           name: kittenconfigs
           # If you chose API tokens for write access OR if you have a private cache
@@ -159,11 +159,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v25
+      - uses: cachix/install-nix-action@v31.10.4
         # with: 
         #   install_url: https://install.lix.systems/lix
         #   install_options: install --no-confirm
-      - uses: cachix/cachix-action@v14
+      - uses: cachix/cachix-action@v17
         with:
           name: kittenconfigs
           # If you chose API tokens for write access OR if you have a private cache
