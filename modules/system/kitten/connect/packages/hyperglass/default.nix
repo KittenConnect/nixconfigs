@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.kittenModules.hyperglass;
-  hyperglass = pkgs.callPackage ./package.nix { pythonPackages = python312Packages; inherit pkgs; };
+  hyperglass = pkgs.callPackage ./package.nix { pythonPackages = pkgs.python312Packages; inherit pkgs; };
 in {
   options.kittenModules.hyperglass = {
     enable = lib.mkEnableOption "Kitten Looking Glasse service";
