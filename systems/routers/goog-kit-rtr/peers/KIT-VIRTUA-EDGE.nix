@@ -15,7 +15,7 @@ in {
     peerKey = "p200ujtoVhMNnbrdljxoHqAF7cbfRDRFTA+6ibGvIEg=";
   };
   template = "kittunderlay";
-  bgpMED = 100;
+  bgpMED = -1;
   ipv6 = {
     #bgpImports = null;
     #bgpExportss = [ "2a12:dd47:9330::/44" ];
