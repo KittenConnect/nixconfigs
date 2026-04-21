@@ -43,6 +43,7 @@ buildPythonApplication {
     owner = "thatmattlove";
     repo = "hyperglass";
     rev = "fd34bda03fe3382cb14a00dc9ec76cf282bc3e0a";
+    hash = "sha256-scSR8DNSVgFklaFUfX6Dh7EOw6OvhSy5S4+M8RvxAIY=";
   };
 
   # do not run tests
