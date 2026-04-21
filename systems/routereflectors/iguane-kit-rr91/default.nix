@@ -49,6 +49,8 @@ in
         ${diskoProfile} = diskoConfig;
       };
 
+      hyperglass.enable = true;
+
       loopback0 = {
         # Enabled by bird by default
         enable = true;
