@@ -25,7 +25,7 @@ args @ {
   peers = cfg.peers;
   peersWithAutoMED = filterAttrs (n: v: v.bgpMED == -1) peers;
 
-  autoMEDPath = "/run/bird/automed.conf";
+  autoMEDPath = "/run/bird_automed.conf";
   autoMEDPackage = pkgs.callPackage ./package.nix {};
 in {
   # Sops secrets implementation
