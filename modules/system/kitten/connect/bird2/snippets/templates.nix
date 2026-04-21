@@ -1,4 +1,6 @@
-{...}: {
+{...}: let
+ defaultMED = 2147483648; # 2^31 
+in {
   kittenModules.bird.extraConfigs."common/templates.conf" = {
     order = 10;
 
@@ -49,9 +51,9 @@
           import filter {
             if is_valid4_network() then {
               if defined( bgp_med ) then
-                      bgp_med = bgp_med + 1000;
+                      bgp_med = bgp_med + ${builtins.toString defaultMED};
                 else {
-                      bgp_med = 1000;
+                      bgp_med = ${builtins.toString defaultMED};
                 }
               accept;
             } else reject;
@@ -68,9 +70,9 @@
           import filter {
             if is_valid6_network() then {
               if defined( bgp_med ) then
-                      bgp_med = bgp_med + 1000;
+                      bgp_med = bgp_med + ${builtins.toString defaultMED};
                 else {
-                      bgp_med = 1000;
+                      bgp_med = ${builtins.toString defaultMED};
                 }
               accept;
             } else reject;
