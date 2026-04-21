@@ -13,7 +13,7 @@ in {
   };
 
   template = "kittunderlay";
-  bgpMED = 100;
+  bgpMED = -1;
   ipv6 = {
     #bgpImports = null;
     #bgpExports = [ "2a12:dd47:9330::/44" ];
