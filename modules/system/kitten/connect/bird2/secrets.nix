@@ -52,12 +52,8 @@ in {
 
     # Service configuration
     services.${cfg.serviceName} = {
-      enable = cfg.enable;
-
       preCheckConfig = mkIf (passwords != []) ''
         (
-            set -x
-
             LINE=$(grep -n include ${cfg.serviceName}.conf | grep bird_secrets.conf | head -1 | cut -d: -f1)
             if [ ! -z "$LINE" ]; then
                 echo "Found secrets importing, will substitute it with placeholders values"

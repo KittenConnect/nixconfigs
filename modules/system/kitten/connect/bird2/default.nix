@@ -69,6 +69,7 @@ in {
   imports = [
     ./server_config.nix
     ./secrets.nix
+    ./autoMED
   ];
 
   # Options

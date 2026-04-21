@@ -78,10 +78,13 @@
         bgpMED ? null,
       }: let
         _bgpMED =
-          if builtins.isString bgpMED
+          if bgpMED == null
+          then
+            if builtins.isInt peerMED
+            then "bgpMED_${toString peerName}"
+            else builtins.toString peerMED
+          else if builtins.isString bgpMED
           then bgpMED
-          else if builtins.isInt bgpMED
-          then "bgpMED_${toString peerName}"
           else builtins.toString bgpMED;
       in
         indentedLines 1 ''
@@ -116,7 +119,7 @@
     myType val;
 in ''
 
-  ${optionalString (bgpMED != null && builtins.isInt bgpMED && (bgpMED >= 0 || throw "TODO: implement auto bgpMED")) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
+  ${optionalString (bgpMED != null && builtins.isInt bgpMED && bgpMED >= 0) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
 
   # L: AS${toString localAS} | R: AS${toString peerAS}
   protocol bgp ${toString peerName} ${fromTemplateString peer.template} {

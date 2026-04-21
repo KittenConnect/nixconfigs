@@ -62,7 +62,7 @@ args @ {
       };
       bgpMED = mkOption {
         type = with types; nullOr (either int str);
-        default = peerConfig.bgpMED;
+        default = null;
       };
       direction = mkOption {
         type = types.enum [
@@ -230,6 +230,13 @@ in {
     default = {};
     type = with types; attrsOf (submodule birdPeerSubmodule); # types.submodule (mkNamedOptionModule birdPeerSubmodule);
     description = "Configuration for BGP peers.";
+  };
+
+  autoMED = mkOption {
+    type = types.bool;
+    default = true;
+    example = false;
+    description = "Enable automatic BGP MED daemon";
   };
 
   extraConfigs = mkOption {
