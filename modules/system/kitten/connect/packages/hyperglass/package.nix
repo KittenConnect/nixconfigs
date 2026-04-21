@@ -39,7 +39,11 @@ buildPythonApplication {
 
   version = "2.0.5";
 
-  src = ./.;
+  src = fetchFromGitHub {
+    owner = "thatmattlove";
+    repo = "hyperglass";
+    rev = "fd34bda03fe3382cb14a00dc9ec76cf282bc3e0a";
+  };
 
   # do not run tests
 
