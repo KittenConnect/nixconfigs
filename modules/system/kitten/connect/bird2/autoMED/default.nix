@@ -43,6 +43,7 @@ in {
     (mkIf (cfg.autoMED) {
       # Service configuration
       systemd.services.bird-icmp-automed = {
+        path = [pkgs.bird2]; # TODO: better pkgs handling
         wants = ["network-online.target"];
         after = ["network-online.target"];
         before = ["${cfg.serviceName}.service"];
