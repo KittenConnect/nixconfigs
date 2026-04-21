@@ -45,6 +45,7 @@ in {
       systemd.services.bird-icmp-automed = {
         wants = ["network-online.target"];
         after = ["network-online.target"];
+        before = ["${cfg.serviceName}.service"];
 
         serviceConfig = {
           Type = "simple";
