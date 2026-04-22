@@ -3,7 +3,7 @@
   kittenLib,
   ...
 }: let
-  iface = "ens18";
+  iface = "eth0";
   kittenIFACE = "ens19";
 in {
   # Pick only one of the below networking options.

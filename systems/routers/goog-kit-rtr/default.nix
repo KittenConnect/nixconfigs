@@ -19,22 +19,14 @@ args @ {
     profile = ../.;
 
     blacklist = [];
-    manual = {
-      # Internal Tunnels
-      virtuaNix_PAR = "KIT-VIRTUA-EDGE.nix";
-      vultrNix_PAR = "KIT-VULTR-EDGE.nix";
-
-      aureG8 = "KIT-aurelien-RBR.nix";
-    };
+    manual = {};
   };
 in {
   imports = [
     ../profile.nix
     ./hardware-configuration.nix
-    ./network-configuration.nix
-
-    (modulesPath + "/virtualisation/google-compute-image.nix")
-
+#     ./network-configuration.nix
+    ../../google-cloud-profile.nix
     ../../../modules/system/kitten/connect/bird2/snippets/kittenCores.nix
   ];
 
@@ -42,22 +34,9 @@ in {
     # Disable SSH deployment. This node will be skipped in a
     # normal`colmena apply`.
     targetUser = "root";
-    targetHost = "ig1nixrtr";
+    targetHost = "goog-kit-rtr";
   };
 
-  virtualisation.vmVariant.virtualisation.graphics = false;
-  virtualisation.vmVariant.services.getty.autologinUser = "root";
-
-  # Bootloader.
-  boot.loader.grub.efiSupport = true;
-  boot.loader.grub.enable = true;
-
-  virtualisation.googleComputeImage.efi = true;
-
-  # boot.loader.grub.efiInstallAsRemovable = true;
-  # boot.loader.efi.efiSysMountPoint = "/boot/efi";
-  # Define on which hard drive you want to install Grub.
-  #boot.loader.grub.devices = [ "${targetConfig.bootdisk}" ]; # or "nodev" for efi only
   kittenModules = {
     disko = {
       enable = lib.mkForce false;
@@ -80,7 +59,7 @@ in {
 
     wireguard = {
       enable = true;
-      # defaultIFACE = "ens18";
+      # defaultIFACE = "eth0";
       peers = peers.wireguard;
     };
 

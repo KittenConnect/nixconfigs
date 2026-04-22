@@ -89,6 +89,10 @@ in
             inherit pkgs lib;
             inherit (pkgs) pv;
           };
+          nixosGoogleCompute = import ./scripts/gcloud-deploy.sh.nix {
+            inherit pkgs lib;
+            inherit (pkgs) google-cloud-sdk;
+          };
         };
 
         colmena = {
