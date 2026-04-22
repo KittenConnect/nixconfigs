@@ -56,6 +56,10 @@ in {
         };
       };
 
+      systemd.services.${cfg.serviceName} = {
+        wants = ["bird-icmp-automed.service"];
+      };
+
       # Bird configuration
       services.${cfg.serviceName} = {
         preCheckConfig = ''
