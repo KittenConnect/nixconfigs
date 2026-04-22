@@ -74,7 +74,7 @@
       gcloud beta compute instances create "$1-$now" \
         --project="$GCP_PROJECT" \
         --zone=europe-west9-b \
-        --description="Kitten VM number 1" \
+        --description="Kitten VM $IMAGE_NAME - created at $now" \
         --machine-type=e2-micro \
         --network-interface=ipv6-network-tier=PREMIUM,network-tier=PREMIUM,stack-type=IPV4_IPV6,subnet=kitten-subnet \
         --metadata="$metadata" \
