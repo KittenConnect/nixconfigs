@@ -2,7 +2,6 @@ args@{
   lib,
   pkgs,
   config,
-  profile,
   ...
 }:
 let
@@ -38,12 +37,6 @@ let
         }:
         ''${rule} comment "${comment}"'';
     };
-
-  profilesPath = ./profiles;
-  profiles = lib.pipe (import profilesPath args).imports [
-    (map builtins.baseNameOf)
-    (map (lib.removeSuffix ".nix"))
-  ];
 
   cfg = config.kittenModules.firewall;
 in
@@ -146,16 +139,9 @@ in
         default = "";
       };
     };
-
-    profile = mkOption {
-      type = types.enum ([ "" ] ++ profiles);
-      default = "";
-    };
   };
 
-  imports = [
-    profilesPath
-  ];
+  imports = [ ];
 
   config = lib.mkIf (cfg.enable) {
     _module.args = {
