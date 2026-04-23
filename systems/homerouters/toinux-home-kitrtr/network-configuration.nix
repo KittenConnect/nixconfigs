@@ -1,17 +1,35 @@
 {kittenLib, ...}: {
+  kittenModules.vrfs = {
+    enable = true;
+    tables = {
+      "SFR" = {
+        tableID = 1010;
+      };
+
+      "ORANGE" = {
+        tableID = 1020;
+      };
+    };
+  };
+
+  systemd.network.enable = true;
+  systemd.network.networks = {
+    "20-eth0" = {
+      matchConfig = {
+        Name = "eth0";
+      };
+      vrf = ["SFR"];
+
+      networkConfig = {
+        IPv6AcceptRA = true;
+        LinkLocalAddressing = "ipv6";
+      };
+      DHCP = "ipv4";
+    };
+  };
+
   # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   networking = {
-    #nameservers = [ "1.3.3.7" ];
-
-    # vlans = {
-    #   vlanXX = {
-    #     id = XX;
-    #     interface = "xxx";
-    #   };
-    # };
-
     interfaces = {
       ens18.useDHCP = true;
 
@@ -46,8 +64,5 @@
     # };
 
     useDHCP = false;
-    #dhcpcd.enable = false;
   };
-
-  systemd.network.enable = true;
 }
