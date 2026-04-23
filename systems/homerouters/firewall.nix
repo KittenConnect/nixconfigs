@@ -44,23 +44,6 @@
     ;
 in {
   config = {
-    boot.kernel.sysctl = {
-      "net.ipv4.ip_forward" = 1;
-      "net.ipv6.conf.all.forwarding" = 1;
-
-      "net.ipv4.conf.all.src_valid_mark" = 1;
-
-      # "net.ipv4.conf.default.rp_filter" = 2;
-      # "net.ipv4.conf.all.rp_filter" = 2;
-
-      # "net.ipv6.conf.all.keep_addr_on_down" = 1;
-      # "net.ipv4.raw_l3mdev_accept" = 1;
-      # "net.ipv4.tcp_l3mdev_accept" = 1;
-      # "net.ipv4.udp_l3mdev_accept" = 1;
-    };
-
-    # environment.systemPackages = with pkgs; [ ferm ]; # Prepare an eventual switch to FERM
-
     networking.nftables = {
       enable = true;
 
