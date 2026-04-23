@@ -37,6 +37,9 @@ in {
     targetHost = "goog-kit-rtr";
   };
 
+  systemd.services."serial-getty@ttyS0".enable = lib.mkForce true;
+
+
   kittenModules = {
     disko = {
       enable = lib.mkForce false;

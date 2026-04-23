@@ -20,8 +20,7 @@
   boot.loader.grub.efiSupport = true;
   boot.loader.grub.enable = true;
 
-  boot.kernelParams = [ "systemd.mask=google-guest-agent.service" ];
-  systemd.services."serial-getty@ttyS0".enable = lib.mkForce true;
+  # boot.kernelParams = [ "systemd.mask=google-guest-agent.service" ];
 
   systemd.services.google-startup-scripts.serviceConfig.TimeoutStartSec = 90;
   systemd.services.google-shutdown-scripts.serviceConfig.TimeoutStartSec = 90;
