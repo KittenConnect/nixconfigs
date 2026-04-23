@@ -7,6 +7,7 @@
 
     ./disko
     ./packages
+    ./security
 
     ./wireguard
     ./firewall.nix

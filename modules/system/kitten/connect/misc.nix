@@ -6,7 +6,14 @@
 }: {
   # TODO: Options + Togglable config
 
-  # TODO: Implement moar stuff here
+  # Set your time zone.
+  time.timeZone = "Europe/Paris";
+
+  # Select internationalisation properties.
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  # tmpFS on /tmp
+  boot.tmp.useTmpfs = lib.mkDefault true;
 
   # Versions Dump
   environment.etc."current-system-packages".text = let
