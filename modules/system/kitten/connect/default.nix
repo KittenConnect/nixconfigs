@@ -11,6 +11,7 @@
 
     ./wireguard
     ./loopback0.nix
+    ./vrfs.nix
     ./bird2
   ];
 
