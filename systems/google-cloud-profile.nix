@@ -42,8 +42,12 @@
     # version = toplevelVersion;
 
     runtimeInputs = with pkgs; [ google-cloud-sdk ];
-    text = ''
-    metadata="^,@^serial-port-enable=true,@enable-oslogin=TRUE"
+    text = let 
+      metadata = 
+      (lib.optional config.systemd.services."serial-getty@ttyS0".enable "serial-port-enable=true")
+      ++ (lib.optional config.security.googleOsLogin.enable "enable-oslogin=TRUE");
+    in ''
+    metadata="${lib.concatStringsSep "," metadata}"
     now="$(date +%Y%m%d-%H%M%S)"
 
     GCP_PROJECT="kittenconnect"
