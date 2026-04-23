@@ -26,8 +26,7 @@
       { cond = config.boot.loader.generic-extlinux-compatible.enable; value = config.boot.loader.generic-extlinux-compatible.configurationLimit; }
     ];
   in
-    default: (builtins.head (lib.foldl (acc: x: acc ++ lib.optional x.cond x.value) [] limitSources) ++ [default])
-
+    default: (builtins.head (lib.foldl (acc: x: acc ++ lib.optional x.cond x.value) [] limitSources) ++ [default]);
 in {
   options.kittenModules.nixConfig = {
     enable = mkEnabledOption "kitten common nix-specific configuration";
