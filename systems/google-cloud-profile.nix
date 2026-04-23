@@ -15,6 +15,7 @@
     ];
   };
 
+  kittenModules.nixConfig.nixosFolder = null;
 
   # Bootloader.
   boot.loader.grub.efiSupport = true;
