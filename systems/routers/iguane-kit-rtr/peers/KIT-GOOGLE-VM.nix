@@ -7,12 +7,12 @@ in {
 
   wireguard = {
     address = kittenLib.network.internal6.cafe.kittens.underlay "110";
-    port = 6969;
+    port = 51869;
 
-    peerKey = "gDriA5mhKKh44OHEIxmmevphoVRLK45TRJmFS1DV1i4=";
+    peerKey = "oQsOZ4fdPplLMrovlTPivyoaiiFrn40nPKxNzbPNy1U=";
   };
   template = "kittunderlay";
-  bgpMED = 6666;
+  bgpMED = -1;
   ipv6 = {
     #imports = null;
     #exports = [ "2a12:dd47:9330::/44" ];

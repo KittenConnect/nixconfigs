@@ -46,7 +46,7 @@ in {
     nixosFolder = mkOption {
       type = with lib.types; nullOr types.path;
       default = if sources ? self then sources.self.outPath else null;
-    }
+    };
 
     defaultKeepNGenerations = mkOption {
       type = lib.types.int;
@@ -57,7 +57,7 @@ in {
   # Implementation
 
   config = lib.mkIf (cfg.enable) {
-    environment.etc.nixos.source = lib.mkIf (cfg.nixosFolder != null) cfg.nixosFolder;
+    environment.etc.nixos = lib.mkIf (cfg.nixosFolder != null) { source = cfg.nixosFolder; };
 
     systemd.services.nix-gc = lib.mkIf (cfg.autoGc) (
       let
