@@ -31,8 +31,57 @@
   # uvloop,
   # xmltodict,
   ...
-}:
+}: let
+  inherit (pythonPackages.overrideScope (
+      final: prev: {
+        typer = pkgs.callPackage ./_typer.nix {
+          inherit (pkgs) lib stdenv fetchpatch;
+          inherit (pythonPackages)
+            buildPythonPackage
+            click
+            colorama
+            coverage
+            fetchPypi
+            flit-core
+            pytest-sugar
+            pytest-xdist
+            pytestCheckHook
+            pythonOlder
+            rich
+            shellingham
+            typing-extensions
+            ;
+        };
+      }
+    )) typer;
 
+    favicons = pkgs.callPackage ./_favicons.nix {
+      inherit (pythonPackages)
+        buildPythonPackage
+        poetry-core
+        pillow
+        reportlab
+        # rlpycairo
+        svglib
+      ;
+      masonry = pkgs.callPackage ./_masonry.nix {
+        inherit (pythonPackages)
+          buildPythonPackage
+          setuptools
+
+          cookiecutter
+          docopt
+          schema
+          inquirer
+          ruamel-yaml
+          gitpython
+          clint
+          py
+        ;
+      };
+      inherit typer;
+    };
+in
 buildPythonApplication {
 
   pname = "hyperglass";
@@ -76,9 +125,14 @@ buildPythonApplication {
     wheel
   ];
 
-  makeWrapperArgs = ["--prefix" "PATH" ":" "${pkgs.nodejs}/bin"];
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    "${pkgs.nodejs}/bin"
+  ];
 
-  dependencies = with pythonPackages; [
+  dependencies = (with pythonPackages; [
     hatchling
     aiofiles
     distro
@@ -102,27 +156,5 @@ buildPythonApplication {
     uvicorn
     uvloop
     xmltodict
-
-    (pythonPackages.overrideScope (final: prev: {
-      typer = pkgs.callPackage ./_typer.nix {
-        inherit (pkgs) lib stdenv fetchpatch;
-          inherit (pythonPackages)
-            buildPythonPackage
-            click
-            colorama
-            coverage
-            fetchPypi
-            flit-core
-            pytest-sugar
-            pytest-xdist
-            pytestCheckHook
-            pythonOlder
-            rich
-            shellingham
-            typing-extensions
-            ;
-      };
-      })
-    ).typer
-  ];
+  ]) ++ [ typer favicons];
 }
