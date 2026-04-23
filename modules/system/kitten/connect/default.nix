@@ -5,11 +5,11 @@
     ./base.nix
     ./misc.nix
 
-    ./firewall
     ./disko
     ./packages
 
     ./wireguard
+    ./firewall.nix
     ./loopback0.nix
     ./vrfs.nix
     ./bird2
