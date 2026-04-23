@@ -7,7 +7,7 @@ args@{
 }:
 let
   inherit (lib.options) mkOption mkEnableOption;
-  inherit (lib.strings) optionalString splitString concatStringsSep;
+  inherit (lib.strings) optionalString splitString concatMapStringsSep concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
   inherit (lib.kitten.strings) indentedLines;
   inherit (lib) types mkAfter;
@@ -76,12 +76,14 @@ in
             submodule (
               {
                 name,
+                config,
                 ...
               }:
               {
                 options = {
                   setType = mkOption {
-                    type = types.enum [
+                    default = null;
+                    type = with types; nullOr (enum [
                       "ipv4_addr" # IPv4 address
                       "ipv6_addr" # IPv6 address.
                       "ether_addr" # Ethernet address.
@@ -89,7 +91,11 @@ in
                       "inet_service" # Internet service (read tcp port for example)
                       "mark" # Mark type.
                       "ifname" # Network interface name (eth0, eth1..)
-                    ];
+                    ]);
+                  };
+                  setTypeOf = mkOption {
+                    default = null;
+                    type = with types; nullOr str;
                   };
 
                   table = mkOption {
@@ -104,6 +110,16 @@ in
                         "constant" # set content may not change while bound
                         "interval" # set contains intervals
                         "timeout" # elements can be added with a timeout
+                      ]);
+                    default = [ ];
+                  };
+
+                  elements = mkOption {
+                    type =
+                      with types;
+                      listOf (oneOf [
+                        str
+                        int
                       ]);
                     default = [ ];
                   };
@@ -145,6 +161,8 @@ in
     _module.args = {
       inherit mkRule;
     };
+
+    assertions = lib.mapAttrsToList (n: v: { assertion = (v.setTypeOf == null && v.setType != null) || (v.setTypeOf != null && v.setType != null); message = "NFTables set ${v.table}.${n} needs exactly one of setType/setTypeOf"; }) cfg.forward.sets;
 
     kittenModules.firewall.forward.sets = {
       wan_iface = {
@@ -194,8 +212,9 @@ in
               # Declare Table Sets for ${table}
               ${lib.concatMapAttrsStringSep "\n" (setName: set: ''
                 set ${setName} {
-                  type ${set.setType}
+                  ${optionalString (set.setType != null) "type ${set.setType}"}${optionalString (set.setTypeOf != null) "typeof ${set.setTypeOf}"}
                   ${optionalString (set.flags != [ ]) "flags ${concatStringsSep ", " set.flags}"}
+                  ${optionalString (set.elements != [ ]) "elements = { ${concatMapStringsSep ", " builtins.toString set.elements} }"}
                   ${optionalString (set.extraConfig != "") (indented 2 set.extraConfig)}
                 }
               '') sets}
