@@ -176,6 +176,8 @@ in
             #
             # }
             alias nixos-anywhere='nix run -f ${inputs.sources.self}/_scripts/nixos-anywhere.nix'
+
+            export GCP_OSLOGIN_USER=$(gcloud compute os-login describe-profile --format=json | jq -r '.posixAccounts[] | .username')
           '';
 
           nativeBuildInputs = with pkgs; [
@@ -184,6 +186,8 @@ in
             # nixel
             alejandra
             colmena
+            google-cloud-sdk
+            jq
             npins
           ];
         };

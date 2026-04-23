@@ -45,7 +45,7 @@ in {
       systemd.services.bird-icmp-automed = {
         path = [pkgs.bird2]; # TODO: better pkgs handling
         wants = ["network-online.target"];
-        after = ["network-online.target"];
+        after = ["network-online.target"] ++ (builtins.map (x: "wg-quick-${x}.service") (builtins.attrNames config.networking.wg-quick.interfaces));
         before = ["${cfg.serviceName}.service"];
 
         serviceConfig = {

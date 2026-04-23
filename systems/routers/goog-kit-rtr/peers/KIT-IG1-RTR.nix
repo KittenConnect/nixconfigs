@@ -8,11 +8,11 @@ in {
   wireguard = {
     address = kittenLib.network.internal6.cafe.kittens.underlay "111";
     port = 6969;
-
+    endpoint = "78.40.121.76:51869";
     peerKey = "gDriA5mhKKh44OHEIxmmevphoVRLK45TRJmFS1DV1i4=";
   };
   template = "kittunderlay";
-  bgpMED = 6666;
+  bgpMED = -1;
   ipv6 = {
     #imports = null;
     #exports = [ "2a12:dd47:9330::/44" ];

@@ -16,6 +16,8 @@
           internet = "${internal6.cafe.kittens.loopbacks}::b00b";
 
           vultr = "${internal6.cafe.kittens.loopbacks}::b48d";
+          virtua = "${internal6.cafe.kittens.loopbacks}::12:10";
+          google = "${internal6.cafe.kittens.loopbacks}::4012:1";
 
           ig1-kit-rtr = "${internal6.cafe.kittens.loopbacks}::113:25";
           ig1-kit-rr = "${internal6.cafe.kittens.loopbacks}::113:91";

@@ -33,12 +33,11 @@ in {
   deployment = {
     # Disable SSH deployment. This node will be skipped in a
     # normal`colmena apply`.
-    targetUser = "root";
+    targetUser = builtins.getEnv "GCP_OSLOGIN_USER";
     targetHost = "goog-kit-rtr";
   };
 
   systemd.services."serial-getty@ttyS0".enable = lib.mkForce true;
-
 
   kittenModules = {
     disko = {
@@ -50,7 +49,7 @@ in {
 
     bird = {
       enable = true;
-      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rtr;
+      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.google;
 
       static6 = [
         "::/0 recursive ${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}"

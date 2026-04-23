@@ -22,9 +22,12 @@
   boot.loader.grub.enable = true;
 
   # boot.kernelParams = [ "systemd.mask=google-guest-agent.service" ];
+  nix.settings.trusted-users = ["@google-sudoers"];
+  services.nscd.enableNsncd = false;
 
   systemd.services.google-startup-scripts.serviceConfig.TimeoutStartSec = 90;
   systemd.services.google-shutdown-scripts.serviceConfig.TimeoutStartSec = 90;
+  systemd.services.google-guest-agent.serviceConfig.TimeoutStartSec = 90;
 
   networking.interfaces.eth0.useDHCP = true;
   networking.useNetworkd = true;
@@ -91,8 +94,8 @@
         --shielded-vtpm \
         --shielded-integrity-monitoring \
         --labels=goog-ec-src=vm_add-gcloud \
-        --reservation-affinity=none
-        # --deletion-protection
+        --reservation-affinity=none \
+        --deletion-protection
     }
 
     set -x

@@ -7,7 +7,7 @@ keys:
   - &router_virtua_edge age1a2dpax5xwt4855jfpsxh83l6y9uf2804uszhxydqhxwr9hk4a96s42k4e0 
 
   - &router_iguane age19qe5ea965hnjv5e9dty2ws5dr375tsh0x4ct0zg6syg82cmlp9wq0l6sgp
-  # - &router_goog age19qe5ea965hnjv5e9dty2ws5dr375tsh0x4ct0zg6syg82cmlp9wq0l6sgp
+  - &router_goog age1lwxvl3ts4fqufk99pqyxuf3wdc0exy7x78x0kc49ahwu4krawpdqguxc90
 
   - &router_aure_home age1f9c0vpqpafkc0uugm4qnwuw8tr87pt63ar9497auzsz6kker33tq8cs7gw
   - &router_romain_home age13shuee5uk80wjlhdsl2hlg7n7nv489wxq8r7xy0arh9nkk3lju9qfs0k0x
@@ -56,7 +56,7 @@ creation_rules:
     # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
     key_groups:
       - age:
-          # - *router_goog
+          - *router_goog
           - *user_root_nixifier
           - *user_root_stonks
           - *user_root_laptaupe

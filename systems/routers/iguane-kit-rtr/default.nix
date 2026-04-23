@@ -42,7 +42,7 @@ in {
     # Disable SSH deployment. This node will be skipped in a
     # normal`colmena apply`.
     targetUser = "root";
-    targetHost = "ig1nixrtr";
+    targetHost = "kit-ig1-newrtr";
   };
 
   virtualisation.vmVariant.virtualisation.graphics = false;

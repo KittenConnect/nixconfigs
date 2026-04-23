@@ -60,7 +60,7 @@ in {
     bird = {
       enable = true;
 
-      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks "12:10";
+      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.virtua;
 
       static6 = [
         "${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}/128 unreachable"

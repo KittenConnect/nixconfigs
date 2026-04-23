@@ -62,9 +62,9 @@
       },
       "branch": "master",
       "submodules": false,
-      "revision": "3198a242e547939c5e659353551b0668ec150268",
-      "url": "https://github.com/Mic92/sops-nix/archive/3198a242e547939c5e659353551b0668ec150268.tar.gz",
-      "hash": "0b7x86lvjfkxpxnf2dl7mf8rvsyhsn0xjmgaw8m58286191wp3lb"
+      "revision": "bef289e2248991f7afeb95965c82fbcd8ff72598",
+      "url": "https://github.com/Mic92/sops-nix/archive/bef289e2248991f7afeb95965c82fbcd8ff72598.tar.gz",
+      "hash": "1lmd6pwil1n4mb90h5krlkpa4h0nypqx8npggkmidsjmy4ylc48d"
     },
     "unstable": {
       "type": "Channel",
