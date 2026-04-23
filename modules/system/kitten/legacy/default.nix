@@ -12,27 +12,13 @@
     # ./nixConfig.nix
     # ./packages.nix # Install system-wide pkgs
     ./inputrc.nix # ReadLine config
-    ./security.nix # PAM + SSH + Keys
     # ./firewall.nix
-
-    # VPNs
-    # ./openvpn.nix
 
     # Kernel / Bootloader
     # ./serial-com.nix
     # ./systemd-boot.nix
     # ./grub-boot.nix
   ];
-
-  # Set your time zone.
-  time.timeZone = "Europe/Paris";
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
 
   boot.supportedFilesystems = ["nfs"];
   services.rpcbind.enable = true; # NFS - Client
@@ -41,14 +27,6 @@
     enable = true;
   };
 
-  # tmpFS on /tmp
-  boot.tmp.useTmpfs = lib.mkDefault true;
-
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-
-  environment.systemPackages = with pkgs; [
-    # Additional packages
-    # nix-inspect
-  ];
 }

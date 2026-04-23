@@ -18,16 +18,16 @@
 
   cfg = config.kittenModules.nixConfig;
 
-  keepGenerations = default:
-    if config.boot.loader.systemd-boot.enable
-    then config.boot.loader.systemd-boot.configurationLimit
-    else if config.boot ? lanzaboote && config.boot.lanzaboote.enable
-    then config.boot.lanzaboote.configurationLimit
-    else if config.boot.loader.grub.enable
-    then config.boot.loader.grub.configurationLimit
-    else if config.boot.loader.generic-extlinux-compatible.enable
-    then config.boot.loader.generic-extlinux-compatible.configurationLimit
-    else default;
+  keepGenerations = let 
+    limitSources = [
+      { cond = config.boot.loader.systemd-boot.enable; value = config.boot.loader.systemd-boot.configurationLimit; }
+      { cond = config.boot ? lanzaboote && config.boot.lanzaboote.enable; value = config.boot.lanzaboote.configurationLimit; }
+      { cond = config.boot.loader.grub.enable; value = config.boot.loader.grub.configurationLimit; }
+      { cond = config.boot.loader.generic-extlinux-compatible.enable; value = config.boot.loader.generic-extlinux-compatible.configurationLimit; }
+    ];
+  in
+    default: (builtins.head (lib.foldl (acc: x: acc ++ lib.optional x.cond x.value) [] limitSources) ++ [default])
+
 in {
   options.kittenModules.nixConfig = {
     enable = mkEnabledOption "kitten common nix-specific configuration";
