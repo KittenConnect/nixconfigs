@@ -1,31 +1,43 @@
-args @ {
+args@{
   lib,
   pkgs,
   config,
   profile,
   ...
-}: let
+}:
+let
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.strings) optionalString splitString concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
   inherit (lib.kitten.strings) indentedLines;
   inherit (lib) types mkAfter;
 
+  baseTable = "nixos-fw";
+
   quoteString = x: ''"${x}"'';
   spaces = n: lib.concatMapStrings (x: " ") (lib.range 1 n);
   indented = n: s: concatStringsSep "\n${spaces n}" (splitString "\n" s);
 
-  mkEnabledOption = desc:
+  mkEnabledOption =
+    desc:
     lib.mkEnableOption desc
     // {
       example = false;
       default = true;
     };
 
-  mkRule = {
-    rule,
-    comment,
-  }: ''${rule} comment "${comment}"'';
+  mkRule =
+    args:
+    args
+    // {
+      __toString =
+        {
+          rule,
+          comment,
+          ...
+        }:
+        ''${rule} comment "${comment}"'';
+    };
 
   profilesPath = ./profiles;
   profiles = lib.pipe (import profilesPath args).imports [
@@ -34,7 +46,8 @@ args @ {
   ];
 
   cfg = config.kittenModules.firewall;
-in {
+in
+{
   options.kittenModules.firewall = {
     enable = mkEnabledOption "KittenConnect common firewall module";
 
@@ -53,7 +66,58 @@ in {
 
       variables = mkOption {
         type = types.attrsOf types.str;
-        default = {};
+        default = { };
+      };
+
+      sets = mkOption {
+        type =
+          with types;
+          attrsOf (
+            submodule (
+              {
+                name,
+                ...
+              }:
+              {
+                options = {
+                  setType = mkOption {
+                    type = types.enum [
+                      "ipv4_addr" # IPv4 address
+                      "ipv6_addr" # IPv6 address.
+                      "ether_addr" # Ethernet address.
+                      "inet_proto" # Inet protocol type.
+                      "inet_service" # Internet service (read tcp port for example)
+                      "mark" # Mark type.
+                      "ifname" # Network interface name (eth0, eth1..)
+                    ];
+                  };
+
+                  table = mkOption {
+                    type = types.str;
+                    default = baseTable;
+                  };
+
+                  flags = mkOption {
+                    type =
+                      with types;
+                      listOf (enum [
+                        "constant" # set content may not change while bound
+                        "interval" # set contains intervals
+                        "timeout" # elements can be added with a timeout
+                      ]);
+                    default = [ ];
+                  };
+
+                  extraConfig = mkOption {
+                    type = types.lines;
+                    default = "";
+                  };
+                };
+              }
+            )
+          );
+
+        default = { };
       };
 
       rules = mkOption {
@@ -68,7 +132,7 @@ in {
     };
 
     profile = mkOption {
-      type = types.enum ([""] ++ profiles);
+      type = types.enum ([ "" ] ++ profiles);
       default = "";
     };
   };
@@ -81,69 +145,110 @@ in {
     _module.args = {
       inherit mkRule;
     };
+
+    kittenModules.firewall.forward.sets = {
+      wan_iface = {
+        setType = "ifname";
+        table = "nat";
+      };
+
+      nat_ranges = {
+        setType = "ipv4_addr";
+        table = "nat";
+        flags = [ "interval" ];
+      };
+    };
+
     networking.firewall.enable = true;
     networking.nftables = {
       enable = true;
 
-      tables."nat" = {
-        family = "inet";
-        content = ''
-          chain srcnat {
-            type nat hook postrouting priority srcnat; policy accept;
-            ${indented 2 cfg.forward.natRules}
+      tables =
+        let
+          setsPerTables = lib.foldl (
+            acc:
+            { name, value }:
+            acc
+            // {
+              "${value.table}" = (acc.${value.table} or { }) // {
+                "${name}" = value;
+              };
+            }
+          ) { } (lib.attrsToList cfg.forward.sets);
+        in
+        lib.mkMerge [
+          {
+            "nat" = {
+              family = "inet";
+              content = ''
+                chain srcnat {
+                  type nat hook postrouting priority srcnat; policy accept;
+                  ${indented 2 cfg.forward.natRules}
+                }
+              '';
+            };
           }
-        '';
-      };
 
-      tables."nixos-fw".content = lib.mkIf (cfg.forward.enable) (
-        mkAfter (
-          let
-            fwVars = mapAttrsToList (k: v: ''define ${k} = ${v}'') cfg.forward.variables;
-
-            gotoRules = "jump ${cfg.forward.chain}";
-            vmapRules = ''
-              ct state vmap {
-                established: accept, related: accept,
-                new: ${gotoRules}, untracked: ${gotoRules},
-                invalid: ${
-                if cfg.forward.keepInvalidState
-                then gotoRules
-                else "drop"
-              },
-              }
+          (lib.mapAttrs (table: sets: {
+            content = lib.mkBefore ''
+              # Declare Table Sets for ${table}
+              ${lib.concatMapAttrsStringSep "\n" (setName: set: ''
+                set ${setName} {
+                  type ${set.setType}
+                  ${optionalString (set.flags != [ ]) "flags ${concatStringsSep ", " set.flags}"}
+                  ${optionalString (set.extraConfig != "") (indented 2 set.extraConfig)}
+                }
+              '') sets}
             '';
+          }) setsPerTables)
 
-            allowICMP = optionalString (cfg.forward.allowICMP) (mkRule {
-              comment = "Accept all ICMPv6 messages except renumbering and node information queries (type 139).  See RFC 4890, section 4.3.";
-              rule = "icmpv6 type != { router-renumbering, 139 } accept";
-            });
+          {
+            "${baseTable}".content = lib.mkIf (cfg.forward.enable) (
+              mkAfter (
+                let
+                  fwVars = mapAttrsToList (k: v: "define ${k} = ${v}") cfg.forward.variables;
 
-            allowDNAT = optionalString (cfg.forward.allowDnat) (mkRule {
-              comment = "Accept all DNAT-marked packet in ConnTrack.";
-              rule = "ct status dnat accept";
-            });
-          in ''
-            # Kitten NixOS Forward rules
-            ${concatStringsSep "\n" fwVars}
+                  invalid = if cfg.forward.keepInvalidState then gotoRules else "drop";
+                  gotoRules = "jump ${cfg.forward.chain}";
+                  vmapRules = ''
+                    ct state vmap {
+                      established: accept, related: accept,
+                      new: ${gotoRules}, untracked: ${gotoRules},
+                      invalid: ${invalid},
+                    }
+                  '';
+                  defaultPolicy = if cfg.forward.stateless then gotoRules else indented 2 vmapRules;
 
-            chain forward {
-              type filter hook forward priority filter; policy drop;
-              ${
-              if cfg.forward.stateless
-              then gotoRules
-              else indented 2 vmapRules
-            }
-            }
+                  allowICMP = mkRule {
+                    comment = "Accept all ICMPv6 messages except renumbering and node information queries (type 139).  See RFC 4890, section 4.3.";
+                    rule = "icmpv6 type != { router-renumbering, 139 } accept";
+                  };
 
-            chain ${cfg.forward.chain} {
-              ${allowICMP}
-              ${allowDNAT}
+                  allowDNAT = mkRule {
+                    comment = "Accept all DNAT-marked packet in ConnTrack.";
+                    rule = "ct status dnat accept";
+                  };
+                in
+                ''
+                  # Kitten NixOS Forward rules
+                  ${concatStringsSep "\n" fwVars}
 
-              ${indented 2 cfg.forward.rules}
-            }
-          ''
-        )
-      );
+                  chain forward {
+                    type filter hook forward priority filter; policy drop;
+                    ${defaultPolicy}
+                  }
+
+                  chain ${cfg.forward.chain} {
+                    ${optionalString (cfg.forward.allowICMP) allowICMP}
+                    ${optionalString (cfg.forward.allowDnat) allowDNAT}
+
+                    ${indented 2 cfg.forward.rules}
+                  }
+                ''
+              )
+            );
+          }
+        ];
     };
   };
 }
