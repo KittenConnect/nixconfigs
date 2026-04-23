@@ -14,9 +14,9 @@
 
   systemd.network.enable = true;
   systemd.network.networks = {
-    "20-eth0" = {
+    "20-eth1" = {
       matchConfig = {
-        Name = "eth0";
+        Name = "eth1";
       };
       vrf = ["SFR"];
 
@@ -25,6 +25,36 @@
         LinkLocalAddressing = "ipv6";
       };
       DHCP = "ipv4";
+    };
+
+    "20-eth2" = {
+      matchConfig = {
+        Name = "eth2";
+      };
+      vrf = ["ORANGE"];
+
+      networkConfig = {
+        IPv6AcceptRA = true;
+        LinkLocalAddressing = "ipv6";
+      };
+      DHCP = "ipv4";
+    };
+
+    "50-eth3" = {
+      matchConfig = {
+        Name = "eth3";
+      };
+
+      address = [
+        "100.100.91.10/24"
+        "2a13:79c0:ffff:feff:b00b:3945:a51:10/112"
+      ];
+
+      networkConfig = {
+        IPv6AcceptRA = false;
+        LinkLocalAddressing = "ipv6";
+      };
+      DHCP = "no";
     };
   };
 
