@@ -42,7 +42,7 @@ in {
     # Disable SSH deployment. This node will be skipped in a
     # normal`colmena apply`.
     targetUser = "root";
-    targetHost = null; # TODO: implement
+    targetHost = "kit-virtua-edge"; # TODO: implement
   };
 
   # Bootloader.
@@ -55,6 +55,11 @@ in {
       profile = diskoProfile;
 
       ${diskoProfile} = diskoConfig;
+    };
+
+    gitnamed = {
+      enable = true;
+      masterURL = lib.mkForce null;
     };
 
     bird = {
