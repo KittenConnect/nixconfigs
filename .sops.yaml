@@ -123,6 +123,16 @@ creation_rules:
           - *user_root_laptaupe
     mac_only_encrypted: true
 
+  - path_regex: .secrets/_gitnamed([_/][^/]*)?\.(yaml|json|env|ini)$
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    key_groups:
+      - age:
+          - *router_vultr_edge
+          - *router_virtua_edge
+
+          - *user_root_stonks
+    mac_only_encrypted: false 
+
   - path_regex: .secrets/[^/]+\.(yaml|json|env|ini)$
     # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
     key_groups:

@@ -5,6 +5,7 @@
   ...
 }: let
   cfg = config.kittenModules.nixHome;
+  zshShell = lib.getExe pkgs.zsh;
 in {
   imports = [
     ../../external/home-manager.nix
@@ -20,10 +21,10 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    users.users.root.shell = pkgs.zsh;
+    users.users.root.shell = zshShell;
     programs.zsh.enable = true; # Install System-Wide -> Config is done with home-manager
 
-    environment.shells = with pkgs; [zsh];
+    environment.shells = with pkgs; [zshShell];
     environment.pathsToLink = ["/share/zsh"]; # ZSH Completions
 
     home-manager = {

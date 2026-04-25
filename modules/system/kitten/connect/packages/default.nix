@@ -3,5 +3,6 @@
     ./rhabbit-consumer
     ./sysupgrade
     ./hyperglass
+    ./gitnamed
   ];
 }

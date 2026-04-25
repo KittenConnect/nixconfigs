@@ -55,7 +55,7 @@ in {
     # Disable SSH deployment. This node will be skipped in a
     # normal`colmena apply`.
     targetUser = "root";
-    targetHost = null; # TODO: implement
+    targetHost = "kit-vultr-edge"; # TODO: implement
   };
 
   # Bootloader.
@@ -63,7 +63,6 @@ in {
   boot.loader.grub.enable = true;
 
   # Networking
-
   services.cloud-init = {
     enable = true;
     ext4.enable = true;
@@ -85,6 +84,10 @@ in {
     };
   };
 
+  virtualisation.vmVariant = {
+    services.cloud-init.enable = lib.mkForce false;
+  };
+
   networking.useDHCP = false;
   networking.useNetworkd = true;
   systemd.network.enable = true;
@@ -95,6 +98,10 @@ in {
       profile = diskoProfile;
 
       ${diskoProfile} = diskoConfig;
+    };
+
+    gitnamed = {
+      enable = true;
     };
 
     bird = {
@@ -130,7 +137,7 @@ in {
         keepInvalidState = true;
         # rules = '' ... '';
         natRules = ''
-          oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.net} snat ip6 prefix to 2a12:5844:1311:feff::/64
+          oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.underlay.net} snat ip6 prefix to 2a12:5844:1311:feff::/64
           oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.net} snat ip6 prefix to 2a12:5844:1311:fefe::/64
         '';
       };
