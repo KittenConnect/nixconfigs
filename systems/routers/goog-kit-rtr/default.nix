@@ -25,7 +25,7 @@ in {
   imports = [
     ../profile.nix
     ./hardware-configuration.nix
-#     ./network-configuration.nix
+    #     ./network-configuration.nix
     ../../google-cloud-profile.nix
     ../../../modules/system/kitten/connect/bird2/snippets/kittenCores.nix
   ];

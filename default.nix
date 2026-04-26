@@ -33,9 +33,11 @@ in
     inputs = {
       inherit pkgs lib;
 
-    sources =
-      let
-        selfSource = builtins.fetchGit { url = ./.; shallow = true; };
+      sources = let
+        selfSource = builtins.fetchGit {
+          url = ./.;
+          shallow = true;
+        };
       in
         sources
         // {
@@ -67,7 +69,9 @@ in
             builtins.readDir ./npins
           )
         )
-        // {nixos = inputs.pkgsInstances.${pkgsInstance};};
+        // {
+          nixos = inputs.pkgsInstances.${pkgsInstance};
+        };
 
       inherit
         nixpkgs

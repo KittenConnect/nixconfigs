@@ -1,22 +1,22 @@
 # https://github.com/NixOS/nixpkgs/blob/92d295f588631b0db2da509f381b4fb1e74173c5/pkgs/development/python-modules/typer/default.nix
-{ lib
-, stdenv
-, buildPythonPackage
-, click
-, colorama
-, coverage
-, fetchpatch
-, fetchPypi
-, flit-core
-, pytest-sugar
-, pytest-xdist
-, pytestCheckHook
-, pythonOlder
-, rich
-, shellingham
-, typing-extensions
+{
+  lib,
+  stdenv,
+  buildPythonPackage,
+  click,
+  colorama,
+  coverage,
+  fetchpatch,
+  fetchPypi,
+  flit-core,
+  pytest-sugar,
+  pytest-xdist,
+  pytestCheckHook,
+  pythonOlder,
+  rich,
+  shellingham,
+  typing-extensions,
 }:
-
 buildPythonPackage rec {
   pname = "typer";
   version = "0.9.0";
@@ -57,26 +57,30 @@ buildPythonPackage rec {
     ];
   };
 
-  nativeCheckInputs = [
-    coverage # execs coverage in tests
-    pytest-sugar
-    pytest-xdist
-    pytestCheckHook
-  ] ++ passthru.optional-dependencies.all;
+  nativeCheckInputs =
+    [
+      coverage # execs coverage in tests
+      pytest-sugar
+      pytest-xdist
+      pytestCheckHook
+    ]
+    ++ passthru.optional-dependencies.all;
 
   preCheck = ''
     export HOME=$(mktemp -d);
   '';
 
-  disabledTests = [
-    "test_scripts"
-    # Likely related to https://github.com/sarugaku/shellingham/issues/35
-    # fails also on Linux
-    "test_show_completion"
-    "test_install_completion"
-  ] ++ lib.optionals (stdenv.isLinux && stdenv.isAarch64) [
-    "test_install_completion"
-  ];
+  disabledTests =
+    [
+      "test_scripts"
+      # Likely related to https://github.com/sarugaku/shellingham/issues/35
+      # fails also on Linux
+      "test_show_completion"
+      "test_install_completion"
+    ]
+    ++ lib.optionals (stdenv.isLinux && stdenv.isAarch64) [
+      "test_install_completion"
+    ];
 
   pythonImportsCheck = [
     "typer"
@@ -87,6 +91,6 @@ buildPythonPackage rec {
     homepage = "https://typer.tiangolo.com/";
     changelog = "https://github.com/tiangolo/typer/releases/tag/${version}";
     license = licenses.mit;
-    maintainers = with maintainers; [ winpat ];
+    maintainers = with maintainers; [winpat];
   };
 }

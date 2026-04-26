@@ -51,7 +51,10 @@ in {
 
     swapResume = mkOption {
       type = types.bool;
-      default = if profileConf.swapSize > 0 then true else false;
+      default =
+        if profileConf.swapSize > 0
+        then true
+        else false;
       description = "Resume from swap";
     };
   };

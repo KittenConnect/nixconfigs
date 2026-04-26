@@ -23,7 +23,8 @@ in
 
     profilePeers = import (profile + /_peers) args;
     peerFiles =
-      lib.filterAttrs (
+      lib.filterAttrs
+      (
         n: v:
           n
           != "default.nix"
@@ -35,7 +36,8 @@ in
           && !builtins.elem (host + "/${n}") (
             lib.mapAttrsToList (_: manualFile) (lib.filterAttrs (_: x: !(builtins.isAttrs x)) manual)
           )
-      ) (
+      )
+      (
         if builtins.pathExists host
         then builtins.readDir host
         else lib.warn "WARN: host peers folder [${builtins.toString host}] is inexistent" {}
@@ -82,14 +84,14 @@ in
     mkWireguardPeer = _peer:
       (_peer.wireguard or {})
       // lib.optionalAttrs (hasWireguard _peer && builtins.isInt _peer.wireguard.address) {
-        address = kittenLib.network.internal6.cafe.kittens.underlay (lib.toHexString _peer.wireguard.address);
+        address = kittenLib.network.internal6.cafe.kittens.underlay (
+          lib.toHexString _peer.wireguard.address
+        );
       };
   in rec {
     global = peers;
 
-    wireguard = (
-      lib.mapAttrs (_: mkWireguardPeer) (lib.filterAttrs (n: hasWireguard) peers)
-    );
+    wireguard = lib.mapAttrs (_: mkWireguardPeer) (lib.filterAttrs (n: hasWireguard) peers);
 
     bird = lib.mapAttrs (n: mkBirdPeer (wireguard.${n} or {})) peers;
   }

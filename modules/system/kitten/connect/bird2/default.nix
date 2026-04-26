@@ -164,7 +164,8 @@ in {
       peerFunc = import ./peer_config.nix args;
       vrfFunc = import ./vrf_config.nix args;
 
-      mkConfigs = prefix: f: attrs: lib.mapAttrs' (n: v: lib.nameValuePair "${prefix}${n}.conf" (f n v)) attrs;
+      mkConfigs = prefix: f: attrs:
+        lib.mapAttrs' (n: v: lib.nameValuePair "${prefix}${n}.conf" (f n v)) attrs;
 
       peerConfigs =
         mkConfigs "peers/" (n: v: {
@@ -186,7 +187,9 @@ in {
     in
       peerConfigs // vrfConfigs;
 
-    kittenModules.vrfs.tables = mkIf (config.kittenModules.vrfs.enable && cfg.vrfs != {}) (lib.mapAttrs (n: v: {inherit (v) tableID;}) vrfWithIDs);
+    kittenModules.vrfs.tables = mkIf (config.kittenModules.vrfs.enable && cfg.vrfs != {}) (
+      lib.mapAttrs (n: v: {inherit (v) tableID;}) vrfWithIDs
+    );
 
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
       enable = mkDefault true;

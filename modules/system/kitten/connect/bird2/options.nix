@@ -94,16 +94,18 @@ args @ {
           };
 
           bgpImports = mkOption {
-            type = with types;
-              nullOr (either str (submodule (birdFilterSubmodule config "import")));
-            default = {ranges = [];};
+            type = with types; nullOr (either str (submodule (birdFilterSubmodule config "import")));
+            default = {
+              ranges = [];
+            };
             description = "List of IPv4 import rules.";
           };
 
           bgpExports = mkOption {
-            type = with types;
-              nullOr (either str (submodule (birdFilterSubmodule config "export")));
-            default = {ranges = [];};
+            type = with types; nullOr (either str (submodule (birdFilterSubmodule config "export")));
+            default = {
+              ranges = [];
+            };
             description = "List of IPv4 export rules.";
           };
         };
@@ -119,16 +121,18 @@ args @ {
           };
 
           bgpImports = mkOption {
-            type = with types;
-              nullOr (either str (submodule (birdFilterSubmodule config "import")));
-            default = {ranges = [];};
+            type = with types; nullOr (either str (submodule (birdFilterSubmodule config "import")));
+            default = {
+              ranges = [];
+            };
             description = "List of IPv6 import rules.";
           };
 
           bgpExports = mkOption {
-            type = with types;
-              nullOr (either str (submodule (birdFilterSubmodule config "export")));
-            default = {ranges = [];};
+            type = with types; nullOr (either str (submodule (birdFilterSubmodule config "export")));
+            default = {
+              ranges = [];
+            };
             description = "List of IPv6 export rules.";
           };
         };

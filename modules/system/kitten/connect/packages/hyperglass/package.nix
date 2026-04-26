@@ -32,9 +32,7 @@
   # xmltodict,
   ...
 }:
-
 buildPythonApplication {
-
   pname = "hyperglass";
 
   version = "2.0.5";
@@ -76,7 +74,12 @@ buildPythonApplication {
     wheel
   ];
 
-  makeWrapperArgs = ["--prefix" "PATH" ":" "${pkgs.nodejs}/bin"];
+  makeWrapperArgs = [
+    "--prefix"
+    "PATH"
+    ":"
+    "${pkgs.nodejs}/bin"
+  ];
 
   dependencies = with pythonPackages; [
     hatchling
@@ -103,10 +106,12 @@ buildPythonApplication {
     uvloop
     xmltodict
 
-    (pythonPackages.overrideScope (final: prev: {
-      typer = pkgs.callPackage ./_typer.nix {
-        inherit (pkgs) lib stdenv fetchpatch;
-          inherit (pythonPackages)
+    (pythonPackages.overrideScope (
+      final: prev: {
+        typer = pkgs.callPackage ./_typer.nix {
+          inherit (pkgs) lib stdenv fetchpatch;
+          inherit
+            (pythonPackages)
             buildPythonPackage
             click
             colorama
@@ -121,8 +126,8 @@ buildPythonApplication {
             shellingham
             typing-extensions
             ;
-      };
-      })
-    ).typer
+        };
+      }
+    )).typer
   ];
 }

@@ -6,7 +6,10 @@
 pkgs.writeShellApplication {
   name = "nixos-burn";
 
-  runtimeInputs = [systemConfig.config.nix.package pv];
+  runtimeInputs = [
+    systemConfig.config.nix.package
+    pv
+  ];
 
   text = let
     inherit (lib) optionalString;

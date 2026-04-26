@@ -5,7 +5,10 @@
   ...
 }: let
   cfg = config.kittenModules.hyperglass;
-  hyperglass = pkgs.callPackage ./package.nix { pythonPackages = pkgs.python312Packages; inherit pkgs; };
+  hyperglass = pkgs.callPackage ./package.nix {
+    pythonPackages = pkgs.python312Packages;
+    inherit pkgs;
+  };
 in {
   options.kittenModules.hyperglass = {
     enable = lib.mkOption {
@@ -17,14 +20,14 @@ in {
 
   config = lib.mkMerge [
     {
-        nixpkgs.overlays = [(final: prev: { inherit hyperglass; })];
+      nixpkgs.overlays = [(final: prev: {inherit hyperglass;})];
     }
 
     (lib.mkIf (cfg.enable) {
-        environment.systemPackages = with pkgs; [ hyperglass ];
-        # systemd.services.hyperglass = {
-        # TODO: implement something
-        # };
+      environment.systemPackages = with pkgs; [hyperglass];
+      # systemd.services.hyperglass = {
+      # TODO: implement something
+      # };
     })
   ];
 }
