@@ -6,7 +6,7 @@
   ...
 }:
 let
-  inherit (lib) mkOption mkEnableOption types;
+  inherit (lib) mkOption types;
 
   vrfSubmodule =
     {
@@ -16,9 +16,11 @@ let
     }:
     {
       options = {
-        enable = mkEnableOption "${name} peer." // {
+        enable = mkOption {
+          type = types.bool;
           default = true;
           example = false;
+          description = "${name} peer.";
         };
 
         iface = mkOption {
@@ -53,8 +55,12 @@ let
 in
 {
   options.kittenModules.vrfs = {
-    enable = lib.mkEnableOption "VRF interfaces module";
-    # hosts = lib.mkEnableOption "hosts entry for each loopback IP";
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "VRF interfaces module";
+    };
+    # hosts = mkOption { type = types.bool; default = false; description = "hosts entry for each loopback IP"; };
 
     tables = lib.mkOption {
       type = with lib.types; attrsOf (submodule vrfSubmodule);

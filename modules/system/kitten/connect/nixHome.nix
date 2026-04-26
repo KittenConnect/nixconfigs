@@ -12,12 +12,12 @@ in {
   ];
 
   options.kittenModules.nixHome = {
-    enable =
-      lib.mkEnableOption "use home-manager for root environment"
-      // {
-        default = true;
-        example = false;
-      };
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      example = false;
+      description = "use home-manager for root environment";
+    };
   };
 
   config = lib.mkIf cfg.enable {

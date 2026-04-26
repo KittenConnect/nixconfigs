@@ -24,7 +24,6 @@
   inherit
     (lib)
     mkOption
-    mkEnableOption
     mkIf
     mkMerge
     types
@@ -41,6 +40,8 @@
 
   hasPort = n: v: v.port != null;
   hasIface = n: v: v.onIFACE != null;
+
+  quoteString = s: ''"${builtins.toString s}"'';
 
   peersWithPort = filterAttrs hasPort peers;
 
@@ -140,8 +141,16 @@
 in {
   # Options
   options.kittenModules.wireguard = {
-    enable = mkEnableOption "Kitten Wireguard module";
-    allowFirewall = mkEnableOption "automatic firewall rules creation";
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Kitten Wireguard module";
+    };
+    allowFirewall = mkOption {
+      type = types.bool;
+      default = true;
+      description = "automatic firewall rules creation";
+    };
 
     defaultIFACE = mkOption {
       type = types.nullOr types.str;

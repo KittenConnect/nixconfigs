@@ -13,19 +13,19 @@
   isMaster = cfg.masterURL == null;
 in {
   options.kittenModules.gitnamed = {
-    enable =
-      lib.mkEnableOption "Kitten gitnamed NixOS package"
-      // {
-        default = true;
-        example = false;
-      };
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      example = false;
+      description = "Kitten gitnamed NixOS package";
+    };
 
-    gitUser =
-      lib.mkEnableOption "system setup for git@ns usage"
-      // {
-        default = true;
-        example = false;
-      };
+    gitUser = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      example = false;
+      description = "system setup for git@ns usage";
+    };
 
     masterURL = lib.mkOption {
       type = with lib.types; nullOr str;

@@ -7,13 +7,17 @@ args @ {
   kittenLib,
   ...
 }: let
-  inherit (lib.options) mkEnableOption;
-  inherit (kittenLib) mkEnabledOption;
+  inherit (lib.options) mkOption;
+  inherit (lib) types;
 
   cfg = config.kittenHome.zsh;
 in {
   options.kittenHome.zsh = {
-    enable = mkEnabledOption "common kitten packages installation";
+    enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "common kitten packages installation";
+    };
   };
 
   config = lib.mkIf (cfg.enable) {

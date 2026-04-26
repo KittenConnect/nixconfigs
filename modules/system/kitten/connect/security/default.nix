@@ -18,10 +18,6 @@
 
   noPasswdServices = [];
 in {
-  imports = [
-    ./openssh.nix
-  ];
-
   users.users.root = {
     initialPassword = lib.mkDefault "toor";
 

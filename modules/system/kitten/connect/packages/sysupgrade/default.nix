@@ -7,12 +7,12 @@
   cfg = config.kittenModules.sysupgrade;
 in {
   options.kittenModules.sysupgrade = {
-    enable =
-      lib.mkEnableOption "Kitten System Upgrade package"
-      // {
-        default = true;
-        example = false;
-      };
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      example = false;
+      description = "Kitten System Upgrade package";
+    };
   };
 
   config = {

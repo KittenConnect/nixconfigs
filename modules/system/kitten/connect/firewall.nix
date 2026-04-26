@@ -6,18 +6,13 @@ args@{
   ...
 }:
 let
-  inherit (lib.options) mkOption mkEnableOption;
+  inherit (lib.options) mkOption;
   inherit (lib.strings) optionalString splitString concatMapStringsSep concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
-  inherit (kittenLib.strings) indentedLines;
-  inherit (kittenLib) mkEnabledOption;
+  inherit (kittenLib.strings) quotedString indentedLines;
   inherit (lib) types mkAfter;
 
   baseTable = "nixos-fw";
-
-  quoteString = x: ''"${x}"'';
-  spaces = n: lib.concatMapStrings (x: " ") (lib.range 1 n);
-  indented = n: s: concatStringsSep "\n${spaces n}" (splitString "\n" s);
 
   mkRule =
     args:
@@ -36,15 +31,39 @@ let
 in
 {
   options.kittenModules.firewall = {
-    enable = mkEnabledOption "KittenConnect common firewall module";
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "KittenConnect common firewall module";
+    };
 
     forward = {
-      enable = mkEnabledOption "KittenConnect common firewall forward rules";
+      enable = mkOption {
+        type = types.bool;
+        default = false;
+        description = "KittenConnect common firewall forward rules";
+      };
 
-      stateless = mkEnableOption "Forwarding rules not using conntrack";
-      keepInvalidState = mkEnableOption "Try invalid state packets in forwarding rules instead of droping them directly";
-      allowDnat = mkEnabledOption "Forwarding Rule allowing DNAT-ed packets";
-      allowICMP = mkEnabledOption "Forwarding Rule allowing ICMP packets";
+      stateless = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Forwarding rules not using conntrack";
+      };
+      keepInvalidState = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Try invalid state packets in forwarding rules instead of droping them directly";
+      };
+      allowDnat = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Forwarding Rule allowing DNAT-ed packets";
+      };
+      allowICMP = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Forwarding Rule allowing ICMP packets";
+      };
 
       chain = mkOption {
         type = types.str;
@@ -181,7 +200,7 @@ in
               content = ''
                 chain srcnat {
                   type nat hook postrouting priority srcnat; policy accept;
-                  ${indented 2 cfg.forward.natRules}
+                  ${indentedLines 2 cfg.forward.natRules}
                 }
               '';
             };
@@ -195,7 +214,7 @@ in
                   ${optionalString (set.setType != null) "type ${set.setType}"}${optionalString (set.setTypeOf != null) "typeof ${set.setTypeOf}"}
                   ${optionalString (set.flags != [ ]) "flags ${concatStringsSep ", " set.flags}"}
                   ${optionalString (set.elements != [ ]) "elements = { ${concatMapStringsSep ", " builtins.toString set.elements} }"}
-                  ${optionalString (set.extraConfig != "") (indented 2 set.extraConfig)}
+                  ${optionalString (set.extraConfig != "") (indentedLines 2 set.extraConfig)}
                 }
               '') sets}
             '';
@@ -216,7 +235,7 @@ in
                       invalid: ${invalid},
                     }
                   '';
-                  defaultPolicy = if cfg.forward.stateless then gotoRules else indented 2 vmapRules;
+                  defaultPolicy = if cfg.forward.stateless then gotoRules else indentedLines 2 vmapRules;
 
                   allowICMP = mkRule {
                     comment = "Accept all ICMPv6 messages except renumbering and node information queries (type 139).  See RFC 4890, section 4.3.";
@@ -241,7 +260,7 @@ in
                     ${optionalString (cfg.forward.allowICMP) allowICMP}
                     ${optionalString (cfg.forward.allowDnat) allowDNAT}
 
-                    ${indented 2 cfg.forward.rules}
+                    ${indentedLines 2 cfg.forward.rules}
                   }
                 ''
               )

@@ -64,23 +64,23 @@ in {
       enable = true;
 
       tables."nixos-fw".content = let
-        quoteString = x: ''"${x}"'';
+        inherit (kittenLib.strings) quotedString;
 
         defines = lib.concatStringsSep "\n" [
           (
             optionalString (transitIFACEs != [])
-            "define transitIFACEs = { ${concatMapStringsSep ", " quoteString transitIFACEs} }"
+            "define transitIFACEs = { ${concatMapStringsSep ", " quotedString transitIFACEs} }"
           )
           (optionalString (
             transitedNetworks != []
           ) "define transitNETs = { ${concatStringsSep ", " transitedNetworks} }")
           (
             optionalString (wgPeers != {})
-            "define wireguardIFACEs = { ${concatMapStringsSep ", " quoteString (attrNames wgPeers)} }"
+            "define wireguardIFACEs = { ${concatMapStringsSep ", " quotedString (attrNames wgPeers)} }"
           )
           (
             optionalString (kittenIFACEs != [])
-            "define kittenIFACEs = { ${concatMapStringsSep ", " quoteString kittenIFACEs} }"
+            "define kittenIFACEs = { ${concatMapStringsSep ", " quotedString kittenIFACEs} }"
           )
         ];
 

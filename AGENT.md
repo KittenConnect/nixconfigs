@@ -58,3 +58,15 @@ Never commit decrypted secrets.
 - **Always use `kittenLib`** (not `lib.kitten`) to access custom library functions
 - Secrets use per-host age keys (see `.sops.yaml`)
 - Modules follow standard NixOS module conventions
+- **Never use `mkEnableOption` or `mkEnabledOption`** - use explicit `mkOption` with `type` and `default`:
+  ```nix
+  enable = mkOption {
+    type = types.bool;
+    default = true;  # or false - always explicit
+    description = "description";
+  };
+  ```
+
+## Guidelines for Agents
+
+- **Append all new conventions to this file** - Any patterns, refactorings, or guidelines discovered during tasks should be documented here for future reference.
