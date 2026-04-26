@@ -6,7 +6,7 @@
       ipv6.enable = false;
       ipv4 = {
         enable = true;
-        bgpExports = { ranges = ["100.100.91.0/24"]; };
+        bgpExports = {ranges = ["100.100.91.0/24"];};
       };
     };
 
@@ -15,7 +15,7 @@
       ipv6.enable = false;
       ipv4 = {
         enable = true;
-        bgpExports = { ranges = ["100.100.91.0/24"]; };
+        bgpExports = {ranges = ["100.100.91.0/24"];};
       };
     };
   };

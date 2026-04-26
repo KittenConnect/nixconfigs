@@ -1,4 +1,8 @@
-args @ {lib, kittenLib, ...}: let
+args @ {
+  lib,
+  kittenLib,
+  ...
+}: let
   inherit (kittenLib.strings) indentedLines;
   inherit (lib) concatStringsSep optionalString;
 
@@ -42,7 +46,8 @@ args @ {lib, kittenLib, ...}: let
         prependASN ? null,
         bgpMED ? null,
       }: let
-        _bgpMED = if builtins.isString bgpMED
+        _bgpMED =
+          if builtins.isString bgpMED
           then bgpMED
           else builtins.toString bgpMED;
       in

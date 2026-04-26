@@ -166,23 +166,27 @@ in {
 
       mkConfigs = prefix: f: attrs: lib.mapAttrs' (n: v: lib.nameValuePair "${prefix}${n}.conf" (f n v)) attrs;
 
-      peerConfigs = mkConfigs "peers/" (n: v: {
-        text = ''
-          # ${n}
-          ${peerFunc (v // { peerName = n; })}
-        '';
-      }) peers;
+      peerConfigs =
+        mkConfigs "peers/" (n: v: {
+          text = ''
+            # ${n}
+            ${peerFunc (v // {peerName = n;})}
+          '';
+        })
+        peers;
 
-      vrfConfigs = mkConfigs "vrf/" (name: val: {
-        text = ''
-          # ${name}
-          ${vrfFunc (val // { inherit name; })}
-        '';
-      }) cfg.vrfs;
+      vrfConfigs =
+        mkConfigs "vrf/" (name: val: {
+          text = ''
+            # ${name}
+            ${vrfFunc (val // {inherit name;})}
+          '';
+        })
+        cfg.vrfs;
     in
       peerConfigs // vrfConfigs;
 
-    kittenModules.vrfs.tables = mkIf (config.kittenModules.vrfs.enable && cfg.vrfs != {}) (lib.mapAttrs (n: v: { inherit (v) tableID; }) vrfWithIDs);
+    kittenModules.vrfs.tables = mkIf (config.kittenModules.vrfs.enable && cfg.vrfs != {}) (lib.mapAttrs (n: v: {inherit (v) tableID;}) vrfWithIDs);
 
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
       enable = mkDefault true;
