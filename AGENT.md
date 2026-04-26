@@ -37,6 +37,11 @@ To verify all Nix files parse correctly:
 find . -type f -name '*.nix' -exec nix-instantiate --parse {} \; >/dev/null
 ```
 
+To verify machine evaluation:
+```bash
+nix eval --show-trace --json -f ./default.nix outputs.nixosConfigurations --apply 'input: map (x: builtins.attrNames input.${x}.config.system.build.toplevel) (builtins.attrNames input)'
+```
+
 ## Secrets
 
 Files in `/.secrets/*.yaml` are SOPS-encrypted. Use `sops` CLI to edit:
