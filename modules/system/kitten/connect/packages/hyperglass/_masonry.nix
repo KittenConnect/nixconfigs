@@ -1,18 +1,18 @@
-{ lib
-, poetry
-, buildPythonPackage
-, setuptools
-, fetchPypi
-, cookiecutter
-, docopt
-, schema
-, inquirer
-, ruamel-yaml
-, gitpython
-, clint
-, py
+{
+  lib,
+  poetry,
+  buildPythonPackage,
+  setuptools,
+  fetchPypi,
+  cookiecutter,
+  docopt,
+  schema,
+  inquirer,
+  ruamel-yaml,
+  gitpython,
+  clint,
+  py,
 }:
-
 buildPythonPackage rec {
   pname = "masonry";
   version = "0.1.2";
@@ -31,7 +31,7 @@ buildPythonPackage rec {
       --replace-fail '"root": ".."' '"root": "."'
   '';
 
-  build-system = [ setuptools ];
+  build-system = [setuptools];
 
   dependencies = [
     cookiecutter
