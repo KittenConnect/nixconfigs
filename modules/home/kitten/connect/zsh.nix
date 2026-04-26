@@ -7,7 +7,7 @@ args @ {
   ...
 }: let
   inherit (lib.options) mkEnableOption;
-  inherit (lib.kitten) mkEnabledOption;
+  inherit (kittenLib) mkEnabledOption;
 
   cfg = config.kittenHome.zsh;
 in {

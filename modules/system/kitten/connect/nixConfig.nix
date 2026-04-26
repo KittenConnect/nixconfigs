@@ -8,7 +8,7 @@
   ...
 }: let
   inherit (lib.options) mkOption mkEnableOption;
-  inherit (lib.kitten) mkEnabledOption;
+  inherit (kittenLib) mkEnabledOption;
 
   cfg = config.kittenModules.nixConfig;
 

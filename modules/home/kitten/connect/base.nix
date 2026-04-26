@@ -11,7 +11,7 @@ args @ {
 
   inherit (lib.options) mkEnableOption;
   inherit (nixOSutils) removePackagesByName;
-  inherit (lib.kitten) mkEnabledOption;
+  inherit (kittenLib) mkEnabledOption;
 
   # Common packages to include everywhere
   defaultPackages = with pkgs; [
