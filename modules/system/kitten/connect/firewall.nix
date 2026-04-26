@@ -1,5 +1,6 @@
 args@{
   lib,
+  kittenLib,
   pkgs,
   config,
   ...

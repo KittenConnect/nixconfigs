@@ -30,6 +30,13 @@ nix develop                    # Enter dev shell
 colmena deploy --on $HOST      # Deploy to host
 ```
 
+## Validation
+
+To verify all Nix files parse correctly:
+```bash
+find . -type f -name '*.nix' -exec nix-instantiate --parse {} \; >/dev/null
+```
+
 ## Secrets
 
 Files in `/.secrets/*.yaml` are SOPS-encrypted. Use `sops` CLI to edit:
