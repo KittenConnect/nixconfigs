@@ -6,7 +6,7 @@
 }: peer: let
   inherit (lib) optionalString;
   inherit (kittenLib.strings) indentedLines;
-  inherit (kittenLib) mkFilter;
+  inherit (kittenLib.network) mkFilter;
   inherit (builtins) concatStringsSep toJSON;
 
   fromTemplateString = t: optionalString (t != null) "from ${toString t}";
