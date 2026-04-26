@@ -7,7 +7,11 @@
   cfg = config.kittenModules.rhabbit-consumer;
 in {
   options.kittenModules.rhabbit-consumer = {
-    enable = lib.mkEnableOption "Kitten RhabbitMQ messages consumer";
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Kitten RhabbitMQ messages consumer";
+    };
   };
 
   config = {

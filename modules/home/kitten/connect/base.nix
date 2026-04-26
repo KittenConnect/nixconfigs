@@ -10,9 +10,9 @@ args @ {
 }: let
   nixOSutils = import "${pkgs.path}/nixos/lib/utils.nix" {inherit (args) lib config pkgs;};
 
-  inherit (lib.options) mkEnableOption;
+  inherit (lib.options) mkOption;
+  inherit (lib) types;
   inherit (nixOSutils) removePackagesByName;
-  inherit (kittenLib) mkEnabledOption;
 
   # Common packages to include everywhere
   defaultPackages = with pkgs; [
@@ -51,7 +51,11 @@ args @ {
   cfg = config.kittenHome.packages;
 in {
   options.kittenHome.packages = {
-    enable = mkEnabledOption "common kitten packages installation";
+    enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "common kitten packages installation";
+    };
 
     defaultPackages = lib.options.mkOption {
       type = lib.types.listOf lib.types.package;

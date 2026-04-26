@@ -7,7 +7,6 @@ args @ {
   inherit
     (lib)
     mkOption
-    mkEnableOption
     types
     ;
 
@@ -87,7 +86,12 @@ args @ {
       ipv4 =
         (arg.ipv4 or {})
         // {
-          enable = mkEnableOption "IPv4 family on this protocol";
+          enable = mkOption {
+            type = types.bool;
+            default = true;
+            example = false;
+            description = "IPv4 family on this protocol";
+          };
 
           bgpImports = mkOption {
             type = with types;
@@ -107,12 +111,12 @@ args @ {
       ipv6 =
         (arg.ipv6 or {})
         // {
-          enable =
-            mkEnableOption "IPv4 family on this protocol"
-            // {
-              default = true;
-              example = false;
-            };
+          enable = mkOption {
+            type = types.bool;
+            default = true;
+            example = false;
+            description = "IPv6 family on this protocol";
+          };
 
           bgpImports = mkOption {
             type = with types;
@@ -136,12 +140,12 @@ args @ {
     ...
   }: {
     options = withFamilies {
-      enable =
-        mkEnableOption "${name} VRF."
-        // {
-          default = true;
-          example = false;
-        };
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        example = false;
+        description = "${name} VRF.";
+      };
 
       birdTable = mkOption {
         type = with types; nullOr str;
@@ -167,12 +171,12 @@ args @ {
     ...
   }: {
     options = withFamilies {
-      enable =
-        mkEnableOption "${name} peer."
-        // {
-          default = true;
-          example = false;
-        };
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        example = false;
+        description = "${name} peer.";
+      };
 
       peerName = mkOption {
         type = types.str;
@@ -265,8 +269,12 @@ args @ {
     ];
   };
 in {
-  enable = mkEnableOption "Kitten Bird2 module";
-  # defaultSnippet = (mkEnableOption "Kitten Bird2 default config") // { default = true; example = false; };
+  enable = mkOption {
+    type = types.bool;
+    default = false;
+    description = "Kitten Bird2 module";
+  };
+  # defaultSnippet = (mkOption { type = types.bool; default = true; example = false; }) "Kitten Bird2 default config";
 
   serviceName = mkOption {
     type = types.str;

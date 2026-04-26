@@ -29,8 +29,16 @@
     else throw "Invalid IPv6 address in the list";
 in {
   options.kittenModules.loopback0 = {
-    enable = lib.mkEnableOption "loopback IP addresses module";
-    hosts = lib.mkEnableOption "hosts entry for each loopback IP";
+    enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "loopback IP addresses module";
+    };
+    hosts = mkOption {
+      type = types.bool;
+      default = false;
+      description = "hosts entry for each loopback IP";
+    };
 
     ipv4 = mkOption {
       type = types.listOf types.str;

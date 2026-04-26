@@ -8,8 +8,8 @@
   sources,
   ...
 }: let
-  inherit (lib.options) mkOption mkEnableOption;
-  inherit (kittenLib) mkEnabledOption;
+  inherit (lib.options) mkOption;
+  inherit (lib) types;
 
   cfg = config.kittenModules.nixConfig;
 
@@ -24,8 +24,16 @@
     default: builtins.head ((lib.foldl (acc: x: acc ++ lib.optional x.cond x.value) [] limitSources) ++ [default]);
 in {
   options.kittenModules.nixConfig = {
-    enable = mkEnabledOption "kitten common nix-specific configuration";
-    autoGc = mkEnabledOption "kitten automatic Nix Garbage-Collect all generations absent from BootLoader";
+    enable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "kitten common nix-specific configuration";
+    };
+    autoGc = mkOption {
+      type = types.bool;
+      default = true;
+      description = "kitten automatic Nix Garbage-Collect all generations absent from BootLoader";
+    };
 
     keepNGenerations = mkOption {
       type = lib.types.int;

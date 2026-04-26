@@ -4,18 +4,16 @@ args @ {
   config,
   ...
 }: let
-  inherit (builtins) baseNameOf; # unsafeGetAttrPos;
+  inherit (builtins) baseNameOf;
   inherit
     (lib)
     types
     optionalAttrs
     mkOption
-    mkEnableOption
     ;
   inherit (lib.strings) removeSuffix;
-  # inherit (lib.attrsets) filterAttrs attrNames;
 
-  fileName = baseNameOf (__curPos).file; # (__curPos) or (unsafeGetAttrPos "args" { inherit args; })
+  fileName = baseNameOf (__curPos).file;
   profileName = lib.strings.removeSuffix ".nix" fileName;
 
   cfg = config.kittenModules.disko;
@@ -45,16 +43,17 @@ in {
         default = "ROOT";
       };
     };
-    crypted = mkEnableOption "luks disk encryption";
+    crypted = mkOption {
+      type = types.bool;
+      default = false;
+      description = "luks disk encryption";
+    };
 
-    swapResume =
-      mkEnableOption "Resume from swap"
-      // {
-        default =
-          if profileConf.swapSize > 0
-          then true
-          else false;
-      };
+    swapResume = mkOption {
+      type = types.bool;
+      default = if profileConf.swapSize > 0 then true else false;
+      description = "Resume from swap";
+    };
   };
 
   # Implementation
