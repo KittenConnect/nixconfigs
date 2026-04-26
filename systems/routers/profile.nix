@@ -7,7 +7,6 @@
   pkgs,
   ...
 }: {
-
   imports = [
     # ./firewall.nix # TODO: cleanup + enable
   ];
