@@ -5,6 +5,7 @@ args @ {
   config,
   osConfig,
   options,
+  kittenLib,
   ...
 }: let
   nixOSutils = import "${pkgs.path}/nixos/lib/utils.nix" {inherit (args) lib config pkgs;};

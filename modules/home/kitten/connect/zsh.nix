@@ -4,6 +4,7 @@ args @ {
   sources,
   config,
   options,
+  kittenLib,
   ...
 }: let
   inherit (lib.options) mkEnableOption;
