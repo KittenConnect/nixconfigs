@@ -1,13 +1,13 @@
-args@{
+args @ {
   lib,
   kittenLib,
   pkgs,
   config,
   name,
   ...
-}:
-let
-  inherit (lib)
+}: let
+  inherit
+    (lib)
     mkOrder
     filterAttrs
     listToAttrs
@@ -27,15 +27,14 @@ let
 
   mkFakeMED = x: "define bgpMED_${x} = 2147483647;"; # 2^31 - 1
 
-  autoMEDPackage = pkgs.callPackage ./package.nix { };
-in
-{
+  autoMEDPackage = pkgs.callPackage ./package.nix {};
+in {
   # Sops secrets implementation
   config = lib.mkMerge [
     (mkIf (!cfg.autoMED) {
       assertions = [
         {
-          assertion = peersWithAutoMED == { };
+          assertion = peersWithAutoMED == {};
           message = "Cannot have peers with MED == -1 (autoMED) if config.kittenModules.bird.automed daemon is disabled";
         }
       ];
@@ -44,19 +43,20 @@ in
     (mkIf (cfg.autoMED) {
       # Service configuration
       systemd.services.bird-icmp-automed = {
-        path = [ pkgs.bird2 ]; # TODO: better pkgs handling
-        wants = [ "network-online.target" ];
-        after = [
-          "network-online.target"
-        ]
-        ++ (builtins.map (x: "wg-quick-${x}.service") (
-          builtins.attrNames config.networking.wg-quick.interfaces
-        ));
-        before = [ "${cfg.serviceName}.service" ];
+        path = [pkgs.bird2]; # TODO: better pkgs handling
+        wants = ["network-online.target"];
+        after =
+          [
+            "network-online.target"
+          ]
+          ++ (builtins.map (x: "wg-quick-${x}.service") (
+            builtins.attrNames config.networking.wg-quick.interfaces
+          ));
+        before = ["${cfg.serviceName}.service"];
 
         serviceConfig = {
           Type = "simple";
-          SupplementaryGroups = [ "bird" ];
+          SupplementaryGroups = ["bird"];
           AmbientCapabilities = [
             "CAP_NET_RAW"
             "CAP_NET_ADMIN"
@@ -67,7 +67,7 @@ in
       };
 
       systemd.services.${cfg.serviceName} = {
-        wants = [ "bird-icmp-automed.service" ];
+        wants = ["bird-icmp-automed.service"];
         preStart = ''
           ${lib.concatMapStringsSep "\n" (x: ''echo "${mkFakeMED x}" > /run/bird-icmp-automed/${x}.conf'') (
             builtins.attrNames peersWithAutoMED
@@ -87,8 +87,8 @@ in
 
                   cat > _automed_substitute.conf <<< '
                       ${lib.concatMapStringsSep "\n" mkFakeMED (
-                        (builtins.attrNames peersWithAutoMED) ++ [ "AUTOPEER" ]
-                      )}
+            (builtins.attrNames peersWithAutoMED) ++ ["AUTOPEER"]
+          )}
                   '
               fi
           )
