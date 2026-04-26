@@ -2,7 +2,7 @@
   kittenASN = 4242421945;
 in {
   peerAS = kittenASN;
-#   peerIP = kittenLib.network.internal6.cafe.kittens.underlay "111";
+  #   peerIP = kittenLib.network.internal6.cafe.kittens.underlay "111";
   localAS = kittenASN;
 
   wireguard = {

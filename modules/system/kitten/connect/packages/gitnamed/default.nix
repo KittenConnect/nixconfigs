@@ -155,7 +155,13 @@ in {
           users = ["named"];
         }
       ];
-      environment.systemPackages = lib.mkIf (cfg.enable) (with pkgs; [bind gitnamed-reload gitnamed-sync]);
+      environment.systemPackages = lib.mkIf (cfg.enable) (
+        with pkgs; [
+          bind
+          gitnamed-reload
+          gitnamed-sync
+        ]
+      );
 
       system.activationScripts.gitnamed = let
         namedHome = config.users.users.named.home;
@@ -163,7 +169,12 @@ in {
         sshKey = "${namedHome}/.ssh/id_gitnamed";
         secretKey = "/run/secrets/gitnamed_sshkey";
 
-        runtimeDependencies = with pkgs; [git openssh bind diffutils];
+        runtimeDependencies = with pkgs; [
+          git
+          openssh
+          bind
+          diffutils
+        ];
 
         masterURL =
           if isMaster

@@ -52,7 +52,9 @@
     else "multihop" + (optionalString (peer.multihop != -1) " ${toString multiHopVar}");
 in ''
 
-  ${optionalString (bgpMED != null && builtins.isInt bgpMED && bgpMED >= 0) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
+  ${optionalString (
+    bgpMED != null && builtins.isInt bgpMED && bgpMED >= 0
+  ) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
 
   # L: AS${toString localAS} | R: AS${toString peerAS}
   protocol bgp ${toString peerName} ${fromTemplateString peer.template} {
@@ -71,12 +73,12 @@ in ''
 
   ${optionalString (peer.ipv6 != {}) ''
       ipv6 {
-    ${optionalString (peer.ipv6.bgpImports == null || (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports.allowed != [])) (
-      indentedLines 2 (mkFilter "import" peerName peer.ipv6.bgpImports)
-    )}
-    ${optionalString (peer.ipv6.bgpExports == null || (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports.allowed != [])) (
-      indentedLines 2 (mkFilter "export" peerName peer.ipv6.bgpExports)
-    )}
+    ${optionalString (
+      peer.ipv6.bgpImports == null || (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports.allowed != [])
+    ) (indentedLines 2 (mkFilter "import" peerName peer.ipv6.bgpImports))}
+    ${optionalString (
+      peer.ipv6.bgpExports == null || (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports.allowed != [])
+    ) (indentedLines 2 (mkFilter "export" peerName peer.ipv6.bgpExports))}
       };
   ''}
 

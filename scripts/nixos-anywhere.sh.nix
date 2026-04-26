@@ -6,7 +6,10 @@
 pkgs.writeShellApplication {
   name = "nixos-anywhere";
 
-  runtimeInputs = [systemConfig.config.nix.package nixos-anywhere];
+  runtimeInputs = [
+    systemConfig.config.nix.package
+    nixos-anywhere
+  ];
 
   text = let
     inherit (lib) optionalString;

@@ -1,5 +1,5 @@
 {...}: let
- defaultMED = 2147483648; # 2^31 
+  defaultMED = 2147483648; # 2^31
 in {
   kittenModules.bird.extraConfigs."common/templates.conf" = {
     order = 10;

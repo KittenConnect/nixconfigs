@@ -13,15 +13,30 @@
 
   cfg = config.kittenModules.nixConfig;
 
-  keepGenerations = let 
+  keepGenerations = let
     limitSources = [
-      { cond = config.boot.loader.systemd-boot.enable; value = config.boot.loader.systemd-boot.configurationLimit; }
-      { cond = config.boot ? lanzaboote && config.boot.lanzaboote.enable; value = config.boot.lanzaboote.configurationLimit; }
-      { cond = config.boot.loader.grub.enable; value = config.boot.loader.grub.configurationLimit; }
-      { cond = config.boot.loader.generic-extlinux-compatible.enable; value = config.boot.loader.generic-extlinux-compatible.configurationLimit; }
+      {
+        cond = config.boot.loader.systemd-boot.enable;
+        value = config.boot.loader.systemd-boot.configurationLimit;
+      }
+      {
+        cond = config.boot ? lanzaboote && config.boot.lanzaboote.enable;
+        value = config.boot.lanzaboote.configurationLimit;
+      }
+      {
+        cond = config.boot.loader.grub.enable;
+        value = config.boot.loader.grub.configurationLimit;
+      }
+      {
+        cond = config.boot.loader.generic-extlinux-compatible.enable;
+        value = config.boot.loader.generic-extlinux-compatible.configurationLimit;
+      }
     ];
   in
-    default: builtins.head ((lib.foldl (acc: x: acc ++ lib.optional x.cond x.value) [] limitSources) ++ [default]);
+    default:
+      builtins.head (
+        (lib.foldl (acc: x: acc ++ lib.optional x.cond x.value) [] limitSources) ++ [default]
+      );
 in {
   options.kittenModules.nixConfig = {
     enable = mkOption {
@@ -47,7 +62,10 @@ in {
 
     nixosFolder = mkOption {
       type = with lib.types; nullOr types.path;
-      default = if sources ? self then sources.self.outPath else null;
+      default =
+        if sources ? self
+        then sources.self.outPath
+        else null;
     };
 
     defaultKeepNGenerations = mkOption {
@@ -59,7 +77,7 @@ in {
   # Implementation
 
   config = lib.mkIf (cfg.enable) {
-    environment.etc.nixos = lib.mkIf (cfg.nixosFolder != null) { source = cfg.nixosFolder; };
+    environment.etc.nixos = lib.mkIf (cfg.nixosFolder != null) {source = cfg.nixosFolder;};
 
     systemd.services.nix-gc = lib.mkIf (cfg.autoGc) (
       let

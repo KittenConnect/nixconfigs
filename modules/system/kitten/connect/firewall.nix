@@ -1,35 +1,36 @@
-args@{
+args @ {
   lib,
   kittenLib,
   pkgs,
   config,
   ...
-}:
-let
+}: let
   inherit (lib.options) mkOption;
-  inherit (lib.strings) optionalString splitString concatMapStringsSep concatStringsSep;
+  inherit
+    (lib.strings)
+    optionalString
+    splitString
+    concatMapStringsSep
+    concatStringsSep
+    ;
   inherit (lib.attrsets) mapAttrsToList;
   inherit (kittenLib.strings) quotedString indentedLines;
   inherit (lib) types mkAfter;
 
   baseTable = "nixos-fw";
 
-  mkRule =
-    args:
+  mkRule = args:
     args
     // {
-      __toString =
-        {
-          rule,
-          comment,
-          ...
-        }:
-        ''${rule} comment "${comment}"'';
+      __toString = {
+        rule,
+        comment,
+        ...
+      }: ''${rule} comment "${comment}"'';
     };
 
   cfg = config.kittenModules.firewall;
-in
-{
+in {
   options.kittenModules.firewall = {
     enable = mkOption {
       type = types.bool;
@@ -72,32 +73,31 @@ in
 
       variables = mkOption {
         type = types.attrsOf types.str;
-        default = { };
+        default = {};
       };
 
       sets = mkOption {
-        type =
-          with types;
+        type = with types;
           attrsOf (
             submodule (
               {
                 name,
                 config,
                 ...
-              }:
-              {
+              }: {
                 options = {
                   setType = mkOption {
                     default = null;
-                    type = with types; nullOr (enum [
-                      "ipv4_addr" # IPv4 address
-                      "ipv6_addr" # IPv6 address.
-                      "ether_addr" # Ethernet address.
-                      "inet_proto" # Inet protocol type.
-                      "inet_service" # Internet service (read tcp port for example)
-                      "mark" # Mark type.
-                      "ifname" # Network interface name (eth0, eth1..)
-                    ]);
+                    type = with types;
+                      nullOr (enum [
+                        "ipv4_addr" # IPv4 address
+                        "ipv6_addr" # IPv6 address.
+                        "ether_addr" # Ethernet address.
+                        "inet_proto" # Inet protocol type.
+                        "inet_service" # Internet service (read tcp port for example)
+                        "mark" # Mark type.
+                        "ifname" # Network interface name (eth0, eth1..)
+                      ]);
                   };
                   setTypeOf = mkOption {
                     default = null;
@@ -110,24 +110,22 @@ in
                   };
 
                   flags = mkOption {
-                    type =
-                      with types;
+                    type = with types;
                       listOf (enum [
                         "constant" # set content may not change while bound
                         "interval" # set contains intervals
                         "timeout" # elements can be added with a timeout
                       ]);
-                    default = [ ];
+                    default = [];
                   };
 
                   elements = mkOption {
-                    type =
-                      with types;
+                    type = with types;
                       listOf (oneOf [
                         str
                         int
                       ]);
-                    default = [ ];
+                    default = [];
                   };
 
                   extraConfig = mkOption {
@@ -139,7 +137,7 @@ in
             )
           );
 
-        default = { };
+        default = {};
       };
 
       rules = mkOption {
@@ -154,14 +152,20 @@ in
     };
   };
 
-  imports = [ ];
+  imports = [];
 
   config = lib.mkIf (cfg.enable) {
     _module.args = {
       inherit mkRule;
     };
 
-    assertions = lib.mapAttrsToList (n: v: { assertion = (v.setTypeOf == null && v.setType != null) || (v.setTypeOf != null && v.setType != null); message = "NFTables set ${v.table}.${n} needs exactly one of setType/setTypeOf"; }) cfg.forward.sets;
+    assertions =
+      lib.mapAttrsToList (n: v: {
+        assertion =
+          (v.setTypeOf == null && v.setType != null) || (v.setTypeOf != null && v.setType != null);
+        message = "NFTables set ${v.table}.${n} needs exactly one of setType/setTypeOf";
+      })
+      cfg.forward.sets;
 
     kittenModules.firewall.forward.sets = {
       wan_iface = {
@@ -172,7 +176,7 @@ in
       nat_ranges = {
         setType = "ipv4_addr";
         table = "nat";
-        flags = [ "interval" ];
+        flags = ["interval"];
       };
     };
 
@@ -180,19 +184,22 @@ in
     networking.nftables = {
       enable = true;
 
-      tables =
-        let
-          setsPerTables = lib.foldl (
-            acc:
-            { name, value }:
+      tables = let
+        setsPerTables = lib.foldl (
+          acc: {
+            name,
+            value,
+          }:
             acc
             // {
-              "${value.table}" = (acc.${value.table} or { }) // {
-                "${name}" = value;
-              };
+              "${value.table}" =
+                (acc.${value.table} or {})
+                // {
+                  "${name}" = value;
+                };
             }
-          ) { } (lib.attrsToList cfg.forward.sets);
-        in
+        ) {} (lib.attrsToList cfg.forward.sets);
+      in
         lib.mkMerge [
           {
             "nat" = {
@@ -207,18 +214,25 @@ in
           }
 
           (lib.mapAttrs (table: sets: {
-            content = lib.mkBefore ''
-              # Declare Table Sets for ${table}
-              ${lib.concatMapAttrsStringSep "\n" (setName: set: ''
-                set ${setName} {
-                  ${optionalString (set.setType != null) "type ${set.setType}"}${optionalString (set.setTypeOf != null) "typeof ${set.setTypeOf}"}
-                  ${optionalString (set.flags != [ ]) "flags ${concatStringsSep ", " set.flags}"}
-                  ${optionalString (set.elements != [ ]) "elements = { ${concatMapStringsSep ", " builtins.toString set.elements} }"}
-                  ${optionalString (set.extraConfig != "") (indentedLines 2 set.extraConfig)}
-                }
-              '') sets}
-            '';
-          }) setsPerTables)
+              content = lib.mkBefore ''
+                # Declare Table Sets for ${table}
+                ${lib.concatMapAttrsStringSep "\n" (setName: set: ''
+                    set ${setName} {
+                      ${optionalString (set.setType != null) "type ${set.setType}"}${
+                      optionalString (set.setTypeOf != null) "typeof ${set.setTypeOf}"
+                    }
+                      ${optionalString (set.flags != []) "flags ${concatStringsSep ", " set.flags}"}
+                      ${
+                      optionalString (set.elements != [])
+                      "elements = { ${concatMapStringsSep ", " builtins.toString set.elements} }"
+                    }
+                      ${optionalString (set.extraConfig != "") (indentedLines 2 set.extraConfig)}
+                    }
+                  '')
+                  sets}
+              '';
+            })
+            setsPerTables)
 
           {
             "${baseTable}".content = lib.mkIf (cfg.forward.enable) (
@@ -226,7 +240,10 @@ in
                 let
                   fwVars = mapAttrsToList (k: v: "define ${k} = ${v}") cfg.forward.variables;
 
-                  invalid = if cfg.forward.keepInvalidState then gotoRules else "drop";
+                  invalid =
+                    if cfg.forward.keepInvalidState
+                    then gotoRules
+                    else "drop";
                   gotoRules = "jump ${cfg.forward.chain}";
                   vmapRules = ''
                     ct state vmap {
@@ -235,7 +252,10 @@ in
                       invalid: ${invalid},
                     }
                   '';
-                  defaultPolicy = if cfg.forward.stateless then gotoRules else indentedLines 2 vmapRules;
+                  defaultPolicy =
+                    if cfg.forward.stateless
+                    then gotoRules
+                    else indentedLines 2 vmapRules;
 
                   allowICMP = mkRule {
                     comment = "Accept all ICMPv6 messages except renumbering and node information queries (type 139).  See RFC 4890, section 4.3.";
@@ -246,8 +266,7 @@ in
                     comment = "Accept all DNAT-marked packet in ConnTrack.";
                     rule = "ct status dnat accept";
                   };
-                in
-                ''
+                in ''
                   # Kitten NixOS Forward rules
                   ${concatStringsSep "\n" fwVars}
 
@@ -270,4 +289,3 @@ in
     };
   };
 }
-

@@ -33,7 +33,10 @@ in {
     sops = mkIf (passwords != []) {
       secrets = (
         listToAttrs (
-          map (n: nameValuePair "bird_secrets/${n}" {reloadUnits = ["${cfg.serviceName}.service"];}) passwords
+          map (
+            n: nameValuePair "bird_secrets/${n}" {reloadUnits = ["${cfg.serviceName}.service"];}
+          )
+          passwords
         )
       );
 

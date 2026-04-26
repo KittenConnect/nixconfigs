@@ -8,7 +8,7 @@
   pkgs,
   ...
 }: {
-imports = [
+  imports = [
     ./firewall.nix
   ];
 

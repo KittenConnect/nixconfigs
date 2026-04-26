@@ -57,7 +57,6 @@ in {
 
         '';
       };
-
     };
 
     networking.nftables = {

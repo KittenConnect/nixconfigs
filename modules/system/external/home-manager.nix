@@ -1,4 +1,9 @@
-{ inputs ? ((import ../../.. {}).inputs), pkgsSources ? inputs.pkgsInstances.nixos, kittenLib ? inputs.kittenLib, ...}: {
+{
+  inputs ? ((import ../../.. {}).inputs),
+  pkgsSources ? inputs.pkgsInstances.nixos,
+  kittenLib ? inputs.kittenLib,
+  ...
+}: {
   imports = [
     "${pkgsSources.home-manager}/nixos"
   ];

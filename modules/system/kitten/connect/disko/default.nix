@@ -34,9 +34,11 @@ in {
   config = lib.mkIf (cfg.enable) {
     system.build = {
       diskoImagesCompressed =
-        pkgs.runCommand "compressed-${config.system.build.diskoImages.name}" {
+        pkgs.runCommand "compressed-${config.system.build.diskoImages.name}"
+        {
           # TODO: see if need prefer local + structuredAttrs + unsafe discard
-        } ''
+        }
+        ''
           pwd
 
           xz="${pkgs.xz}/bin/xz"
