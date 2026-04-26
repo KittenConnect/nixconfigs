@@ -8,16 +8,10 @@ args @ {
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.strings) optionalString concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
+  inherit (lib.kitten) mkEnabledOption;
   inherit (lib) types mkAfter;
 
   quoteString = x: ''"${x}"'';
-
-  mkEnabledOption = desc:
-    lib.mkEnableOption desc
-    // {
-      example = false;
-      default = true;
-    };
 
   cfg = config.kittenModules.disko;
 in {

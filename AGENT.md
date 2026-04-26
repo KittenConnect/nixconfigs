@@ -41,6 +41,8 @@ Never commit decrypted secrets.
 
 ## Conventions
 
+- Uses **default.nix** with `outputs` attribute for the entrypoint (NOT a flake)
 - Uses **npins** (not flakes) for dependency management
+- Never run `nix flake *` commands - this repo does NOT use flakes
 - Secrets use per-host age keys (see `.sops.yaml`)
 - Modules follow standard NixOS module conventions

@@ -10,6 +10,7 @@ args @ {
 
   inherit (lib.options) mkEnableOption;
   inherit (nixOSutils) removePackagesByName;
+  inherit (lib.kitten) mkEnabledOption;
 
   defaultPackages = with pkgs; [
     vim
@@ -18,16 +19,6 @@ args @ {
     fastfetch
     alejandra
   ];
-
-  mkEnabledOption = desc:
-    lib.mkEnableOption desc
-    // {
-      example = false;
-      default = true;
-    };
-
-  # https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/x11/desktop-managers/pantheon.nix
-  # notExcluded = pkg: (!(lib.elem pkg config.environment.pantheon.excludePackages));
 
   cfg = config.kittenModules.packages;
 in {
@@ -48,7 +39,6 @@ in {
   };
 
   config = lib.mkIf (cfg.enable) {
-    # This module will be imported by all hosts
     environment.systemPackages = removePackagesByName cfg.defaultPackages cfg.excludedPackages;
   };
 }
