@@ -48,7 +48,7 @@ in {
     protocol kernel KERNEL4 {
       ipv4 {
         export filter {
-          if  ( is_valid4_network() || is_rr_proto() || source ~ [RTS_STATIC]) then {
+          if (source !~ [RTS_DEVICE] && (source = RTS_STATIC || is_valid4_network() || is_rr_proto())) then {
     ${optionalString (srvCfg.loopback4 != null && srvCfg.loopback4 != "") (
       indentedLines 4 (setLoopBackSRC "0.0.0.0/0" srvCfg.loopback4)
     )}
@@ -63,7 +63,7 @@ in {
     protocol kernel KERNEL6 {
       ipv6 {
         export filter {
-          if (is_valid6_network() || is_rr_proto() || source ~ [RTS_STATIC]) then {
+          if (source !~ [RTS_DEVICE] && (source = RTS_STATIC || is_valid6_network() || is_rr_proto())) then {
     ${optionalString (srvCfg.loopback6 != null && srvCfg.loopback6 != "") (
       indentedLines 4 (setLoopBackSRC "::/0" srvCfg.loopback6)
     )}

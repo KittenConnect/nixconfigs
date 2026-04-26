@@ -33,6 +33,8 @@ args @ {
   peers = cfg.peers;
   peersRouteReflectors = attrNames (filterAttrs (n: v: v.template == "rrserver") peers);
 
+  vrfWithIDs = lib.filterAttrs (n: v: v.tableID != null) cfg.vrfs;
+
   sortedExtraConfigs = builtins.sort (
     p: q:
       if (p.value.order or null) != null && (q.value.order or null) != null
@@ -159,31 +161,28 @@ in {
       };
 
     kittenModules.bird.extraConfigs = let
-      peerFunc = import ./peer_config.nix;
+      peerFunc = import ./peer_config.nix args;
+      vrfFunc = import ./vrf_config.nix args;
 
-      mkPeersFuncArgs = (
-        peerName: peerConfig:
-          args
-          // {
-            peer =
-              {
-                inherit peerName;
-              }
-              // peerConfig;
-          }
-      );
+      mkConfigs = prefix: f: attrs: lib.mapAttrs' (n: v: lib.nameValuePair "${prefix}${n}.conf" (f n v)) attrs;
+
+      peerConfigs = mkConfigs "peers/" (n: v: {
+        text = ''
+          # ${n}
+          ${peerFunc (v // { peerName = n; })}
+        '';
+      }) peers;
+
+      vrfConfigs = mkConfigs "vrf/" (name: val: {
+        text = ''
+          # ${name}
+          ${vrfFunc (val // { inherit name; })}
+        '';
+      }) cfg.vrfs;
     in
-      lib.mapAttrs' (
-        n: v:
-          lib.nameValuePair "peers/${n}.conf" {
-            # inherit (v) enable;
-            text = ''
-              # ${n}
-              ${peerFunc (mkPeersFuncArgs n v)}
-            '';
-          }
-      )
-      peers;
+      peerConfigs // vrfConfigs;
+
+    kittenModules.vrfs.tables = mkIf (config.kittenModules.vrfs.enable && cfg.vrfs != {}) (lib.mapAttrs (n: v: { inherit (v) tableID; }) vrfWithIDs);
 
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
       enable = mkDefault true;

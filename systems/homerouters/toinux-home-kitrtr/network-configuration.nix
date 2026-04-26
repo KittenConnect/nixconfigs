@@ -1,13 +1,21 @@
 {kittenLib, ...}: {
-  kittenModules.vrfs = {
-    enable = true;
-    tables = {
-      "SFR" = {
-        tableID = 1010;
+  kittenModules.vrfs.enable = true;
+  kittenModules.bird.vrfs = {
+    "SFR" = {
+      tableID = 1010;
+      ipv6.enable = false;
+      ipv4 = {
+        enable = true;
+        bgpExports = { ranges = ["100.100.91.0/24"]; };
       };
+    };
 
-      "ORANGE" = {
-        tableID = 1020;
+    "ORANGE" = {
+      tableID = 1020;
+      ipv6.enable = false;
+      ipv4 = {
+        enable = true;
+        bgpExports = { ranges = ["100.100.91.0/24"]; };
       };
     };
   };
