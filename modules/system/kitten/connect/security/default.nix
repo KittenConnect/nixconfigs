@@ -23,7 +23,7 @@ in {
   ];
 
   users.users.root = {
-    # initialPassword = lib.mkDefault "toor";
+    initialPassword = lib.mkDefault "toor";
 
     openssh.authorizedKeys.keys = lib.mkDefault [
       # change this to your ssh key

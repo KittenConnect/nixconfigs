@@ -1,4 +1,7 @@
-args @ {lib, ...}: let
+args @ {lib, kittenLib, ...}: let
+  inherit (kittenLib.strings) indentedLines;
+  inherit (lib) concatStringsSep optionalString;
+
   isValidIPv4 = ip: let
     parts = lib.splitString "." ip;
     isByte = part: let
@@ -13,6 +16,66 @@ args @ {lib, ...}: let
     isHexPart = part: lib.stringLength part <= 4 && (part == "" || (builtins.match "[0-9a-fA-F]+" part != null));
   in
     builtins.length parts <= 8 && lib.all isHexPart parts && ip != "";
+
+  mkFilter = direction: peerName: val: let
+    direction' = direction;
+
+    myType = kittenLib.withType {
+      string = x: let
+        lines = lib.splitString "\n" x;
+        len = builtins.length lines;
+
+        expanded = builtins.replaceStrings ["%{name}"] [peerName] x;
+      in
+        if len == 1
+        then "${direction} ${expanded};"
+        else ''
+          ${direction} ${expanded}
+        '';
+      null = x: "${direction} none;";
+      set = {
+        peerName,
+        direction ? direction',
+        ranges ? [],
+        allowed ? [],
+        prepend ? 0,
+        prependASN ? null,
+        bgpMED ? null,
+      }: let
+        _bgpMED = if builtins.isString bgpMED
+          then bgpMED
+          else builtins.toString bgpMED;
+      in
+        indentedLines 1 ''
+          ${direction} filter {
+            if ( ${concatStringsSep " || " allowed} ) then {
+          ${optionalString (prepend > 0) (
+            indentedLines 2 ''
+              if bgp_path ~ [= ${builtins.toString prependASN} =] then {
+                # Reduce priority artificially by prepending [x${builtins.toString prepend}]
+                ${concatStringsSep " " (
+                builtins.genList (x: "bgp_path.prepend(${builtins.toString prependASN});") prepend
+              )}
+              }
+            ''
+          )}
+          ${optionalString (bgpMED != null) (
+            indentedLines 2 ''
+              if defined( bgp_med ) then
+                bgp_med = bgp_med + ${_bgpMED};
+              else {
+                bgp_med = ${_bgpMED};
+              }
+            ''
+          )}
+              accept;
+            }
+            reject;
+          };
+        '';
+    };
+  in
+    myType val;
 
   withCIDR = let
     splitNetwork = lib.splitString "/";
@@ -103,7 +166,7 @@ args @ {lib, ...}: let
 
   params = import ./params.nix (args // {inherit withCIDR;});
 in {
-  inherit isValidIPv4 isValidIPv6;
+  inherit mkFilter isValidIPv4 isValidIPv6;
   inherit (params) internal6;
 
   pretty =

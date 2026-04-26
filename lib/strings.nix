@@ -19,7 +19,7 @@ in rec {
     then lines
     else if builtins.isString lines
     then lib.splitString "\n" lines
-    else throw "this function needs to be called with str or list of strs";
+    else throw "this function needs to be called with str or list of strs got ${builtins.typeOf lines}";
 
   indentedLines = level: lines: let
     indentSize = 2; # Space number

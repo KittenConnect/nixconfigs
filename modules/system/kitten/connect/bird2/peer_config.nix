@@ -2,12 +2,11 @@
   lib,
   kittenLib,
   pkgs,
-  peer,
   ...
-}: let
+}: peer: let
   inherit (lib) optionalString;
   inherit (kittenLib.strings) indentedLines;
-  inherit (kittenLib) withType;
+  inherit (kittenLib) mkFilter;
   inherit (builtins) concatStringsSep toJSON;
 
   fromTemplateString = t: optionalString (t != null) "from ${toString t}";
@@ -51,72 +50,6 @@
     if peer.multihop == 0
     then "direct"
     else "multihop" + (optionalString (peer.multihop != -1) " ${toString multiHopVar}");
-
-  mkFilterSection = direction: val: let
-    direction' = direction;
-
-    myType = withType {
-      string = x: let
-        lines = lib.splitString "\n" x;
-        len = builtins.length lines;
-
-        expanded = builtins.replaceStrings ["%{name}"] [peerName] x;
-      in
-        if len == 1
-        then "${direction} ${expanded};"
-        else ''
-          ${direction} ${expanded}
-        '';
-      null = x: "${direction} none;";
-      set = {
-        peerName,
-        direction ? direction',
-        ranges ? [],
-        allowed ? [],
-        prepend ? 0,
-        prependASN ? null,
-        bgpMED ? null,
-      }: let
-        _bgpMED =
-          if bgpMED == null
-          then
-            if builtins.isInt peerMED
-            then "bgpMED_${toString peerName}"
-            else builtins.toString peerMED
-          else if builtins.isString bgpMED
-          then bgpMED
-          else builtins.toString bgpMED;
-      in
-        indentedLines 1 ''
-          ${direction} filter {
-            if ( ${concatStringsSep " || " allowed} ) then {
-          ${optionalString (prepend > 0) (
-            indentedLines 2 ''
-              if bgp_path ~ [= ${builtins.toString prependASN} =] then {
-                # Reduce priority artificially by prepending [x${builtins.toString prepend}]
-                ${concatStringsSep " " (
-                builtins.genList (x: "bgp_path.prepend(${builtins.toString prependASN});") prepend
-              )}
-              }
-            ''
-          )}
-          ${optionalString (bgpMED != null || peerMED != null) (
-            indentedLines 2 ''
-              if defined( bgp_med ) then
-                bgp_med = bgp_med + ${_bgpMED};
-              else {
-                bgp_med = ${_bgpMED};
-              }
-            ''
-          )}
-              accept;
-            }
-            reject;
-          };
-        '';
-    };
-  in
-    myType val;
 in ''
 
   ${optionalString (bgpMED != null && builtins.isInt bgpMED && bgpMED >= 0) "define bgpMED_${toString peerName} = ${toString bgpMED};"}
@@ -139,10 +72,10 @@ in ''
   ${optionalString (peer.ipv6 != {}) ''
       ipv6 {
     ${optionalString (peer.ipv6.bgpImports == null || (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports.allowed != [])) (
-      indentedLines 2 (mkFilterSection "import" peer.ipv6.bgpImports)
+      indentedLines 2 (mkFilter "import" peerName peer.ipv6.bgpImports)
     )}
     ${optionalString (peer.ipv6.bgpExports == null || (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports.allowed != [])) (
-      indentedLines 2 (mkFilterSection "export" peer.ipv6.bgpExports)
+      indentedLines 2 (mkFilter "export" peerName peer.ipv6.bgpExports)
     )}
       };
   ''}
