@@ -12,6 +12,11 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
+  # Net Basics
+  networking.useNetworkd = true;
+  systemd.network.enable = true;
+  systemd.network.wait-online.enable = lib.mkDefault false;
+
   # tmpFS on /tmp
   boot.tmp.useTmpfs = lib.mkDefault true;
 
