@@ -81,78 +81,85 @@ args @ {
     };
   };
 
-  withFamilies = arg: arg // {
-    ipv4 = ((arg.ipv4 or {}) // {
-      enable = mkEnableOption "IPv4 family on this protocol";
+  withFamilies = arg:
+    arg
+    // {
+      ipv4 =
+        (arg.ipv4 or {})
+        // {
+          enable = mkEnableOption "IPv4 family on this protocol";
 
-      bgpImports = mkOption {
-        type = with types;
-          nullOr (either str (submodule (birdFilterSubmodule config "import")));
-        default = {ranges = [];};
-        description = "List of IPv4 import rules.";
-      };
+          bgpImports = mkOption {
+            type = with types;
+              nullOr (either str (submodule (birdFilterSubmodule config "import")));
+            default = {ranges = [];};
+            description = "List of IPv4 import rules.";
+          };
 
-      bgpExports = mkOption {
-        type = with types;
-          nullOr (either str (submodule (birdFilterSubmodule config "export")));
-        default = {ranges = [];};
-        description = "List of IPv4 export rules.";
-      };
-    });
+          bgpExports = mkOption {
+            type = with types;
+              nullOr (either str (submodule (birdFilterSubmodule config "export")));
+            default = {ranges = [];};
+            description = "List of IPv4 export rules.";
+          };
+        };
 
-    ipv6 = ((arg.ipv6 or {}) // {
-      enable = mkEnableOption "IPv4 family on this protocol" // {
-        default = true;
-        example = false;
-      };
+      ipv6 =
+        (arg.ipv6 or {})
+        // {
+          enable =
+            mkEnableOption "IPv4 family on this protocol"
+            // {
+              default = true;
+              example = false;
+            };
 
+          bgpImports = mkOption {
+            type = with types;
+              nullOr (either str (submodule (birdFilterSubmodule config "import")));
+            default = {ranges = [];};
+            description = "List of IPv6 import rules.";
+          };
 
-      bgpImports = mkOption {
-        type = with types;
-          nullOr (either str (submodule (birdFilterSubmodule config "import")));
-        default = {ranges = [];};
-        description = "List of IPv6 import rules.";
-      };
+          bgpExports = mkOption {
+            type = with types;
+              nullOr (either str (submodule (birdFilterSubmodule config "export")));
+            default = {ranges = [];};
+            description = "List of IPv6 export rules.";
+          };
+        };
+    };
 
-      bgpExports = mkOption {
-        type = with types;
-          nullOr (either str (submodule (birdFilterSubmodule config "export")));
-        default = {ranges = [];};
-        description = "List of IPv6 export rules.";
-      };
-    });
-  };
-
-  birdVRFSubmodule =
-    {
-      name,
-      config,
-      ...
-    }:
-    {
-      options = withFamilies {
-        enable = mkEnableOption "${name} VRF." // {
+  birdVRFSubmodule = {
+    name,
+    config,
+    ...
+  }: {
+    options = withFamilies {
+      enable =
+        mkEnableOption "${name} VRF."
+        // {
           default = true;
           example = false;
         };
 
-        birdTable = mkOption {
-          type = with types; nullOr str;
-          default = null;
-          description = "existing table in bird to link this VRF interface to (can be master4/6 or master% for automatic family detection) - null to auto manage it";
-        };
-
-        tableID = mkOption {
-          type = with types; nullOr int;
-          description = "table ID used for this VRF by kernel - defaults to kittenModules.vrfs.<name>.tableID";
-        };
-
-        # address = mkOption {
-        #  type = types.listOf types.str;
-        #  default = [ ];
-        # };
+      birdTable = mkOption {
+        type = with types; nullOr str;
+        default = null;
+        description = "existing table in bird to link this VRF interface to (can be master4/6 or master% for automatic family detection) - null to auto manage it";
       };
+
+      tableID = mkOption {
+        type = with types; nullOr int;
+        description = "table ID used for this VRF by kernel - defaults to kittenModules.vrfs.<name>.tableID";
+      };
+
+      # address = mkOption {
+      #  type = types.listOf types.str;
+      #  default = [ ];
+      # };
     };
+  };
 
   birdPeerSubmodule = {
     name,
