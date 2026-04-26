@@ -1,5 +1,6 @@
 {
   lib,
+  kittenLib,
   pkgs,
   config,
   options,
