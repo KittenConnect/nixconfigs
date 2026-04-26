@@ -3,24 +3,29 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   cfg = config.kittenModules.gitnamed;
 
-  configFile = if isMaster then "master" else "slave";
+  configFile =
+    if isMaster
+    then "master"
+    else "slave";
   isMaster = cfg.masterURL == null;
-in
-{
+in {
   options.kittenModules.gitnamed = {
-    enable = lib.mkEnableOption "Kitten gitnamed NixOS package" // {
-      default = true;
-      example = false;
-    };
+    enable =
+      lib.mkEnableOption "Kitten gitnamed NixOS package"
+      // {
+        default = true;
+        example = false;
+      };
 
-    gitUser = lib.mkEnableOption "system setup for git@ns usage" // {
-      default = true;
-      example = false;
-    };
+    gitUser =
+      lib.mkEnableOption "system setup for git@ns usage"
+      // {
+        default = true;
+        example = false;
+      };
 
     masterURL = lib.mkOption {
       type = with lib.types; nullOr str;
@@ -47,26 +52,28 @@ in
             pname = "gitnamed-sync";
             version = "1.0";
 
-            src = ./syndns.py;  # your existing script
+            src = ./syndns.py; # your existing script
 
-            nativeBuildInputs = [ pkgs.makeWrapper ];
+            nativeBuildInputs = [pkgs.makeWrapper];
 
             dontUnpack = true;
 
-            installPhase = let neededPackages = with pkgs; [
-                  python3
-                  bind
-                  openssh
-                  git
-                  sops
-                  ssh-to-age
-                ]; in ''
+            installPhase = let
+              neededPackages = with pkgs; [
+                python3
+                bind
+                openssh
+                git
+                sops
+                ssh-to-age
+              ];
+            in ''
               mkdir -p $out/bin
               cp $src $out/bin/gitnamed-sync
               chmod +x $out/bin/gitnamed-sync
 
               wrapProgram $out/bin/gitnamed-sync \
-                --prefix PATH : ${pkgs.lib.makeBinPath (neededPackages)}
+                --prefix PATH : ${pkgs.lib.makeBinPath neededPackages}
             '';
           };
         })
@@ -76,8 +83,7 @@ in
     (lib.mkIf (cfg.enable && isMaster && cfg.gitUser) (
       let
         git-shell = lib.getExe' pkgs.git "git-shell";
-      in
-      {
+      in {
         # GIT master
         users.users.git = {
           group = "git";
@@ -85,11 +91,11 @@ in
           shell = git-shell;
           isNormalUser = true;
         };
-        users.groups.git = { };
-        environment.shells = [ git-shell ];
+        users.groups.git = {};
+        environment.shells = [git-shell];
         environment.etc."profile.local".text = ''
           if [[ "$(id -u -n)" == "git" ]]; then
-            export PATH="${lib.makeBinPath (with pkgs; [ git ])}:''${PATH:-/run/current-system/sw/bin}"
+            export PATH="${lib.makeBinPath (with pkgs; [git])}:''${PATH:-/run/current-system/sw/bin}"
           fi
         '';
       }
@@ -102,8 +108,8 @@ in
         "::1"
       ];
       networking.firewall = {
-        allowedUDPPorts = [ 53 ];
-        allowedTCPPorts = [ 53 ];
+        allowedUDPPorts = [53];
+        allowedTCPPorts = [53];
       };
       services.resolved.enable = false;
       users.users.named = {
@@ -149,7 +155,7 @@ in
           users = ["named"];
         }
       ];
-      environment.systemPackages = lib.mkIf (cfg.enable) (with pkgs; [ bind gitnamed-reload gitnamed-sync ]);
+      environment.systemPackages = lib.mkIf (cfg.enable) (with pkgs; [bind gitnamed-reload gitnamed-sync]);
 
       system.activationScripts.gitnamed = let
         namedHome = config.users.users.named.home;
@@ -159,37 +165,43 @@ in
 
         runtimeDependencies = with pkgs; [git openssh bind diffutils];
 
-        masterURL = if isMaster then if cfg.gitUser then "git@127.0.0.1:gitnamed" else throw "TODO: implement" else cfg.masterURL;
+        masterURL =
+          if isMaster
+          then
+            if cfg.gitUser
+            then "git@127.0.0.1:gitnamed"
+            else throw "TODO: implement"
+          else cfg.masterURL;
       in {
         deps = ["setupSecrets"];
 
         text = ''
-        (
-          export PATH="${lib.makeBinPath runtimeDependencies}:$PATH"
-          pwd
+          (
+            export PATH="${lib.makeBinPath runtimeDependencies}:$PATH"
+            pwd
 
-          if ! [[ -d ${namedHome}/.git ]]; then
-            GIT_SSH_COMMAND="ssh -i ${secretKey} -o StrictHostKeyChecking=accept-new" git clone ${masterURL} ${namedHome}
-          fi
+            if ! [[ -d ${namedHome}/.git ]]; then
+              GIT_SSH_COMMAND="ssh -i ${secretKey} -o StrictHostKeyChecking=accept-new" git clone ${masterURL} ${namedHome}
+            fi
 
-          [[ -d ${namedHome}/.ssh ]] || mkdir -v ${namedHome}/.ssh
+            [[ -d ${namedHome}/.ssh ]] || mkdir -v ${namedHome}/.ssh
 
-          if ! diff -ruN <(ssh-keygen -y -f ${sshKey}) <(ssh-keygen -y -f ${secretKey}); then
-            [[ ! -f ${sshKey} ]] || mv -v ${sshKey} ${sshKey}.$$
-            cp -v ${secretKey} ${sshKey}
-            [[ ! -f ${sshKey}.pub ]] || mv -v ${sshKey}.pub ${sshKey}.$$.pub
-            ssh-keygen -y -f ${sshKey} > ${sshKey}.pub
-          fi
+            if ! diff -ruN <(ssh-keygen -y -f ${sshKey}) <(ssh-keygen -y -f ${secretKey}); then
+              [[ ! -f ${sshKey} ]] || mv -v ${sshKey} ${sshKey}.$$
+              cp -v ${secretKey} ${sshKey}
+              [[ ! -f ${sshKey}.pub ]] || mv -v ${sshKey}.pub ${sshKey}.$$.pub
+              ssh-keygen -y -f ${sshKey} > ${sshKey}.pub
+            fi
 
-          [[ -f ${rndcKey} ]] || rndc-confgen -a -c ${rndcKey}
+            [[ -f ${rndcKey} ]] || rndc-confgen -a -c ${rndcKey}
 
-          chown -R named ${namedHome}
+            chown -R named ${namedHome}
 
-          ${lib.optionalString isMaster ''
+            ${lib.optionalString isMaster ''
             /run/wrappers/bin/sudo -u named -- /run/current-system/sw/bin/gitnamed-sync || true
           ''}
-        )
-      '';
+          )
+        '';
       };
     })
   ];
