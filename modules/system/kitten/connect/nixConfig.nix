@@ -8,13 +8,7 @@
   ...
 }: let
   inherit (lib.options) mkOption mkEnableOption;
-
-  mkEnabledOption = desc:
-    lib.mkEnableOption desc
-    // {
-      example = false;
-      default = true;
-    };
+  inherit (lib.kitten) mkEnabledOption;
 
   cfg = config.kittenModules.nixConfig;
 

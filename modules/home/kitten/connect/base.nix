@@ -11,6 +11,7 @@ args @ {
 
   inherit (lib.options) mkEnableOption;
   inherit (nixOSutils) removePackagesByName;
+  inherit (lib.kitten) mkEnabledOption;
 
   # Common packages to include everywhere
   defaultPackages = with pkgs; [
@@ -45,16 +46,6 @@ args @ {
     cowsay
     mosh
   ];
-
-  mkEnabledOption = desc:
-    lib.mkEnableOption desc
-    // {
-      example = false;
-      default = true;
-    };
-
-  # https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/x11/desktop-managers/pantheon.nix
-  # notExcluded = pkg: (!(lib.elem pkg config.environment.pantheon.excludePackages));
 
   cfg = config.kittenHome.packages;
 in {

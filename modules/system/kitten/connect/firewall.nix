@@ -9,6 +9,7 @@ let
   inherit (lib.strings) optionalString splitString concatMapStringsSep concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
   inherit (lib.kitten.strings) indentedLines;
+  inherit (lib.kitten) mkEnabledOption;
   inherit (lib) types mkAfter;
 
   baseTable = "nixos-fw";
@@ -16,14 +17,6 @@ let
   quoteString = x: ''"${x}"'';
   spaces = n: lib.concatMapStrings (x: " ") (lib.range 1 n);
   indented = n: s: concatStringsSep "\n${spaces n}" (splitString "\n" s);
-
-  mkEnabledOption =
-    desc:
-    lib.mkEnableOption desc
-    // {
-      example = false;
-      default = true;
-    };
 
   mkRule =
     args:
