@@ -8,7 +8,7 @@ args @ {
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.strings) optionalString concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
-  inherit (lib.kitten) mkEnabledOption;
+  inherit (kittenLib) mkEnabledOption;
   inherit (lib) types mkAfter;
 
   quoteString = x: ''"${x}"'';

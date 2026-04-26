@@ -8,8 +8,8 @@ let
   inherit (lib.options) mkOption mkEnableOption;
   inherit (lib.strings) optionalString splitString concatMapStringsSep concatStringsSep;
   inherit (lib.attrsets) mapAttrsToList;
-  inherit (lib.kitten.strings) indentedLines;
-  inherit (lib.kitten) mkEnabledOption;
+  inherit (kittenLib.strings) indentedLines;
+  inherit (kittenLib) mkEnabledOption;
   inherit (lib) types mkAfter;
 
   baseTable = "nixos-fw";

@@ -28,7 +28,6 @@ NixOS-based machine configurations for KittenConnect network infrastructure.
 ```bash
 nix develop                    # Enter dev shell
 colmena deploy --on $HOST      # Deploy to host
-nixos-rebuild switch --flake .#HOST  # Rebuild locally
 ```
 
 ## Secrets
@@ -44,5 +43,6 @@ Never commit decrypted secrets.
 - Uses **default.nix** with `outputs` attribute for the entrypoint (NOT a flake)
 - Uses **npins** (not flakes) for dependency management
 - Never run `nix flake *` commands - this repo does NOT use flakes
+- **Always use `kittenLib`** (not `lib.kitten`) to access custom library functions
 - Secrets use per-host age keys (see `.sops.yaml`)
 - Modules follow standard NixOS module conventions

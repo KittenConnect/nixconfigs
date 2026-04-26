@@ -10,7 +10,7 @@ args @ {
 
   inherit (lib.options) mkEnableOption;
   inherit (nixOSutils) removePackagesByName;
-  inherit (lib.kitten) mkEnabledOption;
+  inherit (kittenLib) mkEnabledOption;
 
   defaultPackages = with pkgs; [
     vim
