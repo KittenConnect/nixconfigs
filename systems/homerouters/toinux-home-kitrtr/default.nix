@@ -26,7 +26,7 @@ in {
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./network-configuration.nix
-    # ./packages.nix
+    ../../proxmox-image-profile.nix
 
     ../../../modules/system/kitten/connect/bird2/snippets/kittendefaults.nix
   ];
