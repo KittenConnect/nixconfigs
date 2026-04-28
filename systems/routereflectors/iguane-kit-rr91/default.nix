@@ -35,6 +35,12 @@ in
     boot.loader.grub.efiSupport = false;
     boot.loader.grub.enable = true;
 
+    deployment = {
+      # Disable SSH deployment. This node will be skipped in a
+      # normal`colmena apply`.
+      targetHost = "kit-ig1-newrr";
+    };
+
     # Kitten configuration
     kittenModules = {
       # network = {

@@ -28,7 +28,7 @@
         {
           config = {
             peer-group = "kittevpn";
-            prefix = kittenLib.network.internal6.cafe.kittens.loopbacks.net;
+            prefix = kittenLib.network.internal6.cafe.kittens.underlay.net;
           };
         }
       ];
@@ -82,6 +82,16 @@
             {
               config = {
                 afi-safi-name = "ipv6-unicast";
+              };
+            }
+            {
+              config = {
+                afi-safi-name = "l3vpn-ipv4-unicast";
+              };
+            }
+            {
+              config = {
+                afi-safi-name = "l3vpn-ipv6-unicast";
               };
             }
           ];
