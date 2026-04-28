@@ -56,7 +56,8 @@ in {
 
         serviceConfig = {
           Type = "simple";
-          SupplementaryGroups = ["bird"];
+          User = "bird";
+          # SupplementaryGroups = ["bird"];
           AmbientCapabilities = [
             "CAP_NET_RAW"
             "CAP_NET_ADMIN"
@@ -68,10 +69,9 @@ in {
 
       systemd.services.${cfg.serviceName} = {
         wants = ["bird-icmp-automed.service"];
+        # ''${lib.concatMapStringsSep "\n" mkFakeMED (builtins.attrNames peersWithAutoMED)}
         preStart = ''
-          ${lib.concatMapStringsSep "\n" (x: ''echo "${mkFakeMED x}" > /run/bird-icmp-automed/${x}.conf'') (
-            builtins.attrNames peersWithAutoMED
-          )}
+          touch /run/bird-icmp-automed/.empty.conf
         '';
       };
 

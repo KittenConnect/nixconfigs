@@ -17,11 +17,12 @@
       }
 
       function update_bandwidth(int link_bandwidth)
-      int local_bandwidth ; {
-          if link_bandwidth > BANDWIDTH then local_bandwidth = BANDWIDTH;
-          else local_bandwidth = link_bandwidth;
+      # int local_bandwidth ; 
+      {
+          # if link_bandwidth > BANDWIDTH then local_bandwidth = BANDWIDTH;
+          # else local_bandwidth = link_bandwidth;
 
-          bgp_community.add((64511, local_bandwidth));
+          bgp_community.add((64511, link_bandwidth));
               if (64511, 21) ~ bgp_community then { bgp_community.delete([(64511, 22..29)]); return 21; }
           else if (64511, 22) ~ bgp_community then { bgp_community.delete([(64511, 23..29)]); return 22; }
           else if (64511, 23) ~ bgp_community then { bgp_community.delete([(64511, 24..29)]); return 23; }
@@ -55,6 +56,25 @@
           bgp_community.add((64511, country));
       }
 
+    function is_valid4_dn42_network() {
+      return net ~ [
+          172.20.0.0/14{21,29}, # dn42
+          172.20.0.0/24{28,32}, # dn42 Anycast
+          172.21.0.0/24{28,32}, # dn42 Anycast
+          172.22.0.0/24{28,32}, # dn42 Anycast
+          172.23.0.0/24{28,32}, # dn42 Anycast
+          172.31.0.0/16+,       # ChaosVPN
+          10.100.0.0/14+,       # ChaosVPN
+          10.127.0.0/16{16,32}, # neonetwork
+          10.0.0.0/8{15,24}     # Freifunk.net
+      ];
+    }
+
+    function is_valid6_dn42_network() {
+        return net ~ [
+            fd00::/8{44,64} # ULA address space as per RFC 4193
+        ];
+    }
 
       function is_valid4_network() {
           return net ~ [

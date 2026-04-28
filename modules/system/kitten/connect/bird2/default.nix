@@ -127,6 +127,17 @@ in {
 
             # Nix-OS router config generated for ${name}
 
+            # MPLS basics
+            mpls domain mdom;
+            mpls table  mtab;
+
+            protocol kernel krt_mpls {
+              mpls { table mtab; export all; };
+            }
+
+            vpn4 table vpntab4;
+            vpn6 table vpntab6;
+
             # The Device protocol is not a real routing protocol. It does not generate any
             # routes and it only serves as a module for getting information about network
             # interfaces from the kernel. It is necessary in almost any configuration.
@@ -160,9 +171,32 @@ in {
         ];
       };
 
+    kittenModules.bird.vrfs = {
+      "DN42" = {
+        tableID = 42;
+        # ipv6.enable = false;
+        ipv4 = {
+          enable = true;
+          bgpExports = {
+            ranges = ["172.20.0.0/14+"];
+          };
+        };
+
+        ipv6 = {
+          enable = true;
+          bgpExports = {
+            ranges = ["fd00::/8{44,64}"];
+          };
+
+          static = [
+            # "fd42:7331:1241::/48 unreachable"
+          ];
+        };
+      };
+    };
     kittenModules.bird.extraConfigs = let
       peerFunc = import ./peer_config.nix args;
-      vrfFunc = import ./vrf_config.nix args;
+      vrfFunc = import ./vrf_config.nix (args // { birdConfig = cfg; });
 
       mkConfigs = prefix: f: attrs:
         lib.mapAttrs' (n: v: lib.nameValuePair "${prefix}${n}.conf" (f n v)) attrs;
@@ -178,6 +212,8 @@ in {
 
       vrfConfigs =
         mkConfigs "vrf/" (name: val: {
+          order = 07;
+
           text = ''
             # ${name}
             ${vrfFunc (val // {inherit name;})}
