@@ -9,9 +9,9 @@
       },
       "branch": "feat/targetImage",
       "submodules": false,
-      "revision": "b9e5dbafbc91bcb2e8a41368f9ccfbedfc7818f8",
-      "url": "https://github.com/itzwam/colmena/archive/b9e5dbafbc91bcb2e8a41368f9ccfbedfc7818f8.tar.gz",
-      "hash": "1bbwmim8mnlryc8s3mgvbq2a9wkcak336gyrmyyvy7anir0ipm3n"
+      "revision": "d1a83f009ad7ae5aff579fe2664c061b60f36dcf",
+      "url": "https://github.com/itzwam/colmena/archive/d1a83f009ad7ae5aff579fe2664c061b60f36dcf.tar.gz",
+      "hash": "0vrrmcv9q2my929ryv4bh3larkk31z14cp29scbg7nyzl510yzpy"
     },
     "disko": {
       "type": "GitRelease",

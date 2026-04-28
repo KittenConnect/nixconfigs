@@ -8,11 +8,6 @@ args @ {
   pkgs,
   ...
 }: let
-  diskoProfile = "simple";
-  diskoConfig = {
-    bootdisk = "/dev/vda";
-  };
-
   peers = kittenLib.peers {
     host = ./peers;
     profile = ../.;
@@ -31,13 +26,24 @@ in {
     ../../../modules/system/kitten/connect/bird2/snippets/kittendefaults.nix
   ];
 
-  kittenModules = {
-    disko = {
-      enable = true;
-      profile = diskoProfile;
+  deployment = {
+    targetHost = "kit-toinux-rtr";
+    # targetImage = "proxmox";
+  };
 
-      ${diskoProfile} = diskoConfig;
+  proxmox = {
+    # cloudInit.enable = false; # me no need
+    filenameSuffix = "21036_${config.deployment.targetHost}";
+
+    qemuConf = {
+      bios = "ovmf";
+      net0 = "virtio=00:00:00:00:00:00,bridge=vmbr0,firewall=0";
     };
+  };
+
+
+  kittenModules = {
+    disko.enable = lib.mkForce false;
 
     firewall = {
       enable = true;
@@ -70,17 +76,6 @@ in {
     # };
   };
 
-  # Bootloader.
-  #boot.loader.systemd-boot.enable = true;
-  #boot.loader.systemd-boot.configurationLimit = 5;
-  #boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.grub.efiSupport = false;
-  boot.loader.grub.enable = true;
-  # boot.loader.grub.efiInstallAsRemovable = true;
-  # boot.loader.efi.efiSysMountPoint = "/boot/efi";
-  # Define on which hard drive you want to install Grub.
-  #boot.loader.grub.devices = [ "${targetConfig.bootdisk}" ]; # or "nodev" for efi only
-
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -107,5 +102,5 @@ in {
   # and migrated your data accordingly.
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = "25.11"; # Did you read the comment?
 }
