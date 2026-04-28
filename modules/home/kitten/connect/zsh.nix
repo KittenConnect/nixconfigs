@@ -92,7 +92,6 @@ in {
 
         plugins = [
           "git"
-          "thefuck"
         ];
         theme = "";
       };

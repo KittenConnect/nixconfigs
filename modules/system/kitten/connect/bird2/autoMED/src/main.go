@@ -80,15 +80,6 @@ type App struct {
 	active map[string]context.CancelFunc
 }
 
-func NewApp(m *LatencyMonitor, d *PeerDetector, e *BGPExporter) *App {
-	return &App{
-		Monitor:  m,
-		Detector: d,
-		Exporter: e,
-		active:   make(map[string]context.CancelFunc),
-	}
-}
-
 func (a *App) Start(ctx context.Context) {
 	// Initial discovery
 	a.ReloadPeers(ctx)
@@ -218,12 +209,12 @@ func main() {
 		configDir = os.Args[1]
 	}
 
-	// RuntimeDirectory
 	app := &App{
 		Monitor:  monitor,
 		Detector: detector,
 		Exporter: &BGPExporter{ConfigDir: configDir},
 		Peers:    peers,
+		active:   make(map[string]context.CancelFunc),
 	}
 
 	app.Start(context.Background())

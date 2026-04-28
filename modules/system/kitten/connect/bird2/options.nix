@@ -80,7 +80,7 @@ args @ {
     };
   };
 
-  withFamilies = arg:
+  withFamilies = config: arg:
     arg
     // {
       ipv4 =
@@ -143,7 +143,7 @@ args @ {
     config,
     ...
   }: {
-    options = withFamilies {
+    options = withFamilies config {
       enable = mkOption {
         type = types.bool;
         default = true;
@@ -162,6 +162,22 @@ args @ {
         description = "table ID used for this VRF by kernel - defaults to kittenModules.vrfs.<name>.tableID";
       };
 
+      ipv4 = {
+        static = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          description = "List of static IPv4 routes.";
+        };
+      };
+
+      ipv6 = {
+        static = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          description = "List of static IPv6 routes.";
+        };
+      };
+
       # address = mkOption {
       #  type = types.listOf types.str;
       #  default = [ ];
@@ -174,7 +190,7 @@ args @ {
     config,
     ...
   }: {
-    options = withFamilies {
+    options = withFamilies config {
       enable = mkOption {
         type = types.bool;
         default = true;
