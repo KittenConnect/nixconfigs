@@ -63,7 +63,7 @@ in
               config = value (args // {inherit profile;});
 
               customModule = {
-                networking.hostName = lib.mkForce name;
+                networking.hostName = lib.mkOverride 100 name;
                 sops.defaultSopsFile = ./.secrets/${name}.yaml;
               };
             in

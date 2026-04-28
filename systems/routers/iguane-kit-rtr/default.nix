@@ -64,13 +64,13 @@ in {
       ${diskoProfile} = diskoConfig;
     };
 
-    bird = {
+    bird = let lo0 = kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rtr; in {
       enable = true;
-      loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rtr;
+      loopback6 = lo0;
 
       static6 = [
         "::/0 recursive ${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}"
-        "${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr}/128 via ${kittenLib.network.internal6.cafe.kittens.underlay.routed.iguane}:91" # Announce RouteReflector LoopBack
+        "${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr}/128 via ${kittenLib.network.internal6.cafe.kittens.underlay.routed.iguane}:91 { krt_prefsrc = ${lo0}; }" # Announce RouteReflector LoopBack
       ];
 
       peers = peers.bird;

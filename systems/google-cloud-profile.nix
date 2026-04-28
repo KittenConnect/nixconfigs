@@ -39,6 +39,7 @@
 
     virtualisation.googleComputeImage.efi = true;
 
+    system.build.deployImageScript = config.system.build.googleDeployImage;
     system.build.googleDeployImage = let
       image = config.system.build.googleComputeImage;
       toplevelHash = builtins.head (

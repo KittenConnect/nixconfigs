@@ -1,4 +1,4 @@
-{kittenLib, ...}: {
+{kittenLib, ...}: let mgmtIface = "ens18"; homeIface = "ens19"; upIface = "ens20"; in {
   kittenModules.vrfs.enable = true;
   kittenModules.bird.vrfs = {
     "SFR" = {
@@ -26,9 +26,9 @@
 
   systemd.network.enable = true;
   systemd.network.networks = {
-    "20-eth1" = {
+    "40-vlan666" = {
       matchConfig = {
-        Name = "eth1";
+        Name = "vlan666";
       };
       vrf = ["SFR"];
 
@@ -39,9 +39,9 @@
       DHCP = "ipv4";
     };
 
-    "20-eth2" = {
+    "40-vlan777" = {
       matchConfig = {
-        Name = "eth2";
+        Name = "vlan777";
       };
       vrf = ["ORANGE"];
 
@@ -52,14 +52,10 @@
       DHCP = "ipv4";
     };
 
-    "50-eth3" = {
-      matchConfig = {
-        Name = "eth3";
-      };
-
+    "40-vlan91" = {
       address = [
-        "100.100.91.10/24"
-        "2a13:79c0:ffff:feff:b00b:3945:a51:10/112"
+        "100.100.91.25/24"
+        "1010:cafe:ffff:feff:b00b:3945:a51:25/112"
       ];
 
       networkConfig = {
@@ -72,25 +68,52 @@
 
   # Pick only one of the below networking options.
   networking = {
+    vlans = {
+      vlan91 = {
+        id = 91;
+        interface = homeIface;
+      };
+      
+      vlan666 = {
+        id = 666;
+        interface = upIface;
+      };
+      vlan777 = {
+        id = 777;
+        interface = upIface;
+      };
+    };
+
     interfaces = {
-      ens18.useDHCP = true;
+      ${mgmtIface} = {
+        ipv4.addresses = [{
+          address = "10.10.50.25";
+          prefixLength = 24;
+        }];
 
-      # vlanXX = {
+        ipv4.routes = [{
+          address = "10.10.0.0";
+          prefixLength = 16;
+          via = "10.10.50.1";
+        }];
+      };
 
-      #   # ipv4.addresses = [
-      #   #   {
-      #   #     address = "xxx.xx.xx.xx";
-      #   #     prefixLength = 24;
-      #   #   }
-      #   # ];
+      vlan91 = {
 
-      #   # ipv6.addresses = [
-      #   #   {
-      #   #     address = "1010:cafe:ffff:feff:b00b::xxx";
-      #   #     prefixLength = 112;
-      #   #   }
-      #   # ];
-      # };
+        # ipv4.addresses = [
+        #   {
+        #     address = "xxx.xx.xx.xx";
+        #     prefixLength = 24;
+        #   }
+        # ];
+
+        # ipv6.addresses = [
+        #   {
+        #     address = "1010:cafe:ffff:feff:b00b:3945:a51:25";
+        #     prefixLength = 112;
+        #   }
+        # ];
+      };
     };
 
     # defaultGateway = {
