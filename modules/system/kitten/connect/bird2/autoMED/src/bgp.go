@@ -23,8 +23,8 @@ func (e *BGPExporter) Export(peers []MonitoredPeer, lm *LatencyMonitor) {
 	for _, peer := range peers {
 		stats := lm.GetStats(peer.TargetIP)
 
-		// Use a high penalty (1,000,000) if no data is available yet
-		medValue := int64(1000000)
+		// Use a high penalty (2^31 - 1) if no data is available yet
+		medValue := int64(2147483647)
 		if stats.Median != 0 {
 			medValue = stats.Median.Milliseconds()
 		}
