@@ -112,7 +112,7 @@ jobs:
 
   build-toplevel:
     name: "nixOS: ${{ matrix.name }} (${{ matrix.system }})"
-    needs: [nix-matrix, build-nix]
+    needs: [nix-matrix, build-nix, build-kernels]
     runs-on: ${{ matrix.os }}
     strategy:
       # fail-fast: false
