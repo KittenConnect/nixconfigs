@@ -82,22 +82,23 @@
   in {
     table = "off";
     # Determines the IP/IPv6 address and subnet of the client's end of the tunnel interface
-    address = ["${peer.address}/127"];
+    address = let mask = if lib.hasPrefix "fe80::" peer.address then 64 else 127; addrMask = "${peer.address}/${builtins.toString mask}"; in [addrMask];
     # The port that WireGuard listens to - recommended that this be changed from default
     listenPort = mkIf (peer.port != null) peer.port;
 
     postUp = ''
 
-      set - x
+      set -x
 
       ${optionalString (fwMarkString != null) "wg set ${name} fwmark ${fwMarkString}"}
       ${optionalString (peer.onIFACE != null) ''
-
+        ifaceVRF=$(ip -d link show ${peer.onIFACE} | grep -oE 'vrf_slave table ([^ ]+)' | ${pkgs.gawk}/bin/awk '{ print $NF }')
+        [[ -n "$ifaceVRF" ]] || ifaceVRF=main
         echo "TABLE=${fwMarkString}"
         for v in 4 6; do
           echo "[#] IPv$v"
           ip -$v route add unreachable default metric 4294967295 table ${fwMarkString} || true
-          ip -$v route add default $(ip -$v route show default dev ${peer.onIFACE} | grep -oE 'via [^ ]+') dev ${peer.onIFACE} metric 42 table ${fwMarkString} || true
+          ip -$v route add default $(ip -$v route show default dev ${peer.onIFACE} table $ifaceVRF | grep -oE 'via [^ ]+') dev ${peer.onIFACE} metric 42 table ${fwMarkString} || true
           ip -$v rule add fwmark ${fwMarkString} lookup ${fwMarkString}
           ip -$v rule add fwmark ${fwMarkString} lookup main suppress_prefixlength 0
         done
@@ -208,6 +209,13 @@ in {
     _module.args = {
       wgPeers = peers;
     };
+
+    boot.kernelPatches = [
+      {
+        name = "wireguard-mpls";
+        patch = ./wireguard-mpls-${config.boot.kernelPackages.kernel.name}.patch;
+      }
+    ];
 
     #  sops --set '["wireguard_serverkey"] "'"$(wg genkey | tee >(wg pubkey > /dev/stderr))"'"' secrets/[HOSTNAME].yaml
     sops.secrets.wireguard_serverkey = {};
