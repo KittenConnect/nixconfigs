@@ -1,0 +1,365 @@
+
+--- a/drivers/net/wireguard/allowedips.c	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/allowedips.c	2026-04-28 23:41:46.730490345 +0200
+@@ -5,6 +5,7 @@
+ 
+ #include "allowedips.h"
+ #include "peer.h"
++#include "magic.h"
+ 
+ enum { MAX_ALLOWEDIPS_DEPTH = 129 };
+ 
+@@ -356,8 +357,18 @@
+ struct wg_peer *wg_allowedips_lookup_dst(struct allowedips *table,
+ 					 struct sk_buff *skb)
+ {
+-	if (skb->protocol == htons(ETH_P_IP))
++	if (SKB_MPLS_TYPE(skb)) {
++		__be32 tmp = 0;
++		struct wg_peer *peer;
++		peer = lookup(table->root4, 32, &tmp);
++		if (peer) return peer;
++		peer = lookup(table->root6, 128, &tmp);
++		if (peer) return peer;
++		return NULL;
++	}
++	if (skb->protocol == htons(ETH_P_IP)){
+ 		return lookup(table->root4, 32, &ip_hdr(skb)->daddr);
++	}
+ 	else if (skb->protocol == htons(ETH_P_IPV6))
+ 		return lookup(table->root6, 128, &ipv6_hdr(skb)->daddr);
+ 	return NULL;
+@@ -367,6 +378,15 @@
+ struct wg_peer *wg_allowedips_lookup_src(struct allowedips *table,
+ 					 struct sk_buff *skb)
+ {
++	if (SKB_MPLS_TYPE(skb)) {
++		__be32 tmp = 0;
++		struct wg_peer *peer;
++		peer = lookup(table->root4, 32, &tmp);
++		if (peer) return peer;
++		peer = lookup(table->root6, 128, &tmp);
++		if (peer) return peer;
++		return NULL;
++	}
+ 	if (skb->protocol == htons(ETH_P_IP))
+ 		return lookup(table->root4, 32, &ip_hdr(skb)->saddr);
+ 	else if (skb->protocol == htons(ETH_P_IPV6))
+
+--- a/drivers/net/wireguard/device.c	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/device.c	2026-04-28 23:41:46.731490373 +0200
+@@ -286,7 +286,7 @@
+ 	dev->addr_len = 0;
+ 	dev->needed_headroom = DATA_PACKET_HEAD_ROOM;
+ 	dev->needed_tailroom = noise_encrypted_len(MESSAGE_PADDING_MULTIPLE);
+-	dev->type = ARPHRD_NONE;
++	dev->type = ARPHRD_VOID;
+ 	dev->flags = IFF_POINTOPOINT | IFF_NOARP;
+ 	dev->priv_flags |= IFF_NO_QUEUE;
+ 	dev->lltx = true;
+@@ -302,7 +302,8 @@
+ 	/* We need to keep the dst around in case of icmp replies. */
+ 	netif_keep_dst(dev);
+ 
+-	memset(wg, 0, sizeof(*wg));
++	netif_set_tso_max_size(dev, GSO_MAX_SIZE);
++
+ 	wg->dev = dev;
+ }
+ 
+
+--- a/drivers/net/wireguard/magic.c	1970-01-01 01:00:00.000000000 +0100
++++ b/drivers/net/wireguard/magic.c	2026-04-28 23:41:46.731490373 +0200
+@@ -0,0 +1,2 @@
++#include "magic.h"
++
+
+--- a/drivers/net/wireguard/magic.h	1970-01-01 01:00:00.000000000 +0100
++++ b/drivers/net/wireguard/magic.h	2026-04-28 23:41:46.731490373 +0200
+@@ -0,0 +1,78 @@
++#ifndef _WG_MAGIC_H
++#define _WG_MAGIC_H
++
++#include <linux/skbuff.h>
++#include <linux/ip.h>
++#include <linux/ipv6.h>
++#include <net/ip_tunnels.h>
++#include <net/mpls.h>
++#include <net/mpls.h>
++
++#define SKB_MPLS_TYPE(skb) (skb->reserved_tailroom >> 24)
++#define SKB_MPLS_LABEL(skb) (skb->reserved_tailroom & 0xFFFFFF)
++
++enum mpls_type {
++	WG_MPLS_NONE = 0,
++	WG_MPLS_UC = 1,
++	WG_MPLS_MC = 2
++};
++
++static inline bool decap_mpls(struct sk_buff *skb){
++    __be16 mpls_type = skb->protocol;
++    struct mpls_shim_hdr *hdr;
++    hdr = mpls_hdr(skb);
++    // use reserved tailroom for mpls label + exp + bos
++    __u32 skb_lse = be32_to_cpu(hdr->label_stack_entry) >>8;
++
++    skb_pull(skb, MPLS_HLEN);
++    skb_reset_network_header(skb);
++
++    // if stacked
++    if (!(skb_lse & 1)) {
++        skb->protocol = mpls_type;
++    }
++    else { // if not stacked
++        // do not trust inner_protocol since skb would be forwarded and decap
++        // if (skb->inner_protocol == htons(ETH_P_IP) || skb->inner_protocol == htons(ETH_P_IPV6)) {
++        __be16 real_protocol = ip_tunnel_parse_protocol(skb);
++
++        // real_protocol != inner_protocol
++        if (real_protocol != htons(ETH_P_IP) && real_protocol != htons(ETH_P_IPV6))
++            return false;
++        skb->protocol = real_protocol;
++    }
++    if (mpls_type == htons(ETH_P_MPLS_UC))
++        skb->reserved_tailroom = skb_lse | (WG_MPLS_UC<<24);
++    else if (mpls_type == htons(ETH_P_MPLS_MC))
++        skb->reserved_tailroom = skb_lse | (WG_MPLS_MC<<24);
++    return true;
++}
++
++static inline void encap_mpls(struct sk_buff *skb){
++    if (SKB_MPLS_TYPE(skb)){
++        __u8 inner_ttl = 64;
++        __be16 inner_protocol = skb->protocol;
++        if (inner_protocol == htons(ETH_P_IPV6))
++            inner_ttl = ipv6_hdr(skb)->hop_limit;
++        if (inner_protocol == htons(ETH_P_IP))
++            inner_ttl = ip_hdr(skb)->ttl;
++        if (inner_protocol == htons(ETH_P_MPLS_UC))
++            inner_ttl = be32_to_cpu(mpls_hdr(skb)->label_stack_entry) & 0xff;
++        skb_push(skb, MPLS_HLEN);
++        skb_reset_network_header(skb);
++        skb->protocol = htons(ETH_P_MPLS_UC);
++        struct mpls_shim_hdr *hdr;
++        hdr = mpls_hdr(skb);
++        hdr->label_stack_entry = 
++            mpls_entry_encode(
++                SKB_MPLS_LABEL(skb) >>4, // label
++                inner_ttl, // ttl
++                (SKB_MPLS_LABEL(skb) >>1)&0b111, // exp
++                SKB_MPLS_LABEL(skb) & 1 // bos
++            ).label_stack_entry;
++        skb->reserved_tailroom = 0;
++        skb->inner_protocol = inner_protocol;
++    }
++}
++
++#endif /* _WG_MAGIC_H */
+
+--- a/drivers/net/wireguard/main.c	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/main.c	2026-04-28 23:41:46.731490373 +0200
+@@ -45,7 +45,7 @@
+ 	if (ret < 0)
+ 		goto err_netlink;
+ 
+-	pr_info("WireGuard " WIREGUARD_VERSION " loaded. See www.wireguard.com for information.\n");
++	pr_info("WireGuard " WIREGUARD_VERSION " (with MPLS) loaded. See www.wireguard.com for information.\n");
+ 	pr_info("Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.\n");
+ 
+ 	return 0;
+
+--- a/drivers/net/wireguard/messages.h	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/messages.h	2026-04-28 23:41:46.731490373 +0200
+@@ -58,7 +58,9 @@
+ 	MESSAGE_HANDSHAKE_INITIATION = 1,
+ 	MESSAGE_HANDSHAKE_RESPONSE = 2,
+ 	MESSAGE_HANDSHAKE_COOKIE = 3,
+-	MESSAGE_DATA = 4
++	MESSAGE_DATA = 4,
++	MESSAGE_DATA_MPLS = 5,
++	MESSAGE_DATA_MPLS_MC = 6
+ };
+ 
+ struct message_header {
+
+--- a/drivers/net/wireguard/queueing.h	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/queueing.h	2026-04-28 23:41:46.731490373 +0200
+@@ -13,6 +13,8 @@
+ #include <linux/ipv6.h>
+ #include <net/ip_tunnels.h>
+ 
++#include "magic.h"
++
+ struct wg_device;
+ struct wg_peer;
+ struct multicore_worker;
+@@ -69,12 +71,23 @@
+ 
+ static inline bool wg_check_packet_protocol(struct sk_buff *skb)
+ {
+-	__be16 real_protocol = ip_tunnel_parse_protocol(skb);
+-	return real_protocol && skb->protocol == real_protocol;
++	switch(skb->protocol) {
++		case htons(ETH_P_MPLS_UC): {
++			return decap_mpls(skb);
++		}
++		case htons(ETH_P_MPLS_MC): {
++			return decap_mpls(skb);
++		}
++		default: {
++			__be16 real_protocol = ip_tunnel_parse_protocol(skb);
++			return real_protocol && skb->protocol == real_protocol;
++		}
++	}
+ }
+ 
+ static inline void wg_reset_packet(struct sk_buff *skb, bool encapsulating)
+ {
++	u32 mplsheader = skb->reserved_tailroom;
+ 	u8 l4_hash = skb->l4_hash;
+ 	u8 sw_hash = skb->sw_hash;
+ 	u32 hash = skb->hash;
+@@ -100,6 +113,8 @@
+ 	skb_reset_transport_header(skb);
+ 	skb_probe_transport_header(skb);
+ 	skb_reset_inner_headers(skb);
++	if(!encapsulating)
++		skb->reserved_tailroom = mplsheader;
+ }
+ 
+ static inline int wg_cpumask_choose_online(int *stored_cpu, unsigned int id)
+
+--- a/drivers/net/wireguard/receive.c	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/receive.c	2026-04-28 23:41:46.732490400 +0200
+@@ -16,6 +16,8 @@
+ #include <linux/udp.h>
+ #include <net/ip_tunnels.h>
+ 
++#include "magic.h"
++
+ /* Must be called with bh disabled. */
+ static void update_rx_stats(struct wg_peer *peer, size_t len)
+ {
+@@ -23,7 +25,8 @@
+ 	peer->rx_bytes += len;
+ }
+ 
+-#define SKB_TYPE_LE32(skb) (((struct message_header *)(skb)->data)->type)
++#define SKB_TYPE_LE32(skb) (((struct message_header *)(skb)->data)->type & 0b1111)
++#define SKB_MPLSHDR_LE32(skb) (((struct message_header *)(skb)->data)->type>>8)
+ 
+ static size_t validate_header_len(struct sk_buff *skb)
+ {
+@@ -32,6 +35,12 @@
+ 	if (SKB_TYPE_LE32(skb) == cpu_to_le32(MESSAGE_DATA) &&
+ 	    skb->len >= MESSAGE_MINIMUM_LENGTH)
+ 		return sizeof(struct message_data);
++	if (SKB_TYPE_LE32(skb) == cpu_to_le32(MESSAGE_DATA_MPLS) &&
++	    skb->len >= MESSAGE_MINIMUM_LENGTH)
++		return sizeof(struct message_data);
++	if (SKB_TYPE_LE32(skb) == cpu_to_le32(MESSAGE_DATA_MPLS_MC) &&
++	    skb->len >= MESSAGE_MINIMUM_LENGTH)
++		return sizeof(struct message_data);
+ 	if (SKB_TYPE_LE32(skb) == cpu_to_le32(MESSAGE_HANDSHAKE_INITIATION) &&
+ 	    skb->len == sizeof(struct message_handshake_initiation))
+ 		return sizeof(struct message_handshake_initiation);
+@@ -370,8 +379,15 @@
+ 		       (ip_hdr(skb)->version == 4 ||
+ 			(ip_hdr(skb)->version == 6 &&
+ 			 pskb_network_may_pull(skb, sizeof(struct ipv6hdr)))))))
+-		goto dishonest_packet_type;
+-
++	{
++		if (SKB_MPLS_TYPE(skb)) { // is mpls
++			if ((SKB_MPLS_LABEL(skb) & 1)) { // not stacked
++				goto dishonest_packet_type;
++			}
++		}
++		else
++			goto dishonest_packet_type;
++	}
+ 	skb->dev = dev;
+ 	/* We've already verified the Poly1305 auth tag, which means this packet
+ 	 * was not modified in transit. We can therefore tell the networking
+@@ -382,6 +398,10 @@
+ 	skb->ip_summed = CHECKSUM_UNNECESSARY;
+ 	skb->csum_level = ~0; /* All levels */
+ 	skb->protocol = ip_tunnel_parse_protocol(skb);
++	// set protocol for stacked mpls
++	if (SKB_MPLS_TYPE(skb)) // is mpls
++		if (!(SKB_MPLS_LABEL(skb) & 1)) // stacked
++			skb->protocol = htons(ETH_P_MPLS_UC);
+ 	if (skb->protocol == htons(ETH_P_IP)) {
+ 		len = ntohs(ip_hdr(skb)->tot_len);
+ 		if (unlikely(len < sizeof(struct iphdr)))
+@@ -391,6 +411,8 @@
+ 		len = ntohs(ipv6_hdr(skb)->payload_len) +
+ 		      sizeof(struct ipv6hdr);
+ 		INET_ECN_decapsulate(skb, PACKET_CB(skb)->ds, ipv6_get_dsfield(ipv6_hdr(skb)));
++	} else if (skb->protocol == htons(ETH_P_MPLS_UC)) {
++		len = skb->len;
+ 	} else {
+ 		goto dishonest_packet_type;
+ 	}
+@@ -408,6 +430,7 @@
+ 	if (unlikely(routed_peer != peer))
+ 		goto dishonest_packet_peer;
+ 
++	encap_mpls(skb);
+ 	napi_gro_receive(&peer->napi, skb);
+ 	update_rx_stats(peer, message_data_len(len_before_trim));
+ 	return;
+@@ -575,6 +598,16 @@
+ 		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
+ 		wg_packet_consume_data(wg, skb);
+ 		break;
++	case cpu_to_le32(MESSAGE_DATA_MPLS):
++		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
++		skb->reserved_tailroom = SKB_MPLSHDR_LE32(skb) | (WG_MPLS_UC<<24);
++		wg_packet_consume_data(wg, skb);
++		break;
++	case cpu_to_le32(MESSAGE_DATA_MPLS_MC):
++		PACKET_CB(skb)->ds = ip_tunnel_get_dsfield(ip_hdr(skb), skb);
++		skb->reserved_tailroom = SKB_MPLSHDR_LE32(skb) | (WG_MPLS_MC<<24);
++		wg_packet_consume_data(wg, skb);
++		break;
+ 	default:
+ 		WARN(1, "Non-exhaustive parsing of packet header lead to unknown packet type!\n");
+ 		goto err;
+
+--- a/drivers/net/wireguard/selftest/allowedips.c	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/selftest/allowedips.c	2026-04-28 23:41:46.732490400 +0200
+@@ -383,7 +383,6 @@
+ 		for (i = 0; i < NUM_QUERIES; ++i) {
+ 			get_random_bytes(ip, 4);
+ 			if (lookup(t.root4, 32, ip) != horrible_allowedips_lookup_v4(&h, (struct in_addr *)ip)) {
+-				horrible_allowedips_lookup_v4(&h, (struct in_addr *)ip);
+ 				pr_err("allowedips random v4 self-test: FAIL\n");
+ 				goto free;
+ 			}
+
+--- a/drivers/net/wireguard/send.c	1970-01-01 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/send.c	2026-04-28 23:41:46.732490400 +0200
+@@ -203,7 +203,12 @@
+ 	 */
+ 	skb_set_inner_network_header(skb, 0);
+ 	header = (struct message_data *)skb_push(skb, sizeof(*header));
+-	header->header.type = cpu_to_le32(MESSAGE_DATA);
++	if (SKB_MPLS_TYPE(skb) == WG_MPLS_UC)
++		header->header.type = cpu_to_le32(MESSAGE_DATA_MPLS | (SKB_MPLS_LABEL(skb)<<8));
++	else if (SKB_MPLS_TYPE(skb) == WG_MPLS_MC)
++		header->header.type = cpu_to_le32(MESSAGE_DATA_MPLS_MC | (SKB_MPLS_LABEL(skb)<<8));
++	else
++		header->header.type = cpu_to_le32(MESSAGE_DATA);
+ 	header->key_idx = keypair->remote_index;
+ 	header->counter = cpu_to_le64(PACKET_CB(skb)->nonce);
+ 	pskb_put(skb, trailer, trailer_len);
+
+--- a/drivers/net/wireguard/Makefile	2026-04-11 14:24:56.000000000 +0200
++++ b/drivers/net/wireguard/Makefile	2026-04-29 00:00:21.560631537 +0200
+@@ -14,4 +14,5 @@
+ wireguard-y += ratelimiter.o
+ wireguard-y += cookie.o
+ wireguard-y += netlink.o
++wireguard-y += magic.o
+ obj-$(CONFIG_WIREGUARD) := wireguard.o
