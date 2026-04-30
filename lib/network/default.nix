@@ -182,7 +182,9 @@ args @ {
 
           len = lib.toInt (getCidr args);
         }
-        // args
+        // args // (lib.optionalAttrs (args ? fromInternal) {
+          fromInternal = let from = args.fromInternal; in lib.throwIf (from.len != lib.toInt (getCidr args)) "fromInternal ${from.net} needs to match ${args.net} prefix length - got ${from.len}" (address: lib.throwIf (!(lib.hasPrefix (builtins.toString from) address)) "Address ${address} must be in ${args.fromInternal.net}" "${getCleanPrefix args}:${lib.removePrefix ":" (lib.removePrefix "${from}:" address)}");
+        })
       else if builtins.isString args
       then withCIDR {net = args;}
       else throw "withCIDR needs a net argument";
@@ -216,7 +218,7 @@ in ipv6:
   params = import ./params.nix (args // {inherit withCIDR;});
 in {
   inherit mkFilter isValidIPv4 isValidIPv6 expand6 loopbackToRD;
-  inherit (params) internal6;
+  inherit (params) public dn42 internal6;
 
   pretty =
     lib.filterAttrsRecursive (

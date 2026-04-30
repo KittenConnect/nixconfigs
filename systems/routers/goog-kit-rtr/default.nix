@@ -53,7 +53,7 @@ in {
 
       static6 = [
         "::/0 recursive ${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}"
-        "${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr}/128 via ${kittenLib.network.internal6.cafe.kittens.underlay.routed.iguane}:91" # Announce RouteReflector LoopBack
+        # "${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr}/128 via ${kittenLib.network.internal6.cafe.kittens.underlay.routed.iguane}:91" # Announce RouteReflector LoopBack
       ];
 
       peers = peers.bird;

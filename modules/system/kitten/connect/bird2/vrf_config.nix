@@ -64,6 +64,15 @@ in
       ''
     ) (lib.attrsToList {inherit ipv4 ipv6;})}
 
+    protocol direct DIRECT_${name} {
+      # disabled;
+      check link on;
+      ${optionalString (ipv4 != {} && ipv4.enable) "ipv4 { table ${getBirdTable 4}; };"}
+      ${optionalString (ipv6 != {} && ipv6.enable) "ipv6 { table ${getBirdTable 6}; };"}
+
+      interface "${name}";
+    }
+
     # IP <-> VPN translation protocol
     protocol l3vpn l3vpn${name} {
       vrf "${name}";

@@ -5,19 +5,19 @@
 }: let
   kittenASN = 4242421945;
 in {
-  peerAS = 4242420454;
-  peerIP = "fe80::454:102";
+  peerAS = 4242420263;
+  peerIP = "fe80:1263::1:21";
   localAS = kittenASN;
 
   wireguard = {
-    address = "fe80::4242:1945:0:3";
-    port = 51842;
+    address = "fe80:1263::2:21";
+    port = 42263;
     onIFACE = "vlan666";
 
     vrf = "DN42";
 
-    endpoint = "[2001:bc8:711:26fc:dc00:ff:feed:4ab]:43571";
-    peerKey = "pCTgngczpFgIDbZzfxtz6tiaiFo59b2GbeJEEc21mA0=";
+    endpoint = "fr-par1.flap42.eu:52033";
+    peerKey = "/kwo9FiQRtgNyhMARTW9SvyvXIN7I7LfoICTytHjfA4=";
   };
 
   template = "dn42";

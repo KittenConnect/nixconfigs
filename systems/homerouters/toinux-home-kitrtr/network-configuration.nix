@@ -22,6 +22,12 @@
         };
       };
     };
+
+    "DN42" = { # Already exists - only add static range
+      ipv6.static = [
+        "fd42:7331:1241::/48 unreachable"
+      ];
+    };
   };
 
   systemd.network.enable = true;

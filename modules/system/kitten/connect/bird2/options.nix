@@ -168,6 +168,12 @@ args @ {
           default = [];
           description = "List of static IPv4 routes.";
         };
+
+        loopback = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "IPv4 loopback address.";
+        };
       };
 
       ipv6 = {
@@ -176,12 +182,17 @@ args @ {
           default = [];
           description = "List of static IPv6 routes.";
         };
+
+        loopback = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "IPv6 loopback address.";
+        };
       };
 
-      # address = mkOption {
-      #  type = types.listOf types.str;
-      #  default = [ ];
-      # };
+
+
+
     };
   };
 

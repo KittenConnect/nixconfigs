@@ -71,16 +71,23 @@ in ''
     peer.passwordRef != null
   ) "password secretPassword_${passwordRef}; # Defined in secrets file"}
 
-  ${optionalString (peer.ipv6 != {}) ''
-      ipv6 {
-    ${optionalString (
-      peer.ipv6.bgpImports == null || (peer.ipv6.bgpImports != "" && peer.ipv6.bgpImports.allowed != [])
-    ) (indentedLines 2 (mkFilter "import" peerName peer.ipv6.bgpImports))}
-    ${optionalString (
-      peer.ipv6.bgpExports == null || (peer.ipv6.bgpExports != "" && peer.ipv6.bgpExports.allowed != [])
-    ) (indentedLines 2 (mkFilter "export" peerName peer.ipv6.bgpExports))}
-      };
-  ''}
+  ${lib.concatMapStringsSep "\n" (
+    x: let
+      family = x.name;
+      ipvX = x.value;
+      X = builtins.fromJSON (builtins.substring (builtins.stringLength family - 1) 1 family);
 
+      hasFilter = bgpFamilyFilter: bgpFamilyFilter == null || (bgpFamilyFilter != "" && bgpFamilyFilter.allowed != []);
+      filterLine = direction: bgpFamilyFilter: optionalString (hasFilter bgpFamilyFilter) (indentedLines 2 (mkFilter direction "f${builtins.toString X}_${peerName}" bgpFamilyFilter));
+      # _birdTable = getBirdTable X;
+    in ''
+      ${optionalString (ipvX != {} && ipvX.enable) ''
+        ${family} {
+        ${filterLine "import" ipvX.bgpImports}
+        ${filterLine "export" ipvX.bgpExports}
+        };
+      ''}
+    ''
+  ) (lib.attrsToList {inherit (peer) ipv4 ipv6;})}
   }
 ''
