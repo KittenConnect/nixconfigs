@@ -167,17 +167,28 @@ in {
       })
       cfg.forward.sets;
 
-    kittenModules.firewall.forward.sets = {
-      wan_iface = {
-        setType = "ifname";
-        table = "nat";
+    kittenModules.firewall.forward = {
+      sets = {
+        wan_iface = {
+          setType = "ifname";
+          table = "nat";
+        };
+
+        kittenIFACEs = {
+          setType = "ifname";
+          elements = [];
+        };
+
+        nat_ranges = {
+          setType = "ipv4_addr";
+          table = "nat";
+          flags = ["interval"];
+        };
       };
 
-      nat_ranges = {
-        setType = "ipv4_addr";
-        table = "nat";
-        flags = ["interval"];
-      };
+      rules = ''
+        iifname @kittenIFACEs oifname @kittenIFACEs counter accept
+      '';
     };
 
     networking.firewall.enable = true;
@@ -280,6 +291,7 @@ in {
                     ${optionalString (cfg.forward.allowDnat) allowDNAT}
 
                     ${indentedLines 2 cfg.forward.rules}
+                    iifname @kittenIFACEs log prefix "refused connection: " level info reject comment "reject internal instead of default policy"
                   }
                 ''
               )

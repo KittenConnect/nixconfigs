@@ -8,6 +8,7 @@
 
   passwordRef = "virtua";
 
+  ipv4.enable = false;
   ipv6 = {
     bgpImports = null;
     bgpExports = {

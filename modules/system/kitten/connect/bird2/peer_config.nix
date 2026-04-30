@@ -82,7 +82,7 @@ in ''
       # _birdTable = getBirdTable X;
     in ''
       ${optionalString (ipvX != {} && ipvX.enable) ''
-        ${family} {
+        ${family} ${optionalString peer.mpls "mpls"} { # MPLS = ${builtins.toString peer.mpls}
         ${filterLine "import" ipvX.bgpImports}
         ${filterLine "export" ipvX.bgpExports}
         };

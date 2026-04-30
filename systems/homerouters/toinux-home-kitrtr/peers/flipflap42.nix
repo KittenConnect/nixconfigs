@@ -7,6 +7,7 @@
 in {
   peerAS = 4242420263;
   peerIP = "fe80:1263::1:21";
+  # localIP address = "fe80:1263::2:21";
   localAS = kittenASN;
 
   wireguard = {

@@ -8,7 +8,7 @@
   ...
 }: {
   imports = [
-    # ./firewall.nix # TODO: Remove
+    ../routers/firewall.nix
   ];
 
   kittenModules = {

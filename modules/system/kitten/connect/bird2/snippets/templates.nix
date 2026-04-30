@@ -21,17 +21,7 @@ in {
           # export filter { if is_v4_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
           import limit 1000 action block;
           igp table master4; # IGP table for routes with IPv4 nexthops
-          #  igp table master6; # IGP table for routes with IPv4 nexthops
-        };
-
-        ipv6 {
-          gateway recursive;
-          next hop self;
-
-          import filter { accept; };
-          export filter { if is_rr_valid6_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
-          import limit 1000 action block;
-          igp table master6; # IGP table for routes with IPv6 nexthops
+          # igp table master6; # IGP table for routes with IPv4 nexthops
         };
 
         vpn4 mpls { igp table master4; next hop self; table vpntab4; import all; export all; extended next hop; };
@@ -65,7 +55,7 @@ in {
           import limit 1000 action block;
         };
 
-        ipv6 {
+        ipv6 mpls {
           next hop self;
           import keep filtered;
 
