@@ -172,6 +172,35 @@ in {
       };
 
     kittenModules.bird.vrfs = {
+      "WAN" = {
+        tableID = 1337;
+        # ipv6.enable = false;
+        ipv4 = {
+          enable = true;
+          bgpExports = {
+            ranges = [
+              "0.0.0.0/0"
+              "0.0.0.0/0{32,32}"
+            ]; # TODO: change
+          };
+          # loopback = mkIf (cfg.loopback4 != null) (kittenLib.network.public.kittens.fromInternal cfg.loopback4);
+        };
+
+        ipv6 = {
+          enable = true;
+          bgpExports = {
+            ranges = [
+              "::0/0"
+              "2a12:5844:1310::/44{44,48}"
+            ];
+          };
+          loopback = mkIf (cfg.loopback6 != null) (kittenLib.network.public.kittens.fromInternal cfg.loopback6);
+          static = [
+            # "fd42:7331:1241::/48 unreachable"
+          ];
+        };
+      };
+
       "DN42" = {
         tableID = 42;
         # ipv6.enable = false;
@@ -180,14 +209,15 @@ in {
           bgpExports = {
             ranges = ["172.20.0.0/14+"];
           };
+          loopback = mkIf (cfg.loopback4 != null) (kittenLib.network.dn42.fromInternal cfg.loopback4);
         };
 
         ipv6 = {
           enable = true;
           bgpExports = {
-            ranges = ["fd00::/8{44,64}"];
+            ranges = ["fd00::/8{44,64}" "fd42:7331:1241::/48+"];
           };
-
+          loopback = mkIf (cfg.loopback6 != null) (kittenLib.network.dn42.fromInternal cfg.loopback6);
           static = [
             # "fd42:7331:1241::/48 unreachable"
           ];
@@ -224,7 +254,13 @@ in {
       peerConfigs // vrfConfigs;
 
     kittenModules.vrfs.tables = mkIf (config.kittenModules.vrfs.enable && cfg.vrfs != {}) (
-      lib.mapAttrs (n: v: {inherit (v) tableID;}) vrfWithIDs
+      lib.mapAttrs (n: v: {
+        inherit (v) tableID;
+
+        address = mkIf (v.ipv4.loopback != null || v.ipv6.loopback != null) (
+          (optional (v.ipv4.loopback != null) v.ipv4.loopback) ++ (optional (v.ipv6.loopback != null) v.ipv6.loopback)
+        );
+      }) vrfWithIDs
     );
 
     kittenModules.loopback0 = mkIf (cfg.loopback4 != null || cfg.loopback6 != null) {
@@ -234,9 +270,21 @@ in {
       ipv6 = mkIf (cfg.loopback6 != null) [cfg.loopback6];
     };
 
+    boot.kernelModules = ["mpls_router"];
     boot.kernel.sysctl = {
       "net.ipv4.ip_forward" = 1;
       "net.ipv6.conf.all.forwarding" = 1;
+
+      "net.ipv6.conf.all.keep_addr_on_down" = 1;
+
+      "net.ipv4.conf.all.rp_filter" = 0;
+      "net.ipv4.conf.all.src_valid_mark" = 1;
+
+      "net.ipv4.raw_l3mdev_accept" = 1;
+      "net.ipv4.tcp_l3mdev_accept" = 1;
+      "net.ipv4.udp_l3mdev_accept" = 1;
+
+      "net.mpls.platform_labels" = 1048575;
     };
 
     # kittenModules.bird = {

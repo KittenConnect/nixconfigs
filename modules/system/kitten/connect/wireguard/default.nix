@@ -79,10 +79,14 @@
       in
         genFWMarkStr mark
     );
+
+  # Determines the IP/IPv6 address and subnet of the client's end of the tunnel interface
+  address = let mask = if lib.hasPrefix "fe80:" peer.address then 64 else 127; addrMask = "${peer.address}/${builtins.toString mask}"; in addrMask;
+    
   in {
     table = "off";
-    # Determines the IP/IPv6 address and subnet of the client's end of the tunnel interface
-    address = let mask = if lib.hasPrefix "fe80::" peer.address then 64 else 127; addrMask = "${peer.address}/${builtins.toString mask}"; in [addrMask];
+
+    address = [address];
     # The port that WireGuard listens to - recommended that this be changed from default
     listenPort = mkIf (peer.port != null) peer.port;
 
@@ -91,7 +95,13 @@
       set -x
 
       ${optionalString (fwMarkString != null) "wg set ${name} fwmark ${fwMarkString}"}
+      ${optionalString (peer.vrf != null) ''
+        ip link set dev ${name} master ${peer.vrf}
+        ip addr add ${address} dev ${name} scope global
+      ''}
+      ${optionalString (peer.mpls) "sysctl net.mpls.conf.${name}.input=1"}
       ${optionalString (peer.onIFACE != null) ''
+        sleep $((1 + $RANDOM % 10))
         ifaceVRF=$(ip -d link show ${peer.onIFACE} | grep -oE 'vrf_slave table ([^ ]+)' | ${pkgs.gawk}/bin/awk '{ print $NF }')
         [[ -n "$ifaceVRF" ]] || ifaceVRF=main
         echo "TABLE=${fwMarkString}"
@@ -178,6 +188,16 @@ in {
                 type = types.nullOr types.int;
                 default = null;
                 description = "The port that WireGuard listens to.";
+              };
+              vrf = mkOption {
+                type = types.nullOr types.str;
+                default = null;
+                description = "VRF parent interface to set for this peer.";
+              };
+              mpls = mkOption {
+                type = types.bool;
+                default = config.vrf == null;
+                description = "use Kitten mpls Wireguard module on this link";
               };
               fwMark = mkOption {
                 type = types.nullOr types.int;

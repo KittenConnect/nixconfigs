@@ -34,8 +34,8 @@ in {
           igp table master6; # IGP table for routes with IPv6 nexthops
         };
 
-        vpn4 mpls { table vpntab4; import all; export all; extended next hop; };
-        vpn6 mpls { table vpntab6; import all; export all; };
+        vpn4 mpls { igp table master4; next hop self; table vpntab4; import all; export all; extended next hop; };
+        vpn6 mpls { igp table master6; next hop self; table vpntab6; import all; export all; };
       }
 
       template bgp kittunderlay {
@@ -82,21 +82,6 @@ in {
 
           export filter { if is_valid6_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
           import limit 1000 action block;
-        };
-
-        ipv4 mpls {
-          next hop self;
-          extended next hop;
-
-          import all;
-          export all;
-        };
-
-        ipv6 mpls {
-          next hop self;
-
-          import all;
-          export all;
         };
 
         mpls {

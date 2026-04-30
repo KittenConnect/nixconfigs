@@ -14,6 +14,8 @@ in {
     port = 51842;
     onIFACE = "vlan666";
 
+    vrf = "DN42";
+
     endpoint = "[2001:bc8:711:26fc:dc00:ff:feed:4ab]:43571";
     peerKey = "pCTgngczpFgIDbZzfxtz6tiaiFo59b2GbeJEEc21mA0=";
   };

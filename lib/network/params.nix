@@ -1,4 +1,25 @@
-{withCIDR, ...}: rec {
+{lib, withCIDR, ...}: rec {
+  dn42 = withCIDR {
+    asn = 4242421945;
+    net = "fd42:7331:1241::/48";
+
+    fromInternal = internal6.cafe.kittens;
+  };
+
+  public = withCIDR {
+    asn = 213197;
+    net = "2a12:5844:1310::/44";
+
+    kittens = withCIDR { 
+      net = "2a12:5844:1311::/48";
+      fromInternal = internal6.cafe.kittens; 
+    };
+    customers = withCIDR { 
+      net = "2a12:5844:1312::/48";
+      fromInternal =  internal6.cafe.customers; 
+    };
+  };
+
   internal6 = withCIDR {
     asn = 4242421945;
     net = "1010::/16";
