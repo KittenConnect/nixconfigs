@@ -1,9 +1,16 @@
-{...}: let
+{ lib, kittenLib, ... }:
+let
   iface = "ens18";
   # kittenIFACE = "ens19";
-in {
+in
+{
   kittenModules = {
-    bird.transitInterfaces = [iface];
+    bird.transitInterfaces = [ iface ];
+
+    firewall.forward.natRules = ''
+      oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.underlay.net} snat ip6 prefix to 2a12:5844:1311:feff::/64
+      oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.net} snat ip6 prefix to 2a12:5844:1311:fefe::/64
+    '';
   };
 
   networking = {

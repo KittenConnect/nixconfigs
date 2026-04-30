@@ -70,9 +70,9 @@ in {
         enable = true;
         keepInvalidState = true;
         rules = ''
-          # iifname "''${kittenIFACE}" ip6 saddr 1010:cafe:ffff:feff:b00b:caca:b173:0/112 oifname $wireguardIFACEs counter accept
-          iifname $wireguardIFACEs ip6 daddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr} tcp dport { 179, 1790 } counter accept
-          iifname ens19 oifname $wireguardIFACEs counter accept
+          # iifname "''${kittenIFACE}" ip6 saddr 1010:cafe:ffff:feff:b00b:caca:b173:0/112 oifname @kittenIFACEs counter accept
+          iifname @kittenIFACEs ip6 daddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr} tcp dport { 179, 1790 } counter accept
+          iifname ens19 oifname @kittenIFACEs counter accept
         '';
       };
     };

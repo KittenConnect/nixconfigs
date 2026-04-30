@@ -189,10 +189,6 @@ args @ {
           description = "IPv6 loopback address.";
         };
       };
-
-
-
-
     };
   };
 
@@ -207,6 +203,12 @@ args @ {
         default = true;
         example = false;
         description = "${name} peer.";
+      };
+
+      mpls = mkOption {
+        type = types.bool;
+        default = config.localAS == config.peerAS;
+        description = "use Kitten mpls Wireguard module on this link";
       };
 
       peerName = mkOption {

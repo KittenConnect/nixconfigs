@@ -258,7 +258,7 @@ in {
         inherit (v) tableID;
 
         address = mkIf (v.ipv4.loopback != null || v.ipv6.loopback != null) (
-          (optional (v.ipv4.loopback != null) v.ipv4.loopback) ++ (optional (v.ipv6.loopback != null) v.ipv6.loopback)
+          (optional (v.ipv4.loopback != null) "${v.ipv4.loopback}/32") ++ (optional (v.ipv6.loopback != null) "${v.ipv6.loopback}/128")
         );
       }) vrfWithIDs
     );

@@ -8,9 +8,10 @@
   ...
 }: {
   imports = [
-    # ./firewall.nix # TODO: cleanup + enable
+    ./firewall.nix # TODO: cleanup + enable
   ];
 
+  kittenModules.firewall.enable = true;
   kittenModules.vrfs.enable = true;
   kittenModules.gitnamed = {
     enable = lib.mkDefault false;

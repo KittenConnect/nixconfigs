@@ -78,7 +78,7 @@ in {
       forward = {
         enable = true;
         rules = ''
-          iifname "${kittenIFACE}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.underlay.routed.aure.net} oifname $wireguardIFACEs counter accept
+          iifname "${kittenIFACE}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.underlay.routed.aure.net} oifname @kittenIFACEs counter accept
 
           ct state vmap {
             established : accept,

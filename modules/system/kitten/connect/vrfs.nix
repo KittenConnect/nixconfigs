@@ -20,6 +20,12 @@
         description = "${name} peer.";
       };
 
+      bindCarrier = mkOption {
+        type = with types; nullOr str;
+        default = cfg.requiredLink;
+        description = "defines an interface to up before the VRF";
+      };
+
       iface = mkOption {
         type = types.str;
         default = name;
@@ -57,6 +63,12 @@ in {
       description = "VRF interfaces module";
     };
     # hosts = mkOption { type = types.bool; default = false; description = "hosts entry for each loopback IP"; };
+
+    requiredLink = mkOption {
+      type = types.str;
+      default = "lo";
+      description = "defines the default interface to up before the VRFs";
+    };
 
     tables = lib.mkOption {
       type = with lib.types; attrsOf (submodule vrfSubmodule);
@@ -98,7 +110,10 @@ in {
             lib.nameValuePair "15-${vrf.iface}" {
               matchConfig.Name = vrf.iface;
               address = vrf.address;
-              networkConfig.LinkLocalAddressing = false;
+              networkConfig = {
+                LinkLocalAddressing = false;
+                BindCarrier = vrf.bindCarrier;
+              };
             }
         )
         vrfTables;

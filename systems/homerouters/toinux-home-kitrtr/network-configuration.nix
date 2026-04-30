@@ -1,4 +1,13 @@
-{kittenLib, ...}: let mgmtIface = "ens18"; homeIface = "ens19"; upIface = "ens20"; in {
+{kittenLib, lib, pkgs, ...}: let mgmtIface = "ens18"; homeIface = "ens19"; upIface = "ens20"; in {
+  virtualisation.vmVariant = {
+    config.system.activationScripts.setupSecrets.text = lib.mkAfter ''
+      (
+        [[ -d /run/secrets ]] || mkdir -vp /run/secrets
+        [[ -f /run/secrets/wireguard_serverkey ]] || ${pkgs.wireguard-tools}/bin/wg genkey > /run/secrets/wireguard_serverkey
+      )
+    '';
+  };
+
   kittenModules.vrfs.enable = true;
   kittenModules.bird.vrfs = {
     "SFR" = {
@@ -30,45 +39,52 @@
     };
   };
 
-  systemd.network.enable = true;
-  systemd.network.networks = {
-    "40-vlan666" = {
-      matchConfig = {
-        Name = "vlan666";
-      };
-      vrf = ["SFR"];
+  systemd.network = {
+    enable = true;
 
-      networkConfig = {
-        IPv6AcceptRA = true;
-        LinkLocalAddressing = "ipv6";
-      };
-      DHCP = "ipv4";
-    };
+    networks = {
+      "40-vlan666" = {
+        matchConfig = {
+          Name = "vlan666";
+        };
+        vrf = ["SFR"];
 
-    "40-vlan777" = {
-      matchConfig = {
-        Name = "vlan777";
-      };
-      vrf = ["ORANGE"];
+        networkConfig = {
+          IPv6AcceptRA = true;
+          LinkLocalAddressing = "ipv6";
+        };
+        linkConfig.RequiredFamilyForOnline = "both";
 
-      networkConfig = {
-        IPv6AcceptRA = true;
-        LinkLocalAddressing = "ipv6";
+        DHCP = "ipv4";
       };
-      DHCP = "ipv4";
-    };
 
-    "40-vlan91" = {
-      address = [
-        "100.100.91.25/24"
-        "1010:cafe:ffff:feff:b00b:3945:a51:25/112"
-      ];
+      "40-vlan777" = {
+        matchConfig = {
+          Name = "vlan777";
+        };
+        vrf = ["ORANGE"];
 
-      networkConfig = {
-        IPv6AcceptRA = false;
-        LinkLocalAddressing = "ipv6";
+        networkConfig = {
+          IPv6AcceptRA = true;
+          LinkLocalAddressing = "ipv6";
+        };
+        linkConfig.RequiredFamilyForOnline = "both";
+
+        DHCP = "ipv4";
       };
-      DHCP = "no";
+
+      "40-vlan91" = {
+        address = [
+          "100.100.91.25/24"
+          "1010:cafe:ffff:feff:b00b:3945:a51:25/112"
+        ];
+
+        networkConfig = {
+          IPv6AcceptRA = false;
+          LinkLocalAddressing = "ipv6";
+        };
+        DHCP = "no";
+      };
     };
   };
 

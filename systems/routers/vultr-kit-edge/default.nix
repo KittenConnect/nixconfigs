@@ -14,15 +14,30 @@ args @ {
     # swapSize = 1024;
   };
 
-  iface = "enp1s0";
-
   peers = kittenLib.peers {
     host = ./peers;
     profile = ../.;
 
     blacklist = [];
     manual = {
-      # peers we dont want in the peers folder
+      TRS_VULTR4_PAR = {
+        localAS = 213197;
+        peerAS = 64515;
+        peerIP = "169.254.169.254";
+        multihop = 2;
+
+        passwordRef = "vultr";
+
+        ipv6.enable = false;
+        ipv4 = {
+          bgpImports = { ranges = ["0.0.0.0/0"];};
+          bgpExports = {
+            ranges = [
+              "0.0.0.0/0{32,32}" # Kitten Reserved IPv4
+            ];
+          };
+        };
+      };
       TRS_VULTR6_PAR = {
         localAS = 213197;
         peerAS = 64515;
@@ -31,6 +46,7 @@ args @ {
 
         passwordRef = "vultr";
 
+        ipv4.enable = false;
         ipv6 = {
           bgpImports = null;
           bgpExports = {
@@ -46,7 +62,8 @@ in {
   imports = [
     ../profile.nix
     ./hardware-configuration.nix
-    #     ./network-configuration.nix # included here because of its simplicity
+    ./network-configuration.nix # included here because of its simplicity
+    # ./cloud-init.nix
 
     ../../../modules/system/kitten/connect/bird2/snippets/kittenCores.nix
   ];
@@ -61,28 +78,6 @@ in {
   # Bootloader.
   boot.loader.grub.efiSupport = false;
   boot.loader.grub.enable = true;
-
-  # Networking
-  services.cloud-init = {
-    enable = true;
-    ext4.enable = true;
-    network.enable = true;
-    settings = {
-      datasource_list = ["Vultr"];
-      disable_root = false;
-      ssh_pwauth = 0;
-      updates = {
-        network = {
-          when = [
-            "boot"
-            "boot-legacy"
-            "boot-new-instance"
-            "hotplug"
-          ];
-        };
-      };
-    };
-  };
 
   virtualisation.vmVariant = {
     services.cloud-init.enable = lib.mkForce false;
@@ -109,7 +104,6 @@ in {
 
       loopback6 = kittenLib.network.internal6.cafe.kittens.loopbacks.vultr;
 
-      transitInterfaces = [iface];
       static6 =
         [
           "${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}/128 unreachable" # Special Anycast "loopback" for default gateways
@@ -117,10 +111,7 @@ in {
           # "2a13:79c0:ffff::/48 unreachable" # Networking stuff
           # "2a12:5844:1310::/44 unreachable" # full range /40
           "2a12:5844:1310::/44 unreachable" # New range /44
-        ]
-        ++ lib.mapAttrsToList (n: v: ''${n} via "fe80::${v}%${iface}"'') {
-          "2001:19f0::/32" = "fc00:4ff:fe82:5c6e";
-        };
+        ];
 
       peers = peers.bird;
     };
@@ -136,10 +127,6 @@ in {
         enable = true;
         keepInvalidState = true;
         # rules = '' ... '';
-        natRules = ''
-          oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.underlay.net} snat ip6 prefix to 2a12:5844:1311:feff::/64
-          oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.net} snat ip6 prefix to 2a12:5844:1311:fefe::/64
-        '';
       };
     };
   };

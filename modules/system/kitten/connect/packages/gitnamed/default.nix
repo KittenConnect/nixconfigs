@@ -58,6 +58,11 @@ in {
 
             dontUnpack = true;
 
+            # preCheck = ''
+            #   export GITNAMED_SCRIPTS=.
+            #   touch settings.py
+            # '';
+
             installPhase = let
               neededPackages = with pkgs; [
                 python3
@@ -209,7 +214,7 @@ in {
             chown -R named ${namedHome}
 
             ${lib.optionalString isMaster ''
-            /run/wrappers/bin/sudo -u named -- /run/current-system/sw/bin/gitnamed-sync || true
+            (cd /home/named && /run/wrappers/bin/sudo -u named -- /run/current-system/sw/bin/gitnamed-sync || true)
           ''}
           )
         '';
