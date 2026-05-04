@@ -296,8 +296,8 @@ args @ {
 
     config = lib.mkMerge [
       (lib.mkIf (config.template == "kittunderlay") {
-        ipv4.bgpImports = lib.mkDefault {allowed = ["is_valid4_network()"];};
-        ipv6.bgpImports = lib.mkDefault {allowed = ["is_valid6_network()"];};
+        ipv4.bgpImports = lib.mkDefault {allowed = ["is_kitten4_network()"];};
+        ipv6.bgpImports = lib.mkDefault {allowed = ["is_kitten6_network()"];};
       })
     ];
   };

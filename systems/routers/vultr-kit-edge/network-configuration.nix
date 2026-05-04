@@ -9,7 +9,10 @@ in
     bird.static6 = lib.mapAttrsToList (n: v: ''${n} via "fe80::${v}%${iface}"'') {
       "2001:19f0::/32" = "fc00:4ff:fe82:5c6e";
     };
-    vrfs.requiredLink = iface;
+    vrfs.tables.DN42.address = [
+      "${kittenLib.network.dn42.dns6}/128"
+      "${kittenLib.network.dn42.dns4}/32"
+    ];
 
     firewall.forward.natRules = ''
       oifname "${iface}" ip6 saddr ${kittenLib.network.internal6.cafe.kittens.underlay.net} snat ip6 prefix to 2a12:5844:1311:feff::/64

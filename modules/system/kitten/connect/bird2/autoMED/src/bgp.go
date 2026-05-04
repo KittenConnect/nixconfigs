@@ -26,7 +26,7 @@ func (e *BGPExporter) Export(peers []MonitoredPeer, lm *LatencyMonitor) {
 		// Use a high penalty (2^31 - 1) if no data is available yet
 		medValue := int64(2147483647)
 		if stats.Median != 0 {
-			medValue = stats.Median.Milliseconds()
+			medValue = stats.Median.Microseconds()
 		}
 
 		// 2. Create a file named after the interface (e.g., eth0.conf)

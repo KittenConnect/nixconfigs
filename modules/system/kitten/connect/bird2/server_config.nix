@@ -49,7 +49,7 @@ in {
       ipv4 {
         export filter {
           if (net = 0.0.0.0/0 && dest = RTD_UNREACHABLE) then reject;
-          if (source !~ [RTS_DEVICE] && (source = RTS_STATIC || is_valid4_network() || is_rr_proto())) then {
+          if (source !~ [RTS_DEVICE] && (source = RTS_STATIC || is_kitten4_network() || is_rr_proto())) then {
     ${optionalString (srvCfg.loopback4 != null && srvCfg.loopback4 != "") (
       indentedLines 4 (setLoopBackSRC "0.0.0.0/0" srvCfg.loopback4)
     )}
@@ -65,7 +65,7 @@ in {
       ipv6 {
         export filter {
           if (net = ::/0 && dest = RTD_UNREACHABLE) then reject;
-          if (source !~ [RTS_DEVICE] && (source = RTS_STATIC || is_valid6_network() || is_rr_proto())) then {
+          if (source !~ [RTS_DEVICE] && (source = RTS_STATIC || is_kitten6_network() || is_rr_proto())) then {
     ${optionalString (srvCfg.loopback6 != null && srvCfg.loopback6 != "") (
       indentedLines 4 (setLoopBackSRC "::/0" srvCfg.loopback6)
     )}
