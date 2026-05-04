@@ -3,6 +3,9 @@
     asn = 4242421945;
     net = "fd42:7331:1241::/48";
 
+    dns4 = "172.23.193.253";
+    dns6 = dn42 "53";
+
     fromInternal = internal6.cafe.kittens;
   };
 

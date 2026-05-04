@@ -114,6 +114,13 @@ in {
                 LinkLocalAddressing = false;
                 BindCarrier = vrf.bindCarrier;
               };
+
+              routingPolicyRules = builtins.map (addr: {
+                  Family = if lib.hasInfix ":" addr then "ipv6" else "ipv4";
+                  From = addr;
+                  IncomingInterface = "lo";
+                  Table = vrf.tableID;
+              }) (builtins.filter (addr: !(lib.hasPrefix "::1/" addr || lib.hasPrefix "127.0.0.1/" addr)) vrf.address);
             }
         )
         vrfTables;
