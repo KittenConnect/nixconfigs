@@ -123,8 +123,9 @@ in
 ]
 ++ basicRules
 ++ [
+
   (mkSopsRule {
-    path_regex = ".secrets/_gitnamed([_/][^/]*)?\.(yaml|json|env|ini)$";
+    path_regex = ".secrets/gitnamed([_/][^/]*)?\.(yaml|json|env|ini)$";
     # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
     allowedKeys = mergeKeyGroups (
       [ operators.root ]
@@ -136,5 +137,6 @@ in
 
     mac_only_encrypted = true;
   })
+
   (mkPublicRule ".secrets/[^/]+\.(yaml|json|env|ini)$")
 ]
