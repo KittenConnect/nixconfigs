@@ -4,3 +4,4 @@ repl-result-*
 .gcroots
 *.qcow2
 *.kate-swp
+.sops.yaml
