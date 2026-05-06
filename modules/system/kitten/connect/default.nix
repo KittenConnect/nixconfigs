@@ -4,6 +4,7 @@
     ./nixHome.nix
     ./base.nix
     ./misc.nix
+    ./grafanacloud.nix
 
     ./disko
     ./packages

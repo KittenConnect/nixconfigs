@@ -140,7 +140,7 @@ in {
       };
 
       sops.secrets.gitnamed_sshkey = {
-        sopsFile = ../../../../../../.secrets/_gitnamed.yaml;
+        sopsFile = ../../../../../../.secrets/gitnamed.yaml;
       };
 
       security.sudo.extraRules = [
