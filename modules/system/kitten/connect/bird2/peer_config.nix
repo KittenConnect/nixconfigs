@@ -22,8 +22,6 @@
     bgpMED
     ;
 
-  peerMED = bgpMED;
-
   _localIP = optionalString (localIP != null) (toString localIP);
 
   interface = assert lib.asserts.assertMsg (peer.multihop == 0)
