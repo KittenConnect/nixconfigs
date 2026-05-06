@@ -61,7 +61,7 @@ args @ {
       };
       bgpMED = mkOption {
         type = with types; nullOr (either int str);
-        default = null;
+        default = if (peerConfig.bgpMED or null) != null then peerConfig.bgpMED else null;
       };
       direction = mkOption {
         type = types.enum [
@@ -149,6 +149,12 @@ args @ {
         default = true;
         example = false;
         description = "${name} VRF.";
+      };
+
+      peerName = mkOption {
+        type = types.str;
+        default = name;
+        description = "Override name of the VRF protocol.";
       };
 
       birdTable = mkOption {
@@ -299,6 +305,11 @@ args @ {
         ipv4.bgpImports = lib.mkDefault {allowed = ["is_kitten4_network()"];};
         ipv6.bgpImports = lib.mkDefault {allowed = ["is_kitten6_network()"];};
       })
+
+      # (lib.mkIf (config.bgpMED != null) {
+      #   ipv4.bgpImports = lib.mkIf (builtins.isAttrs config.ipv4.bgpImports) (lib.mkDefault config.bgpMED);
+      #   ipv6.bgpImports = lib.mkIf (builtins.isAttrs config.ipv6.bgpImports) (lib.mkDefault config.bgpMED);
+      # })
     ];
   };
 in {

@@ -49,7 +49,7 @@ args @ {
         _bgpMED =
           if builtins.isString bgpMED
           then bgpMED
-          else builtins.toString bgpMED;
+          else if bgpMED < 0 then "bgpMED_${toString peerName}" else builtins.toString bgpMED;
       in
         indentedLines 1 ''
           ${direction} filter {
