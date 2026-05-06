@@ -180,13 +180,17 @@ in
             #
             # }
             alias nixos-anywhere='nix run -f ${inputs.sources.self}/_scripts/nixos-anywhere.nix'
+            alias sopsnix='nix run -f $(git rev-parse --show-toplevel)/.secrets/sops.nix --'
 
-            export GCP_OSLOGIN_USER=$(gcloud compute os-login describe-profile --format=json | jq -r '.posixAccounts[] | .username')
+            if command -v gcloud >/dev/null; then
+              export GCP_OSLOGIN_USER=$(gcloud compute os-login describe-profile --format=json | jq -r '.posixAccounts[] | .username')
+            fi
           '';
 
           nativeBuildInputs = with pkgs; [
             act
             sops
+            git
             # nixel
             alejandra
             colmena
