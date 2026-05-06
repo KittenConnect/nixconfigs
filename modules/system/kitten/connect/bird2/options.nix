@@ -61,7 +61,7 @@ args @ {
       };
       bgpMED = mkOption {
         type = with types; nullOr (either int str);
-        default = null;
+        default = if (peerConfig.bgpMED or null) != null then peerConfig.bgpMED else null;
       };
       direction = mkOption {
         type = types.enum [
@@ -80,7 +80,7 @@ args @ {
     };
   };
 
-  withFamilies = arg:
+  withFamilies = config: arg:
     arg
     // {
       ipv4 =
@@ -143,12 +143,18 @@ args @ {
     config,
     ...
   }: {
-    options = withFamilies {
+    options = withFamilies config {
       enable = mkOption {
         type = types.bool;
         default = true;
         example = false;
         description = "${name} VRF.";
+      };
+
+      peerName = mkOption {
+        type = types.str;
+        default = name;
+        description = "Override name of the VRF protocol.";
       };
 
       birdTable = mkOption {
@@ -162,10 +168,33 @@ args @ {
         description = "table ID used for this VRF by kernel - defaults to kittenModules.vrfs.<name>.tableID";
       };
 
-      # address = mkOption {
-      #  type = types.listOf types.str;
-      #  default = [ ];
-      # };
+      ipv4 = {
+        static = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          description = "List of static IPv4 routes.";
+        };
+
+        loopback = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "IPv4 loopback address.";
+        };
+      };
+
+      ipv6 = {
+        static = mkOption {
+          type = types.listOf types.str;
+          default = [];
+          description = "List of static IPv6 routes.";
+        };
+
+        loopback = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          description = "IPv6 loopback address.";
+        };
+      };
     };
   };
 
@@ -174,12 +203,18 @@ args @ {
     config,
     ...
   }: {
-    options = withFamilies {
+    options = withFamilies config {
       enable = mkOption {
         type = types.bool;
         default = true;
         example = false;
         description = "${name} peer.";
+      };
+
+      mpls = mkOption {
+        type = types.bool;
+        default = config.localAS == config.peerAS;
+        description = "use Kitten mpls Wireguard module on this link";
       };
 
       peerName = mkOption {
@@ -267,9 +302,14 @@ args @ {
 
     config = lib.mkMerge [
       (lib.mkIf (config.template == "kittunderlay") {
-        ipv4.bgpImports = lib.mkDefault {allowed = ["is_valid4_network()"];};
-        ipv6.bgpImports = lib.mkDefault {allowed = ["is_valid6_network()"];};
+        ipv4.bgpImports = lib.mkDefault {allowed = ["is_kitten4_network()"];};
+        ipv6.bgpImports = lib.mkDefault {allowed = ["is_kitten6_network()"];};
       })
+
+      # (lib.mkIf (config.bgpMED != null) {
+      #   ipv4.bgpImports = lib.mkIf (builtins.isAttrs config.ipv4.bgpImports) (lib.mkDefault config.bgpMED);
+      #   ipv6.bgpImports = lib.mkIf (builtins.isAttrs config.ipv6.bgpImports) (lib.mkDefault config.bgpMED);
+      # })
     ];
   };
 in {

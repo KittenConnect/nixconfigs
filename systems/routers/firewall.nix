@@ -23,16 +23,9 @@
       kittenLib.network.internal6.cafe.kittens.underlay.routed.net
     ];
 
-  wgPeers = filterAttrs (n: v: v ? wireguard && v.wireguard != {}) birdConfig.peers;
-
   transitIFACEs =
     [] ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
   # ++ lib.optional (birdConfig ? transitInterface) birdConfig.transitInterface;
-
-  kittenIFACEs = (
-    (attrNames wgPeers)
-    ++ lib.optionals (birdConfig.allowedInterfaces != []) birdConfig.allowedInterfaces
-  );
 
   inherit
     (lib)
@@ -52,100 +45,29 @@ in {
       forward = {
         enable = true;
         stateless = true;
+        allowICMP = true;
+        allowDnat = true;
+
+        sets = {
+          transitIFACEs = {
+            setType = "ifname";
+            elements = transitIFACEs;
+          };
+          transitNETs = {
+            setType = "ipv6_addr";
+            flags = ["interval"];
+            elements = transitedNetworks;
+          };
+        };
 
         rules = ''
-
+          ip6 saddr @transitNETs  iifname @kittenIFACEs  oifname @transitIFACEs  counter accept
+          ip6 daddr @transitNETs  oifname @kittenIFACEs  iifname @transitIFACEs  counter accept
         '';
       };
     };
 
-    networking.nftables = {
-      enable = true;
-
-      tables."nixos-fw".content = let
-        inherit (kittenLib.strings) quotedString;
-
-        defines = lib.concatStringsSep "\n" [
-          (
-            optionalString (transitIFACEs != [])
-            "define transitIFACEs = { ${concatMapStringsSep ", " quotedString transitIFACEs} }"
-          )
-          (optionalString (
-            transitedNetworks != []
-          ) "define transitNETs = { ${concatStringsSep ", " transitedNetworks} }")
-          (
-            optionalString (wgPeers != {})
-            "define wireguardIFACEs = { ${concatMapStringsSep ", " quotedString (attrNames wgPeers)} }"
-          )
-          (
-            optionalString (kittenIFACEs != [])
-            "define kittenIFACEs = { ${concatMapStringsSep ", " quotedString kittenIFACEs} }"
-          )
-        ];
-
-        extraForwardRules = lib.concatStringsSep "\n" (
-          [
-            ''
-              ${optionalString (transitedNetworks != [] && transitIFACEs != [] && kittenIFACEs != []) ''
-                # iifname $kittenIFACEs oifname $transitIFACEs counter accept
-                ip6 saddr $transitNETs  iifname $kittenIFACEs  oifname $transitIFACEs  counter accept
-                ip6 daddr $transitNETs  oifname $kittenIFACEs  iifname $transitIFACEs  counter accept
-              ''}
-              # ip6 daddr 2a12:5844:1310::/44 counter accept
-              # ip6 daddr { 1010:cafe:ffff:feff:b00b:3945:a51:b00b, 1010:cafe:ffff:feff:b00b:3945:a51:dead } counter accept
-
-              # ip6 saddr 1010:cafe:ffff:feff:b00b::/80 ip6 daddr 1010:cafe:ffff:fefe::/64 counter accept
-
-              # ip6 saddr { 1010:cafe:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } ip6 daddr { 1010:cafe:ffff:fefe::/64, 1010:cafe:ffff:feff::/64 } counter accept
-
-
-              ${optionalString (kittenIFACEs != []) ''
-                iifname $kittenIFACEs oifname $kittenIFACEs counter accept
-              ''}
-            ''
-          ]
-          ++ optional (birdConfig ? extraForwardRules) birdConfig.extraForwardRules
-          ++ optional (kittenIFACEs != []) ''
-            iifname $kittenIFACEs log prefix "refused connection: " level info reject comment "reject internal instead of drop"
-          ''
-        );
-      in
-        mkAfter ''
-          # FireWall Test Configs
-          ${defines}
-
-            chain forward {
-              type filter hook forward priority filter; policy drop;
-              # We want StateLess firewalling
-              # ct state vmap {
-              #   invalid : jump forward-allow,
-              #   established : accept,
-              #   related : accept,
-              #   new : jump forward-allow,
-              #   untracked : jump forward-allow,
-              # }
-              jump forward-rules
-            }
-
-            chain forward-rules {
-              icmpv6 type != { router-renumbering, 139 } accept comment "Accept all ICMPv6 messages except renumbering and node information queries (type 139).  See RFC 4890, section 4.3."
-              ct status dnat accept comment "allow port forward"
-              ${extraForwardRules}
-            }
-        '';
-    };
-
-    # Open ports in the firewall.
-    networking.firewall = {
-      enable = true;
-
-      allowedTCPPorts = [22];
-      # allowedUDPPorts = [ ... ];
-
-      # checkReversePath = "loose";
-      checkReversePath = false;
-
-      filterForward = false;
-    };
+    networking.firewall.allowedTCPPorts = [22];
+    networking.firewall.checkReversePath = false;
   };
 }

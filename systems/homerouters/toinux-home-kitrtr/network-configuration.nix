@@ -1,4 +1,13 @@
-{kittenLib, ...}: {
+{kittenLib, lib, pkgs, ...}: let mgmtIface = "ens18"; homeIface = "ens19"; upIface = "ens20"; in {
+  virtualisation.vmVariant = {
+    config.system.activationScripts.setupSecrets.text = lib.mkAfter ''
+      (
+        [[ -d /run/secrets ]] || mkdir -vp /run/secrets
+        [[ -f /run/secrets/wireguard_serverkey ]] || ${pkgs.wireguard-tools}/bin/wg genkey > /run/secrets/wireguard_serverkey
+      )
+    '';
+  };
+
   kittenModules.vrfs.enable = true;
   kittenModules.bird.vrfs = {
     "SFR" = {
@@ -22,75 +31,111 @@
         };
       };
     };
+
+    "DN42" = { # Already exists - only add static range
+      ipv6.static = [
+        "fd42:7331:1241::/48 unreachable"
+      ];
+    };
   };
 
-  systemd.network.enable = true;
-  systemd.network.networks = {
-    "20-eth1" = {
-      matchConfig = {
-        Name = "eth1";
-      };
-      vrf = ["SFR"];
+  systemd.network = {
+    enable = true;
 
-      networkConfig = {
-        IPv6AcceptRA = true;
-        LinkLocalAddressing = "ipv6";
-      };
-      DHCP = "ipv4";
-    };
+    networks = {
+      "40-vlan666" = {
+        matchConfig = {
+          Name = "vlan666";
+        };
+        vrf = ["SFR"];
 
-    "20-eth2" = {
-      matchConfig = {
-        Name = "eth2";
-      };
-      vrf = ["ORANGE"];
+        networkConfig = {
+          IPv6AcceptRA = true;
+          LinkLocalAddressing = "ipv6";
+        };
+        linkConfig.RequiredFamilyForOnline = "both";
 
-      networkConfig = {
-        IPv6AcceptRA = true;
-        LinkLocalAddressing = "ipv6";
-      };
-      DHCP = "ipv4";
-    };
-
-    "50-eth3" = {
-      matchConfig = {
-        Name = "eth3";
+        DHCP = "ipv4";
       };
 
-      address = [
-        "100.100.91.10/24"
-        "2a13:79c0:ffff:feff:b00b:3945:a51:10/112"
-      ];
+      "40-vlan777" = {
+        matchConfig = {
+          Name = "vlan777";
+        };
+        vrf = ["ORANGE"];
 
-      networkConfig = {
-        IPv6AcceptRA = false;
-        LinkLocalAddressing = "ipv6";
+        networkConfig = {
+          IPv6AcceptRA = true;
+          LinkLocalAddressing = "ipv6";
+        };
+        linkConfig.RequiredFamilyForOnline = "both";
+
+        DHCP = "ipv4";
       };
-      DHCP = "no";
+
+      "40-vlan91" = {
+        address = [
+          "100.100.91.25/24"
+          "1010:cafe:ffff:feff:b00b:3945:a51:25/112"
+        ];
+
+        networkConfig = {
+          IPv6AcceptRA = false;
+          LinkLocalAddressing = "ipv6";
+        };
+        DHCP = "no";
+      };
     };
   };
 
   # Pick only one of the below networking options.
   networking = {
+    vlans = {
+      vlan91 = {
+        id = 91;
+        interface = homeIface;
+      };
+      
+      vlan666 = {
+        id = 666;
+        interface = upIface;
+      };
+      vlan777 = {
+        id = 777;
+        interface = upIface;
+      };
+    };
+
     interfaces = {
-      ens18.useDHCP = true;
+      ${mgmtIface} = {
+        ipv4.addresses = [{
+          address = "10.10.50.25";
+          prefixLength = 24;
+        }];
 
-      # vlanXX = {
+        ipv4.routes = [{
+          address = "10.10.0.0";
+          prefixLength = 16;
+          via = "10.10.50.1";
+        }];
+      };
 
-      #   # ipv4.addresses = [
-      #   #   {
-      #   #     address = "xxx.xx.xx.xx";
-      #   #     prefixLength = 24;
-      #   #   }
-      #   # ];
+      vlan91 = {
 
-      #   # ipv6.addresses = [
-      #   #   {
-      #   #     address = "1010:cafe:ffff:feff:b00b::xxx";
-      #   #     prefixLength = 112;
-      #   #   }
-      #   # ];
-      # };
+        # ipv4.addresses = [
+        #   {
+        #     address = "xxx.xx.xx.xx";
+        #     prefixLength = 24;
+        #   }
+        # ];
+
+        # ipv6.addresses = [
+        #   {
+        #     address = "1010:cafe:ffff:feff:b00b:3945:a51:25";
+        #     prefixLength = 112;
+        #   }
+        # ];
+      };
     };
 
     # defaultGateway = {

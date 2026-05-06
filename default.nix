@@ -197,6 +197,8 @@ in
             google-cloud-sdk
             jq
             npins
+            cachix
+            nix-output-monitor
           ];
         };
       };

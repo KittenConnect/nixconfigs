@@ -21,67 +21,115 @@ in {
           # export filter { if is_v4_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
           import limit 1000 action block;
           igp table master4; # IGP table for routes with IPv4 nexthops
-          #  igp table master6; # IGP table for routes with IPv4 nexthops
+          # igp table master6; # IGP table for routes with IPv4 nexthops
         };
 
-        ipv6 {
-          gateway recursive;
+        vpn4 mpls { 
+          extended next hop;
+          igp table master4;
           next hop self;
-
-          import filter { accept; };
-          export filter { if is_rr_valid6_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
-          import limit 1000 action block;
-          igp table master6; # IGP table for routes with IPv6 nexthops
+          table vpntab4;
+          import all; # Filter is done on l3VPN+RRs side for now
+          export all; # Filter is done on l3VPN+RRs side for now
         };
-
+        
+        vpn6 mpls {
+          igp table master6;
+          next hop self;
+          table vpntab6;
+          import all;  # Filter is done on l3VPN+RRs side for now
+          export all;  # Filter is done on l3VPN+RRs side for now
+        };
       }
 
       template bgp kittunderlay {
-      #  local as 4242421945;
-      #  neighbor as kittenASN;
+        # local as 4242421945;
+        # neighbor as kittenASN;
         local port 1790;
         neighbor port 1790;
         rr client;
         path metric off;
-        ipv4 {
+        ipv4 mpls {
           extended next hop;
           next hop self;
           import keep filtered;
 
           import filter {
-            if is_valid4_network() then {
+            if is_kitten4_network() then {
               if defined( bgp_med ) then
-                      bgp_med = bgp_med + ${builtins.toString defaultMED};
-                else {
-                      bgp_med = ${builtins.toString defaultMED};
-                }
+                bgp_med = bgp_med + ${builtins.toString defaultMED};
+              else {
+                bgp_med = ${builtins.toString defaultMED};
+              }
               accept;
             } else reject;
           };
 
-          export filter { if is_valid4_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
+          export filter { if is_kitten4_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
           import limit 1000 action block;
         };
 
-        ipv6 {
+        ipv6 mpls {
           next hop self;
           import keep filtered;
 
           import filter {
-            if is_valid6_network() then {
+            if is_kitten6_network() then {
               if defined( bgp_med ) then
-                      bgp_med = bgp_med + ${builtins.toString defaultMED};
-                else {
-                      bgp_med = ${builtins.toString defaultMED};
-                }
+                bgp_med = bgp_med + ${builtins.toString defaultMED};
+              else {
+                bgp_med = ${builtins.toString defaultMED};
+              }
               accept;
             } else reject;
           };
 
-          export filter { if is_valid6_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
+          export filter { if is_kitten6_network() && source ~ [RTS_STATIC, RTS_DEVICE, RTS_BGP, RTS_OSPF] then accept; else reject; };
           import limit 1000 action block;
         };
 
+        mpls {
+          label policy aggregate;
+        };
+      }
+
+      template bgp dn42 {
+        # metric is the number of hops between us and the peer
+        path metric 1;
+        ipv4 {
+          extended next hop;
+          import limit 9000 action block;
+          import filter {
+            if is_valid4_dn42_network() then {
+              if defined( bgp_med ) then
+                  bgp_med = bgp_med + ${builtins.toString defaultMED};
+                else {
+                  bgp_med = ${builtins.toString defaultMED};
+                }
+              accept;
+            } else reject;
+          };
+          export filter { if is_valid4_dn42_network() && source ~ [RTS_STATIC, RTS_DEVICE] then accept; else reject; }; # TODO: proper filter + transit
+          import table;
+          table t4_DN42;
+        };
+
+        ipv6 {
+          import limit 9000 action block;
+          import filter {
+            if is_valid6_dn42_network() then {
+              if defined( bgp_med ) then
+                  bgp_med = bgp_med + ${builtins.toString defaultMED};
+                else {
+                  bgp_med = ${builtins.toString defaultMED};
+                }
+              accept;
+            } else reject;
+          };
+          export filter { if is_valid6_dn42_network() && source ~ [RTS_STATIC, RTS_DEVICE] then accept; else reject; };  # TODO: proper filter + transit
+          import table;
+          table t6_DN42;
+        };
       }
     '';
   };

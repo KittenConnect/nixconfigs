@@ -1,11 +1,14 @@
 { lib, kittenLib, ... }:
 let
-  iface = "ens18";
+  iface = "enp1s0";
   # kittenIFACE = "ens19";
 in
 {
   kittenModules = {
     bird.transitInterfaces = [ iface ];
+    bird.static6 = lib.mapAttrsToList (n: v: ''${n} via "fe80::${v}%${iface}"'') {
+      "2001:19f0::/32" = "fc00:4ff:fe82:5c6e";
+    };
     vrfs.tables.DN42.address = [
       "${kittenLib.network.dn42.dns6}/128"
       "${kittenLib.network.dn42.dns4}/32"
@@ -21,31 +24,25 @@ in
     #nameservers = [ "1.3.3.7" ];
     interfaces = {
       "${iface}" = {
-        ipv4.addresses = [
-          {
-            address = "185.10.17.235";
-            prefixLength = 24;
-          }
-        ];
-
+        useDHCP = true;
         ipv6.addresses = [
           {
-            address = "2a07:8dc0:19:1f6::1";
+            address = "2001:19f0:6801:365::1";
             prefixLength = 128;
           }
         ];
       };
     };
     defaultGateway = {
-      address = "185.10.17.254";
+      address = "140.82.54.1";
       metric = 42;
       interface = iface;
     };
-    defaultGateway6 = {
-      address = "fe80::1";
-      metric = 42;
-      interface = iface;
-    };
+    # defaultGateway6 = {
+    #   address = "fe80::1";
+    #   metric = 42;
+    #   interface = iface;
+    # };
     useDHCP = false;
     #dhcpcd.enable = false;
   };

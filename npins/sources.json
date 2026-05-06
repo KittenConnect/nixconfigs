@@ -4,14 +4,14 @@
       "type": "Git",
       "repository": {
         "type": "GitHub",
-        "owner": "zhaofengli",
+        "owner": "itzwam",
         "repo": "colmena"
       },
-      "branch": "main",
+      "branch": "feat/targetImage",
       "submodules": false,
-      "revision": "349b035a5027f23d88eeb3bc41085d7ee29f18ed",
-      "url": "https://github.com/zhaofengli/colmena/archive/349b035a5027f23d88eeb3bc41085d7ee29f18ed.tar.gz",
-      "hash": "1x7wpj8cy6h7x0qygqa0i6qapw2flffcmq2m2li4ll7p4ggb4ms1"
+      "revision": "d1a83f009ad7ae5aff579fe2664c061b60f36dcf",
+      "url": "https://github.com/itzwam/colmena/archive/d1a83f009ad7ae5aff579fe2664c061b60f36dcf.tar.gz",
+      "hash": "0vrrmcv9q2my929ryv4bh3larkk31z14cp29scbg7nyzl510yzpy"
     },
     "disko": {
       "type": "GitRelease",

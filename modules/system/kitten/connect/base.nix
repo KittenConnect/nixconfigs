@@ -19,6 +19,8 @@ args @ {
     curl
     fastfetch
     alejandra
+    tcpdump
+    htop
   ];
 
   cfg = config.kittenModules.packages;

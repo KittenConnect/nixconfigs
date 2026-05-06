@@ -19,7 +19,7 @@ args @ {
     parts = lib.splitString ":" ip;
     isHexPart = part: lib.stringLength part <= 4 && (part == "" || (builtins.match "[0-9a-fA-F]+" part != null));
   in
-    builtins.length parts <= 8 && lib.all isHexPart parts && ip != "";
+    !lib.hasInfix ":::" ip && builtins.length parts <= 8 && lib.all isHexPart parts && ip != "";
 
   mkFilter = direction: peerName: val: let
     direction' = direction;
@@ -49,7 +49,7 @@ args @ {
         _bgpMED =
           if builtins.isString bgpMED
           then bgpMED
-          else builtins.toString bgpMED;
+          else if bgpMED < 0 then "bgpMED_${toString peerName}" else builtins.toString bgpMED;
       in
         indentedLines 1 ''
           ${direction} filter {
@@ -81,6 +81,24 @@ args @ {
     };
   in
     myType val;
+
+  expand6 = ipv6: let
+      noEmpty = map (x: if x == "" then "0" else x);
+      longerParts = let
+        missing = 8 - len;
+      in
+      builtins.concatMap (x:
+          if x == ""
+          then builtins.genList (_: "") (if missing > 0 then missing + 1 else 0)
+          else [x]
+        )
+        parts;
+
+      toIP = concatStringsSep ":";
+      parts = lib.splitString ":" ipv6;
+      len = builtins.length parts;
+      full = if len == 8 then toIP (noEmpty parts) else toIP (noEmpty longerParts);
+    in if isValidIPv6 ipv6 then full else throw "Invalid IPv6 cannot expand ${ipv6}";
 
   withCIDR = let
     splitNetwork = lib.splitString "/";
@@ -164,15 +182,43 @@ args @ {
 
           len = lib.toInt (getCidr args);
         }
-        // args
+        // args // (lib.optionalAttrs (args ? fromInternal) {
+          fromInternal = let from = args.fromInternal; in lib.throwIf (from.len != lib.toInt (getCidr args)) "fromInternal ${from.net} needs to match ${args.net} prefix length - got ${from.len}" (address: lib.throwIf (!(lib.hasPrefix (builtins.toString from) address)) "Address ${address} must be in ${args.fromInternal.net}" "${getCleanPrefix args}:${lib.removePrefix ":" (lib.removePrefix "${from}:" address)}");
+        })
       else if builtins.isString args
       then withCIDR {net = args;}
       else throw "withCIDR needs a net argument";
 
+  loopbackToRD = 
+    let
+  hexToInt = hex: (builtins.fromTOML "hex = 0x${hex}").hex;
+in ipv6:
+    let
+      removeLeadingColons = str:
+      let
+        m = builtins.match "^:+(.*)$" str;
+      in
+        if m == null then str else builtins.elemAt m 0;
+
+      prefix = params.internal6.cafe.kittens.loopbacks;
+      full = expand6 (prefix (removeLeadingColons (lib.removePrefix (builtins.toString prefix) ipv6)));
+
+      last4 = lib.sublist 4 4 (lib.splitString ":" full);
+
+      h1 = hexToInt (builtins.elemAt last4 0);
+      h2 = hexToInt (builtins.elemAt last4 1);
+      h3 = hexToInt (builtins.elemAt last4 2);
+      h4 = hexToInt (builtins.elemAt last4 3);
+
+      a = h1 * 65536 + h2;
+      b = h3 * 65536 + h4;
+    in
+  if lib.hasPrefix (builtins.toString prefix) ipv6 then [ a b ] else throw "must give loopback (${params.internal6.cafe.kittens.loopbacks}) address got ${ipv6}";
+
   params = import ./params.nix (args // {inherit withCIDR;});
 in {
-  inherit mkFilter isValidIPv4 isValidIPv6;
-  inherit (params) internal6;
+  inherit mkFilter isValidIPv4 isValidIPv6 expand6 loopbackToRD;
+  inherit (params) public dn42 internal6;
 
   pretty =
     lib.filterAttrsRecursive (

@@ -1,10 +1,9 @@
 {kittenLib, ...}: let
   kittenASN = 4242421945;
-  toinuxASN = 4242423692;
 in {
-  peerAS = toinuxASN;
+  peerAS = kittenASN;
   # peerIP = kittenLib.network.internal6.cafe.kittens.underlay "3013";
-  localAS = toinuxASN;
+  localAS = kittenASN;
 
   wireguard = {
     address = 12306;
