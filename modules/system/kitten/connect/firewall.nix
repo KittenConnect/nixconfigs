@@ -291,7 +291,9 @@ in {
                     ${optionalString (cfg.forward.allowDnat) allowDNAT}
 
                     ${indentedLines 2 cfg.forward.rules}
-                    iifname @kittenIFACEs log prefix "refused connection: " level info reject comment "reject internal instead of default policy"
+                    
+                    limit rate 120/minute burst 300 packets log prefix "default match ${defaultPolicy}: " level info
+                    iifname @kittenIFACEs reject comment "reject internal instead of default policy"
                   }
                 ''
               )

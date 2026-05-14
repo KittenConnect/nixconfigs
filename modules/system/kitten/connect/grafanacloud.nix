@@ -30,9 +30,10 @@ in {
     services.alloy = {
       enable = true;
       configPath = pkgs.writeText "config.alloy" ''
+        // https://kittenconnect.grafana.net/a/grafana-collector-app/fleet-management/fleet-inventory
         remotecfg {
           url = "https://fleet-management-prod-011.grafana.net"
-          id = "ff2ae47d6d0b"
+          id = constants.hostname
           poll_frequency = "60s"
           attributes = encoding.from_json(coalesce(``, `${builtins.toJSON cfg.attributes}`))
 
@@ -67,8 +68,6 @@ in {
 
       environmentFile = config.sops.secrets.grafana_environment.path;
     };
-    
-    systemd.services.alloy.environment.GCLOUD_FM_COLLECTOR_ID = config.networking.hostName; # Not sure if really needed
 
     sops.secrets.grafana_environment = {
       sopsFile = ../../../../.secrets/_default.yaml;

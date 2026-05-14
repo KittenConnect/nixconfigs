@@ -4,6 +4,8 @@ let
     # host_stonkstation = "age16462eqs3uc8rvlr5ef7ttvt2qe2gvaha7gf2prhwadfffmvmcdgs5nt22v";
     # host_prodesk = "age1syx48exjgrns9500apf3v4a84gj62fdpy0sqvseax438d9k0y3tqrtfn3t";
 
+    iguane-kit-rr91.age = "age10xsr9022y63x6udk8gd5y2ss28hrk06mc8dgqhh9l4qd6u2ks9es3xv6jp";
+
     vultr-kit-edge.age = "age1w2cfzf8wm02umpj74tcseqmslhj2cfl9qtkdkcnj5cyvspyhvfxq5lh2gd";
     virtua-kit-edge.age = "age1a2dpax5xwt4855jfpsxh83l6y9uf2804uszhxydqhxwr9hk4a96s42k4e0";
 
