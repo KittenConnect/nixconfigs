@@ -15,6 +15,8 @@
     ./loopback0.nix
     ./vrfs.nix
     ./bird2
+
+    ./k3s.nix
   ];
 
   options.kittenModules.common = lib.mkOption {
