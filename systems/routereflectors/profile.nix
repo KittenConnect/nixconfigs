@@ -14,6 +14,8 @@
 
   environment.systemPackages = with pkgs; [gobgp];
 
+  kittenModules.grafana.attributes.goBGP = "routereflector";
+
   # List services that you want to enable:
   services.gobgpd = {
     enable = true;

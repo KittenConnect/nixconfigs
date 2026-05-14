@@ -12,7 +12,7 @@
     miniupnpc
   ];
 
-  sopsFile = ../../secrets/_default.yaml;
+  sopsFile = ../../.secrets/_default.yaml;
 in {
   sops.secrets.k3s_cluster_token = {
     inherit sopsFile;

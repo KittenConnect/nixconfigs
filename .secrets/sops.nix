@@ -22,7 +22,8 @@ pkgs.writeShellScriptBin "sopsnix" ''
     fi
 
     SOPS_CONFIG="$SOPS_RULES" exec sops "$@"
-  else
-    rm $SOPS_RULES.$$
   fi
+
+  rm $SOPS_RULES.$$
+  exit 1
 ''

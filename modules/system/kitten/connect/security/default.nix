@@ -24,7 +24,7 @@ in {
     openssh.authorizedKeys.keys = lib.mkDefault [
       # change this to your ssh key
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPxJpIrlaMMuw+zqOlZa35ehViBytyROvdf73poXTlVz"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINC+U2GVzJm2vPdmeSwiImGuZ82prwMybkjmrfLdOsWu"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPuDns8x8vdZiKHLwnybiICTX63i3uuN9ny7/cHzpiek"
     ];
   };
 

@@ -99,6 +99,12 @@ in {
     in
       lib.mapAttrs' (name: file: lib.nameValuePair "${configHome}/${name}" (sane file)) cfg.extraConfigs;
 
+    services.prometheus.exporters.bird = {
+      enable = lib.mkDefault true;
+      listenAddress = "127.0.0.1";
+    };
+    kittenModules.grafana.attributes.bird = "kitten";
+
     # Service configuration
     services.${cfg.serviceName} =
       (lib.optionalAttrs (cfg.serviceName != "bird2") {
