@@ -3,7 +3,8 @@
   pkgs,
   config,
   ...
-}: let
+}:
+let
   noPasswdCommands = [
     "/run/current-system/sw/bin/reboot"
     "/run/current-system/sw/bin/poweroff"
@@ -16,10 +17,16 @@
     "/run/current-system/sw/bin/nixos-rebuild *"
   ];
 
-  noPasswdServices = [];
-in {
+  noPasswdServices = [ ];
+in
+{
   users.users.root = {
-    initialPassword = lib.mkDefault "toor";
+    initialPassword =
+      let
+        envPassword = builtins.getEnv "NIXOS_ROOT_PASSWD";
+        pass = if envPassword != "" then envPassword else "toor";
+      in
+      lib.mkDefault pass;
 
     openssh.authorizedKeys.keys = lib.mkDefault [
       # change this to your ssh key
@@ -36,25 +43,22 @@ in {
   security = {
     sudo = {
       enable = true;
-      extraRules =
-        [
-          {
-            commands =
-              map (cmd: {
-                command = cmd;
-                options = ["NOPASSWD"];
-              })
-              noPasswdCommands;
+      extraRules = [
+        {
+          commands = map (cmd: {
+            command = cmd;
+            options = [ "NOPASSWD" ];
+          }) noPasswdCommands;
 
-            groups = ["wheel"];
-          }
-        ]
-        ++ map (svc: {
-          commands =
-            map
+          groups = [ "wheel" ];
+        }
+      ]
+      ++ map (svc: {
+        commands =
+          map
             (cmd: {
               command = cmd;
-              options = ["NOPASSWD"];
+              options = [ "NOPASSWD" ];
             })
             [
               "/run/current-system/sw/bin/systemctl start ${svc}"
@@ -62,9 +66,8 @@ in {
               "/run/current-system/sw/bin/systemctl stop ${svc}"
             ];
 
-          groups = ["wheel"];
-        })
-        noPasswdServices;
+        groups = [ "wheel" ];
+      }) noPasswdServices;
 
       # ++ lib.flatten (
       #   map (svc: [
