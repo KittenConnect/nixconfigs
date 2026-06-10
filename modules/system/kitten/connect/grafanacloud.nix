@@ -27,6 +27,7 @@ in {
       systemHash = sources.self.revision;
     };
 
+    virtualisation.vmVariant.systemd.services.alloy.enable = lib.mkForce false;
     services.alloy = {
       enable = true;
       configPath = pkgs.writeText "config.alloy" ''
