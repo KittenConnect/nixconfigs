@@ -12,14 +12,16 @@ in {
   options.kittenHome.kube = {
     enable = lib.mkOption {
       type = lib.types.bool;
-      default = true;
+      default = kubeCfg.enable && kubeCfg.role == "server";
       example = false;
       description = "KittenK3s common configuration";
     };
   };
 
-  config = lib.optionalAttrs (kubeCfg.enable && kubeCfg.role == "server" && options.home ? kubenv) {
-    home.kubenv.enable = true;
+  config = lib.mkIf cfg.enable {
     home.sessionVariables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+  }
+  // lib.optionalAttrs (options.home ? kubenv) {
+    home.kubenv.enable = true;
   };
 }
