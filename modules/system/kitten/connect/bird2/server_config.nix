@@ -34,7 +34,7 @@
     }'';
 in {
   services.${srvCfg.serviceName}.config = mkOrder 25 ''
-    function is_rr_proto() {
+    function is_rr_proto() ->  bool {
       return ${
       if (rrs != [])
       then "${RRs}"

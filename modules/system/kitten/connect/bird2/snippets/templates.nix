@@ -95,7 +95,7 @@ in {
 
       template bgp dn42 {
         # metric is the number of hops between us and the peer
-        path metric 1;
+        path metric on;
         ipv4 {
           extended next hop;
           import limit 9000 action block;

@@ -170,7 +170,7 @@ in {
           (mkOrder 10 ''
             # NixOS declared includes
             ${concatMapStringsSep "\n" (
-                x: ''${optionalString (!(cfg.enable)) "# "}include "${x.name}";''
+                {name, value}: ''${optionalString (!(value.enable) || value.order < 0) "# "}include "${name}";''
               )
               sortedExtraConfigs}
           '')
@@ -239,6 +239,8 @@ in {
 
       peerConfigs =
         mkConfigs "peers/" (n: v: {
+          order = if v.bgpMED != null -> v.bgpMED > 0 then 10 else -1;
+
           text = ''
             # ${n}
             ${peerFunc (v // {peerName = n;})}
@@ -274,6 +276,17 @@ in {
 
       ipv4 = mkIf (cfg.loopback4 != null) [cfg.loopback4];
       ipv6 = mkIf (cfg.loopback6 != null) [cfg.loopback6];
+    };
+
+    kittenModules.firewall.forward = lib.mkIf (config.kittenModules.firewall.forward.enable) {
+      sets.kittenIFACEs = {
+        setType = "ifname";
+        elements = builtins.attrNames (lib.filterAttrs (n: v: v.template == "kittunderlay") peers);
+      };
+      sets.dn42IFACEs = {
+        setType = "ifname";
+        elements = builtins.attrNames (lib.filterAttrs (n: v: v.template == "dn42") peers);
+      };
     };
 
     boot.kernelModules = ["mpls_router"];
