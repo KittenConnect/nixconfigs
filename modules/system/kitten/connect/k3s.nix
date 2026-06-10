@@ -1,5 +1,7 @@
 { lib, config, pkgs, ... }: let
-  inherit (lib) mkOption types mkIf mkMerge optionals;
+  inherit (lib) mkOption types mkIf mkMerge optional optionals;
+
+  tokenSecret = if cfg.controller then "k3s_cluster_token" else "k3s_token";
 
   cfg = config.kittenModules.k3s;
 
@@ -14,30 +16,35 @@
       [
         "--kubelet-arg=container-log-max-files=5"
         "--kubelet-arg=container-log-max-size=10Mi"
-        "--kube-apiserver-arg oidc-issuer-url=https://auth.home.kube.kittenconnect.net/"
-        "--kube-apiserver-arg oidc-client-id=KubernetesAPIClient"
-        "--kube-apiserver-arg oidc-username-claim=email"
-        "--kube-apiserver-arg oidc-groups-claim=groups"
         "--cluster-cidr=${cfg.clusterCidr}"
         "--service-cidr=${cfg.serviceCidr}"
-        "--flannel-ipv6-masq"
         "--disable=servicelb,local-storage,traefik"
-        "--secrets-encryption"
       ]
-      ++ optionals cfg.etcdSnapshot.enable [
-        "--etcd-snapshot-schedule-cron='${cfg.etcdSnapshot.schedule}'"
-        "--etcd-snapshot-retention=${toString cfg.etcdSnapshot.retention}"
-      ]
-      ++ optionals (cfg.etcdSnapshot.enable && cfg.enableTmpfsDb) [
+      ++ (optionals (cfg.oidc.issuerUrl != null) [
+        "--kube-apiserver-arg oidc-issuer-url=${cfg.oidc.issuerUrl}"
+        "--kube-apiserver-arg oidc-client-id=${cfg.oidc.clientId}"
+        "--kube-apiserver-arg oidc-username-claim=${cfg.oidc.usernameClaim}"
+        "--kube-apiserver-arg oidc-groups-claim=${cfg.oidc.groupsClaim}"
+      ])
+      ++ (optionals (cfg.etcd.snapshot.schedule != null) [
+        "--etcd-snapshot-schedule-cron='${cfg.etcd.snapshot.schedule}'"
+        "--etcd-snapshot-retention=${toString cfg.etcd.snapshot.retention}"
+      ])
+      ++ (optionals (cfg.etcd.snapshot.schedule != null && cfg.etcd.tmpfs) [
         "--etcd-snapshot-dir=/var/lib/rancher/k3s/server/db.persistent/snapshots"
-      ]
-      ++ optionals (cfg.etcdSnapshot.enable && cfg.etcdSnapshot.s3.enable) [
+      ])
+      ++ (optionals (cfg.etcd.heartbeatInterval != null) [
+        "--etcd-arg heartbeat-interval=${toString cfg.etcd.heartbeatInterval}"
+      ])
+      ++ (optionals (cfg.etcd.electionTimeout != null) [
+        "--etcd-arg election-timeout=${toString cfg.etcd.electionTimeout}"
+      ])
+      ++ (optionals (cfg.etcd.snapshot.schedule != null && cfg.etcd.snapshot.s3.bucket != null) [
         "--etcd-s3"
-        "--etcd-s3-endpoint=${cfg.etcdSnapshot.s3.endpoint}"
-        "--etcd-s3-region=${cfg.etcdSnapshot.s3.region}"
-        "--etcd-s3-bucket=${cfg.etcdSnapshot.s3.bucket}"
-        "--etcd-s3-folder=${cfg.etcdSnapshot.s3.folder}"
-      ]
+        "--etcd-s3-endpoint=${cfg.etcd.snapshot.s3.endpoint}"
+        "--etcd-s3-region=${cfg.etcd.snapshot.s3.region}"
+        "--etcd-s3-bucket=${cfg.etcd.snapshot.s3.bucket}"
+      ] ++ optional (cfg.etcd.snapshot.s3.folder != "") "--etcd-s3-folder=${cfg.etcd.snapshot.s3.folder}")
       ++ cfg.extraServerFlags
     else
       [];
@@ -105,75 +112,89 @@ in {
       description = "Cluster service CIDR";
     };
 
-    etcdSnapshot = {
-      enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable automatic etcd snapshots";
-      };
-
-      schedule = mkOption {
-        type = types.str;
-        default = "0 * * * *";
-        description = "Cron schedule for automatic etcd snapshots";
-      };
-
-      retention = mkOption {
-        type = types.int;
-        default = 12;
-        description = "Number of etcd snapshots to retain";
-      };
-
-      s3 = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = "Enable S3 storage for etcd snapshots";
+    etcd = {
+      snapshot = {
+        schedule = mkOption {
+          type = with types; nullOr str;
+          default = "0 * * * *";
+          description = "Cron schedule for automatic etcd snapshots";
         };
 
-        endpoint = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "S3 endpoint URL for etcd snapshots";
+        retention = mkOption {
+          type = types.int;
+          default = 12;
+          description = "Number of etcd snapshots to retain";
         };
 
-        region = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "S3 region for etcd snapshots";
-        };
+        s3 = {
+          endpoint = mkOption {
+            type = types.str;
+            default = "s3.${cfg.region}.amazonaws.com";
+            description = "S3 endpoint URL for etcd snapshots";
+          };
 
-        bucket = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "S3 bucket name for etcd snapshots";
-        };
+          region = mkOption {
+            type = types.str;
+            default = "eu-west-3"; # La Fronce mossieur
+            description = "S3 region for etcd snapshots";
+          };
 
-        folder = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          description = "S3 folder prefix for snapshots";
+          bucket = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            description = "S3 bucket name for etcd snapshots";
+          };
+
+          folder = mkOption {
+            type = types.str;
+            default = "";
+            description = "S3 folder prefix for snapshots";
+          };
         };
       };
-    };
 
-    enableTmpfsDb = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Mount /var/lib/rancher/k3s/server/db as tmpfs (server only)";
-    };
-
-    sops = {
-      enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Configure sops secrets for k3s tokens";
-      };
-
-      sopsFile = mkOption {
-        type = types.nullOr types.path;
+      heartbeatInterval = mkOption {
+        type = types.nullOr types.int;
         default = null;
-        description = "Path to the sops file containing k3s secrets";
+        description = "etcd heartbeat interval in milliseconds (--etcd-arg heartbeat-interval)";
+      };
+
+      electionTimeout = mkOption {
+        type = types.nullOr types.int;
+        default = null;
+        description = "etcd election timeout in milliseconds (--etcd-arg election-timeout)";
+      };
+
+      tmpfs = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Mount /var/lib/rancher/k3s/server/db as tmpfs (server only)";
+      };
+    };
+
+    oidc = {
+      issuerUrl = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "OIDC issuer URL for Kubernetes API authentication";
+      };
+
+      clientId = mkOption {
+        type = types.str;
+        default = "kubeapi";
+        description = "OIDC client ID for Kubernetes API authentication";
+      };
+
+      usernameClaim = mkOption {
+        type = types.str;
+        default = "email";
+        description = "OIDC username claim";
+      };
+
+      groupsClaim = mkOption {
+        type = types.str;
+        default = "groups";
+        description = "OIDC groups claim";
       };
     };
   };
@@ -182,17 +203,17 @@ in {
     {
       networking.firewall.allowedUDPPorts = [ 51820 51821 ];
 
+      sops.secrets.${tokenSecret} = {
+        sopsFile = ../../../../.secrets/kubernetes.yaml;
+      };
+
       services.k3s = {
         enable = true;
         package = cfg.package;
         role = if cfg.controller then "server" else "agent";
 
-        tokenFile = lib.mkIf cfg.sops.enable (
-          if cfg.controller then
-            config.sops.secrets.k3s_cluster_token.path
-          else
-            config.sops.secrets.k3s_token.path
-        );
+        # hexdump -vn24 -e'6/4 "%08X" 1 "\n"' /dev/urandom
+        tokenFile = config.sops.secrets.${tokenSecret}.path;
 
         clusterInit = cfg.master;
 
@@ -208,17 +229,7 @@ in {
       };
     }
 
-    (lib.mkIf cfg.sops.enable {
-      sops.secrets.k3s_cluster_token = {
-        sopsFile = cfg.sops.sopsFile;
-      };
-
-      sops.secrets.k3s_token = {
-        sopsFile = cfg.sops.sopsFile;
-      };
-    })
-
-    (lib.mkIf (cfg.master && cfg.enableTmpfsDb) {
+    (lib.mkIf (cfg.master && cfg.etcd.tmpfs) {
       fileSystems."/var/lib/rancher/k3s/server/db" = {
         fsType = "tmpfs";
         options = [

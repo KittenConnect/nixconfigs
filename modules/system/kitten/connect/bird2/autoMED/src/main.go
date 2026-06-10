@@ -83,6 +83,7 @@ type App struct {
 func (a *App) Start(ctx context.Context) {
 	// Initial discovery
 	a.ReloadPeers(ctx)
+	a.Exporter.Export(a.Peers, a.Monitor)
 
 	// 1. Listen for SIGHUP
 	go a.listenForSignals(ctx)
