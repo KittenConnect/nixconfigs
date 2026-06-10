@@ -15,6 +15,8 @@ let
     aure-home-kitrtr.age = "age1f9c0vpqpafkc0uugm4qnwuw8tr87pt63ar9497auzsz6kker33tq8cs7gw";
     romain-home-kitrtr.age = "age13shuee5uk80wjlhdsl2hlg7n7nv489wxq8r7xy0arh9nkk3lju9qfs0k0x";
     toinux-home-kitrtr.age = "age1fuf8dejemxxlqmsc44frs0xkfzyk4qypyrrdr36g5c3rlmt2fv7qc3ljsl";
+
+    k8s-iguane-01.age = "age1rp6e6ue8ve87snrzjr9nmqsr25m62w0dhuk64dn0xk94fkj42dxq5rucjv";
   };
 
   operators = {
@@ -26,6 +28,19 @@ let
       ];
     };
   };
+
+
+  withKeys =
+    source: keyNames:
+    if builtins.isList keyNames then
+      map (x: source.${x}) keyNames
+    else if builtins.isAttrs keyNames then
+      builtins.attrValues keyNames
+    else if builtins.isString keyNames then
+      withKeys source (builtins.filter (x: (builtins.match "(${keyNames})" x) != null) (builtins.attrNames source))
+    else
+      [ ];
+  withMachines = withKeys machines;
 
   getMachineKeys =
     keyType: machineName:
@@ -135,6 +150,17 @@ in
         vultr-kit-edge
         virtua-kit-edge
       ])
+    );
+
+    mac_only_encrypted = true;
+  })
+
+  (mkSopsRule {
+    path_regex = ".secrets/kubernetes([_/][^/]*)?\.(yaml|json|env|ini)$";
+    # encrypted_regex: ([sS]ecret([-_]key)?|[pP]assword)$
+    allowedKeys = mergeKeyGroups (
+      [ operators.root ]
+      ++ (withMachines "k8s-.*")
     );
 
     mac_only_encrypted = true;
