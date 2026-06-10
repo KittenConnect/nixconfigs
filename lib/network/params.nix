@@ -1,4 +1,5 @@
-{lib, withCIDR, ...}: rec {
+{ lib, withCIDR, ... }:
+rec {
   dn42 = withCIDR {
     asn = 4242421945;
     net = "fd42:7331:1241::/48";
@@ -13,13 +14,13 @@
     asn = 213197;
     net = "2a12:5844:1310::/44";
 
-    kittens = withCIDR { 
+    kittens = withCIDR {
       net = "2a12:5844:1311::/48";
-      fromInternal = internal6.cafe.kittens; 
+      fromInternal = internal6.cafe.kittens;
     };
-    customers = withCIDR { 
+    customers = withCIDR {
       net = "2a12:5844:1312::/48";
-      fromInternal =  internal6.cafe.customers; 
+      fromInternal = internal6.cafe.customers;
     };
   };
 
@@ -45,6 +46,8 @@
 
           ig1-kit-rtr = "${internal6.cafe.kittens.loopbacks}::113:25";
           ig1-kit-rr = "${internal6.cafe.kittens.loopbacks}::113:91";
+
+          kube-ingress-dead = "${internal6.cafe.kittens.loopbacks}::dead";
         };
 
         underlay = withCIDR {
