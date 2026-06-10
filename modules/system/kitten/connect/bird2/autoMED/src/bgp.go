@@ -31,9 +31,20 @@ func (e *BGPExporter) Export(peers []MonitoredPeer, lm *LatencyMonitor) {
 
 		// 2. Create a file named after the interface (e.g., eth0.conf)
 		filePath := fmt.Sprintf("%s/%s.conf", e.ConfigDir, peer.Interface)
-		content := []byte(fmt.Sprintf("define bgpMED_%s = %d;\n", peer.Interface, medValue))
+		
+		peerPath := fmt.Sprintf("/etc/bird/peers/%s.conf", peer.Interface)
+		peerContent, err := os.ReadFile(peerPath)
+		if err != nil {
+			peerContent = []byte(fmt.Sprintf("# could not read %s: %v", peerPath, err))
+		}
+		peerContent = append(peerContent, []byte("\n")...)
 
-		err := os.WriteFile(filePath, content, 0644)
+		content := append(
+			[]byte(fmt.Sprintf("define bgpMED_%s = %d;\n", peer.Interface, medValue)), 
+			peerContent...
+		)
+
+		err = os.WriteFile(filePath, content, 0644)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error writing file %s: %v\n", filePath, err)
 			continue
