@@ -92,10 +92,19 @@ in
       mode = "0440";
       group = "systemd-network";
     };
+    virtualisation.vmVariant = {
+      config.system.activationScripts.setupSecrets.text = lib.mkAfter ''
+        (
+          [[ -d /run/secrets ]] || mkdir -vp /run/secrets
+          [[ -f /run/secrets/wireguard_serverkey ]] || ${pkgs.wireguard-tools}/bin/wg genkey > /run/secrets/wireguard_serverkey
+        )
+      '';
+    };
+
     environment.systemPackages = with pkgs; [ wireguard-tools ];
     systemd.services.systemd-networkd = {
       reloadTriggers = [ config.sops.secrets.wireguard_serverkey.path ];
-      wants = ["systemd-udev-settle.service"];
+      wants = [ "systemd-udev-settle.service" ];
     };
     environment.etc."iproute2/rt_tables.d/wgnix.conf" = mkIf (peers != [ ]) {
       text = ''
@@ -125,7 +134,7 @@ in
       })
     ];
     kittenModules.firewall.forward = lib.mkIf (config.kittenModules.firewall.forward.enable) {
-      sets.kittenIFACEs = {
+      sets.wgIFACEs = {
         setType = "ifname";
         elements = builtins.attrNames peers;
       };
