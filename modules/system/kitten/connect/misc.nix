@@ -3,7 +3,8 @@
   config,
   sources,
   ...
-}: {
+}:
+{
   # TODO: Options + Togglable config
 
   # Set your time zone.
@@ -11,6 +12,17 @@
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
+
+  virtualisation.vmVariant = {
+    services.getty.autologinUser = "root";
+    services.cloud-init.enable = lib.mkForce false;
+
+    boot.consoleLogLevel = 7;
+    boot.kernelParams = [
+      "systemd.journald.forward_to_console=1"
+      "systemd.log_level=info"
+    ];
+  };
 
   # Net Basics
   networking.useNetworkd = true;
@@ -21,36 +33,32 @@
   boot.tmp.useTmpfs = lib.mkDefault true;
 
   # Versions Dump
-  environment.etc."current-system-packages".text = let
-    channelUrlRev = s:
-      lib.replaceStrings ["/"] ["_"] (
-        lib.removePrefix "https://releases.nixos.org/" (lib.removeSuffix "/nixexprs.tar.xz" s)
-      );
-
-    sourceRevision = source:
-      if source ? revision
-      then "${source.version or source.branch}_${source.revision}"
-      else
-        (
-          if source.type == "Channel"
-          then channelUrlRev source.url
-          else source.hash
+  environment.etc."current-system-packages".text =
+    let
+      channelUrlRev =
+        s:
+        lib.replaceStrings [ "/" ] [ "_" ] (
+          lib.removePrefix "https://releases.nixos.org/" (lib.removeSuffix "/nixexprs.tar.xz" s)
         );
 
-    getName = p:
-      if p ? name
-      then "${p.name}"
-      else "${p}";
-    packages = builtins.map getName config.environment.systemPackages;
-    sortedUnique = l: builtins.sort builtins.lessThan (lib.unique l);
+      sourceRevision =
+        source:
+        if source ? revision then
+          "${source.version or source.branch}_${source.revision}"
+        else
+          (if source.type == "Channel" then channelUrlRev source.url else source.hash);
 
-    npinSources = builtins.sort builtins.lessThan (
-      lib.mapAttrsToList (n: v: "npins-sources-${n}-${sourceRevision v}") sources
-    );
+      getName = p: if p ? name then "${p.name}" else "${p}";
+      packages = builtins.map getName config.environment.systemPackages;
+      sortedUnique = l: builtins.sort builtins.lessThan (lib.unique l);
 
-    formatted = builtins.concatStringsSep "\n" (
-      (sortedUnique npinSources) ++ [] ++ (sortedUnique packages)
-    );
-  in
+      npinSources = builtins.sort builtins.lessThan (
+        lib.mapAttrsToList (n: v: "npins-sources-${n}-${sourceRevision v}") sources
+      );
+
+      formatted = builtins.concatStringsSep "\n" (
+        (sortedUnique npinSources) ++ [ ] ++ (sortedUnique packages)
+      );
+    in
     formatted;
 }

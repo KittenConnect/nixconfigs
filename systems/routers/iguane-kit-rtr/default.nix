@@ -32,6 +32,7 @@ args @ {
 in {
   imports = [
     ../profile.nix
+    ../resolver-profile.nix
     ./hardware-configuration.nix
     ./network-configuration.nix
 
@@ -46,7 +47,6 @@ in {
   };
 
   virtualisation.vmVariant.virtualisation.graphics = false;
-  virtualisation.vmVariant.services.getty.autologinUser = "root";
 
   # Bootloader.
   boot.loader.grub.efiSupport = true;
@@ -71,6 +71,7 @@ in {
       static6 = [
         "::/0 recursive ${kittenLib.network.internal6.cafe.kittens.loopbacks.internet}"
         "${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr}/128 via ${kittenLib.network.internal6.cafe.kittens.underlay.routed.iguane}:91 { krt_prefsrc = ${lo0}; }" # Announce RouteReflector LoopBack
+        "${kittenLib.network.internal6.cafe.kittens.loopbacks.kube-ingress-dead}/128 via ${kittenLib.network.internal6.cafe.kittens.underlay.routed.iguane}:201 { krt_prefsrc = ${lo0}; }" # Announce Kube ingress LoopBack
       ];
 
       peers = peers.bird;
@@ -89,6 +90,7 @@ in {
         rules = ''
           # iifname "''${kittenIFACE}" ip6 saddr 1010:cafe:ffff:feff:b00b:caca:b173:0/112 oifname @kittenIFACEs counter accept
           iifname @kittenIFACEs ip6 daddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.ig1-kit-rr} tcp dport { 179, 1790 } counter accept
+          iifname @kittenIFACEs ip6 daddr ${kittenLib.network.internal6.cafe.kittens.loopbacks.kube-ingress-dead} counter accept
           oifname bootstrap ip6 daddr 1010:cafe:ffff:feff:b00b:3965:222:0/112 counter accept
 
           # ip6 saddr 2a01:cb08:bbb:3700::/64 oifname ens19 counter accept

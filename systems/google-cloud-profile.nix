@@ -10,13 +10,6 @@
   config = {
     virtualisation.vmVariant = {
       virtualisation.graphics = false;
-
-      services.getty.autologinUser = "root";
-      boot.consoleLogLevel = 7;
-      boot.kernelParams = [
-        "systemd.journald.forward_to_console=1"
-        "systemd.log_level=info"
-      ];
     };
 
     kittenModules.nixConfig.nixosFolder = null;

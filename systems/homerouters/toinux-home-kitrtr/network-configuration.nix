@@ -1,13 +1,4 @@
 {kittenLib, lib, pkgs, ...}: let mgmtIface = "ens18"; homeIface = "ens19"; upIface = "ens20"; in {
-  virtualisation.vmVariant = {
-    config.system.activationScripts.setupSecrets.text = lib.mkAfter ''
-      (
-        [[ -d /run/secrets ]] || mkdir -vp /run/secrets
-        [[ -f /run/secrets/wireguard_serverkey ]] || ${pkgs.wireguard-tools}/bin/wg genkey > /run/secrets/wireguard_serverkey
-      )
-    '';
-  };
-
   kittenModules.vrfs.enable = true;
   kittenModules.bird.vrfs = {
     "SFR" = {

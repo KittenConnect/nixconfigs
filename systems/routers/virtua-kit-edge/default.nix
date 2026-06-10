@@ -32,6 +32,7 @@ args @ {
 in {
   imports = [
     ../profile.nix
+    ../edgerouter-profile.nix
     ./hardware-configuration.nix
     ./network-configuration.nix
 
