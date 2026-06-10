@@ -61,6 +61,7 @@ args @ {
 in {
   imports = [
     ../profile.nix
+    ../edgerouter-profile.nix
     ./hardware-configuration.nix
     ./network-configuration.nix # included here because of its simplicity
     # ./cloud-init.nix
@@ -78,10 +79,6 @@ in {
   # Bootloader.
   boot.loader.grub.efiSupport = false;
   boot.loader.grub.enable = true;
-
-  virtualisation.vmVariant = {
-    services.cloud-init.enable = lib.mkForce false;
-  };
 
   networking.useDHCP = false;
   networking.useNetworkd = true;

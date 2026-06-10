@@ -66,7 +66,5 @@ Never commit decrypted secrets.
     description = "description";
   };
   ```
-
-## Guidelines for Agents
-
 - **Append all new conventions to this file** - Any patterns, refactorings, or guidelines discovered during tasks should be documented here for future reference.
+- **Avoid duplicating variable values across files** — define shared values (interface names, IPs, etc.) in a single place (e.g. `network-configuration.nix`) and reference them elsewhere rather than repeating the literal string. Use `lib.mkForce` or `lib.mkDefault` to resolve priority conflicts between profiles and host overrides.

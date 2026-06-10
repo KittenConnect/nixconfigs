@@ -27,6 +27,8 @@
     [] ++ lib.optionals (birdConfig.transitInterfaces != []) birdConfig.transitInterfaces;
   # ++ lib.optional (birdConfig ? transitInterface) birdConfig.transitInterface;
 
+  dn42Network = "fd00::/8";
+
   inherit
     (lib)
     mkAfter
@@ -56,13 +58,20 @@ in {
           transitNETs = {
             setType = "ipv6_addr";
             flags = ["interval"];
-            elements = transitedNetworks;
+            elements = transitedNetworks ++ [dn42Network]; # DN42 Network
+          };
+          dn42IFACEs = {
+            setType = "ifname";
+            elements = ["DN42"];
           };
         };
 
         rules = ''
           ip6 saddr @transitNETs  iifname @kittenIFACEs  oifname @transitIFACEs  counter accept
           ip6 daddr @transitNETs  oifname @kittenIFACEs  iifname @transitIFACEs  counter accept
+
+          ip6 saddr ${dn42Network}  iifname @dn42IFACEs  oifname @kittenIFACEs  counter accept
+          ip6 daddr ${dn42Network}  oifname @dn42IFACEs  iifname @kittenIFACEs  counter accept
         '';
       };
     };

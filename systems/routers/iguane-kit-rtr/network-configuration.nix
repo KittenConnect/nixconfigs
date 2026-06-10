@@ -12,17 +12,17 @@ in {
   networking = {
     useNetworkd = true;
 
-    nftables.tables."nat" = {
-      family = "inet";
-      name = "nat";
+    # nftables.tables."nat" = {
+    #   family = "inet";
+    #   name = "nat";
 
-      content = lib.mkAfter ''
-        chain postrouting {
-          type nat hook postrouting priority srcnat; policy accept;
-          ip6 daddr 1010:cafe:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
-        }
-      '';
-    };
+    #   content = lib.mkAfter ''
+    #     chain postrouting {
+    #       type nat hook postrouting priority srcnat; policy accept;
+    #       ip6 daddr 1010:cafe:ffff:feff:b00b:3965:222:0/112 oifname "bootstrap" counter masquerade # random,persistent
+    #     }
+    #   '';
+    # };
 
     firewall = {
       allowedTCPPorts = [51888];
