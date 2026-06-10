@@ -1,5 +1,18 @@
-{ lib, config, pkgs, ... }: let
-  inherit (lib) mkOption types mkIf mkMerge optional optionals;
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}:
+let
+  inherit (lib)
+    mkOption
+    types
+    mkIf
+    mkMerge
+    optional
+    optionals
+    ;
 
   tokenSecret = if cfg.controller then "k3s_cluster_token" else "k3s_token";
 
@@ -14,6 +27,7 @@
   serverFlags =
     if cfg.controller then
       [
+        "--node-taint node-role.kubernetes.io/control-plane=true:PreferNoSchedule"
         "--kubelet-arg=container-log-max-files=5"
         "--kubelet-arg=container-log-max-size=10Mi"
         "--cluster-cidr=${cfg.clusterCidr}"
@@ -39,18 +53,27 @@
       ++ (optionals (cfg.etcd.electionTimeout != null) [
         "--etcd-arg election-timeout=${toString cfg.etcd.electionTimeout}"
       ])
-      ++ (optionals (cfg.etcd.snapshot.schedule != null && cfg.etcd.snapshot.s3.bucket != null) [
-        "--etcd-s3"
-        "--etcd-s3-endpoint=${cfg.etcd.snapshot.s3.endpoint}"
-        "--etcd-s3-region=${cfg.etcd.snapshot.s3.region}"
-        "--etcd-s3-bucket=${cfg.etcd.snapshot.s3.bucket}"
-      ] ++ optional (cfg.etcd.snapshot.s3.folder != "") "--etcd-s3-folder=${cfg.etcd.snapshot.s3.folder}")
+      ++ (
+        optionals (cfg.etcd.snapshot.schedule != null && cfg.etcd.snapshot.s3.bucket != null) [
+          "--etcd-s3"
+          "--etcd-s3-endpoint=${cfg.etcd.snapshot.s3.endpoint}"
+          "--etcd-s3-region=${cfg.etcd.snapshot.s3.region}"
+          "--etcd-s3-bucket=${cfg.etcd.snapshot.s3.bucket}"
+        ]
+        ++ optional (cfg.etcd.snapshot.s3.folder != "") "--etcd-s3-folder=${cfg.etcd.snapshot.s3.folder}"
+      )
       ++ cfg.extraServerFlags
     else
-      [];
+      [ ];
 
-  deps = with pkgs; [ ipset iptables nfs-utils miniupnpc ];
-in {
+  deps = with pkgs; [
+    ipset
+    iptables
+    nfs-utils
+    miniupnpc
+  ];
+in
+{
   options.kittenModules.k3s = {
     enable = mkOption {
       type = types.bool;
@@ -90,13 +113,13 @@ in {
 
     extraFlags = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = "Extra command-line flags for k3s (applied to all nodes)";
     };
 
     extraServerFlags = mkOption {
       type = types.listOf types.str;
-      default = [];
+      default = [ ];
       description = "Extra flags applied only to server nodes";
     };
 
@@ -110,6 +133,12 @@ in {
       type = types.str;
       default = "10.43.0.0/16,fd43::/112";
       description = "Cluster service CIDR";
+    };
+
+    dataDisk = mkOption {
+      type = with types; nullOr str;
+      default = null;
+      description = "Disk to mount as k3s data volume - null to leave it on /";
     };
 
     etcd = {
@@ -201,10 +230,21 @@ in {
 
   config = mkIf cfg.enable (mkMerge [
     {
-      networking.firewall.allowedUDPPorts = [ 51820 51821 ];
+      networking.firewall.allowedUDPPorts = [
+        51820
+        51821
+      ];
 
       sops.secrets.${tokenSecret} = {
         sopsFile = ../../../../.secrets/kubernetes.yaml;
+      };
+      virtualisation.vmVariant = {
+        config.system.activationScripts.setupSecrets.text = lib.mkAfter ''
+          (
+            [[ -d /run/secrets ]] || mkdir -vp /run/secrets
+            [[ -f /run/secrets/${tokenSecret} ]] || ${pkgs.util-linux}/bin/hexdump -vn24 -e'6/4 "%08X" 1 "\n"' /dev/urandom > /run/secrets/${tokenSecret}
+          )
+        '';
       };
 
       services.k3s = {
@@ -229,26 +269,35 @@ in {
       };
     }
 
+    (lib.mkIf (cfg.dataDisk != null) {
+      fileSystems."/var/lib/rancher/k3s" = {
+        device = cfg.dataDisk;
+        options = [ "X-mount.mkdir" ];
+      };
+    })
+
     (lib.mkIf (cfg.master && cfg.etcd.tmpfs) {
       fileSystems."/var/lib/rancher/k3s/server/db" = {
         fsType = "tmpfs";
+        depends = lib.mkIf (cfg.dataDisk != null) [ "/var/lib/rancher/k3s" ];
         options = [
           "size=1G"
           "nosuid"
           "mode=700"
+          "X-mount.mkdir"
         ];
       };
 
       systemd.services.k3s = {
         preStart = ''
-          if ! [[ -d /var/lib/rancher/k3s/server/db/etcd ]]; then
+          if [[ -d /var/lib/rancher ]] && ! [[ -d /var/lib/rancher/k3s/server/db/etcd ]]; then
             ${pkgs.rsync}/bin/rsync -arvp --exclude=snapshots --delete /var/lib/rancher/k3s/server/db.persistent/ /var/lib/rancher/k3s/server/db/
           fi
           mkdir -vp /var/lib/rancher/k3s/server/db.persistent/snapshots
         '';
 
         preStop = ''
-          k3s etcd-snapshot save --etcd-snapshot-dir /var/lib/rancher/k3s/server/db.persistent/snapshots --name on-stop
+          ${config.services.k3s.package}/bin/k3s etcd-snapshot save --etcd-snapshot-dir /var/lib/rancher/k3s/server/db.persistent/snapshots --name on-stop
         '';
 
         postStop = ''
